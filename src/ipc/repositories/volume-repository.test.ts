@@ -58,4 +58,13 @@ describe("volume repository", () => {
     const err = await captureError(createVolumeRepository().get(9));
     expect(err).toBeInstanceOf(IpcError);
   });
+
+  it("reorder 调用 reorder_volumes", async () => {
+    invokeMock.mockResolvedValue(undefined);
+    await createVolumeRepository().reorder(7, [3, 1, 2]);
+    expect(invokeMock).toHaveBeenCalledWith("reorder_volumes", {
+      novelId: 7,
+      orderedIds: [3, 1, 2],
+    });
+  });
 });

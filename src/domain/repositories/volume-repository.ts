@@ -7,4 +7,6 @@ export interface VolumeRepository {
   create(input: { novelId: number; title: string; orderIndex: number }): Promise<Volume>;
   update(id: number, input: { title: string }): Promise<Volume>;
   remove(id: number): Promise<void>;
+  /** 按给定顺序重排某作品下的卷（0..n-1，连续唯一） */
+  reorder(novelId: number, orderedIds: number[]): Promise<void>;
 }

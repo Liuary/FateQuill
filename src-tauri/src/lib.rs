@@ -26,6 +26,7 @@ pub fn run() {
             commands::list_chapters, commands::get_chapter, commands::create_chapter, commands::update_chapter, commands::delete_chapter,
             commands::list_setting_cards, commands::get_setting_card, commands::create_setting_card, commands::update_setting_card, commands::delete_setting_card,
             commands::list_characters, commands::get_character, commands::create_character, commands::update_character, commands::delete_character,
+            commands::reorder_volumes, commands::reorder_chapters, commands::move_chapter,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

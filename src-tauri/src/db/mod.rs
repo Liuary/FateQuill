@@ -4,8 +4,12 @@ pub mod volume;
 pub mod chapter;
 pub mod setting_card;
 pub mod character;
+pub mod word_count;
+pub mod ordering;
 #[cfg(test)]
 pub mod seed;
+#[cfg(test)]
+pub mod bench;
 // test_util 由 op-003 在本文件内联定义（见下方 `pub mod test_util`），无需再声明文件模块
 
 /// 数据库连接串（Tauri AppData 下的 sqlite 文件）

@@ -59,16 +59,18 @@ pub async fn create(
     content_format: &str,
     order_index: i64,
 ) -> Result<ChapterRow, IpcError> {
-    // status 由数据库默认 'draft'，word_count 默认 0（op-006 计算）
+    // status 由数据库默认 'draft'；word_count 由 Rust 侧计算回填
     validate(title, content_format, "draft")?;
+    let wc = crate::db::word_count::count_words(content, content_format);
     let id: i64 = sqlx::query_scalar(
-        "INSERT INTO chapter (volume_id,title,content,content_format,order_index) VALUES (?,?,?,?,?) RETURNING id",
+        "INSERT INTO chapter (volume_id,title,content,content_format,order_index,word_count) VALUES (?,?,?,?,?,?) RETURNING id",
     )
     .bind(volume_id)
     .bind(title)
     .bind(content)
     .bind(content_format)
     .bind(order_index)
+    .bind(wc)
     .fetch_one(pool)
     .await?;
     get(pool, id).await
@@ -84,14 +86,16 @@ pub async fn update(
     order_index: i64,
 ) -> Result<ChapterRow, IpcError> {
     validate(title, content_format, status)?;
+    let wc = crate::db::word_count::count_words(content, content_format);
     let n = sqlx::query(
-        "UPDATE chapter SET title=?, content=?, content_format=?, status=?, order_index=?, updated_at=datetime('now') WHERE id=?",
+        "UPDATE chapter SET title=?, content=?, content_format=?, status=?, order_index=?, word_count=?, updated_at=datetime('now') WHERE id=?",
     )
     .bind(title)
     .bind(content)
     .bind(content_format)
     .bind(status)
     .bind(order_index)
+    .bind(wc)
     .bind(id)
     .execute(pool)
     .await?
@@ -103,14 +107,29 @@ pub async fn update(
 }
 
 pub async fn delete(pool: &SqlitePool, id: i64) -> Result<(), IpcError> {
-    let n = sqlx::query("DELETE FROM chapter WHERE id=?")
+    // 事务内删除并按同卷紧凑化 order_index（保持不变量①）
+    let mut tx = pool.begin().await?;
+    let volume_id: Option<i64> = sqlx::query_scalar("SELECT volume_id FROM chapter WHERE id=?")
         .bind(id)
-        .execute(pool)
-        .await?
-        .rows_affected();
-    if n == 0 {
-        return Err(IpcError::not_found("chapter"));
+        .fetch_optional(&mut *tx)
+        .await?;
+    let volume_id = match volume_id {
+        Some(v) => v,
+        None => return Err(IpcError::not_found("chapter")),
+    };
+    sqlx::query("DELETE FROM chapter WHERE id=?").bind(id).execute(&mut *tx).await?;
+    let ids: Vec<i64> = sqlx::query_scalar("SELECT id FROM chapter WHERE volume_id=? ORDER BY order_index")
+        .bind(volume_id)
+        .fetch_all(&mut *tx)
+        .await?;
+    for (i, cid) in ids.iter().enumerate() {
+        sqlx::query("UPDATE chapter SET order_index=? WHERE id=?")
+            .bind(i as i64)
+            .bind(cid)
+            .execute(&mut *tx)
+            .await?;
     }
+    tx.commit().await?;
     Ok(())
 }
 

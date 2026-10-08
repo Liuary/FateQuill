@@ -64,3 +64,11 @@ plan v3 技术约束中的目录集为 `src/{app,components,features,domain,orch
 - **一一对齐**：5 个实体仓储接口各含 `list/get/create/update/delete` 五个方法，与 25 个命令一一对应（REV-010），`get` 不得缺省。
 - **就近过滤**：`list_*` 命令无过滤参数，`listByNovel` / `listByVolume` 在实现层按父 id 客户端过滤。
 - **无 `src/infra/`**：不设 infra 层（YAGNI）；实现层即 `src/ipc/repositories/`。
+
+## 7. 顺序与字数约定
+
+- **`order_index`**：同一父级内**唯一且连续**（从 0 起）。移动/删除后在**事务内**重排（`src-tauri/src/db/ordering.rs` 的 `reorder_volumes` / `reorder_chapters` / `move_chapter`）。对应命令 `reorder_volumes` / `reorder_chapters` / `move_chapter`。
+- **`word_count`**：**Rust 侧写入时统一计算回填**（`src-tauri/src/db/word_count.rs`），按 `content_format` 分支：`html` 去标签取文本、`tiptap-json` 遍历文本节点、`plaintext` 直接计数。
+  - **计数单位 = 非空白字符数**（面向中文「字数」）。
+  - **为近似值（REV-011）**：`html` 分支为**简易去标签 + 常用实体解码**（`&amp;`/`&lt;`/`&gt;`/`&quot;`/`&#39;`/`&nbsp;`），**未处理**属性值内 `>`、`<script>/<style>` 文本与未知实体；需精确字数时后续引入 HTML 解析器，或以 `tiptap-json` 文本节点遍历为准。
+- **基准**：`src-tauri/src/db/bench.rs`（`#[cfg(test)]`）基于 seed（50 章 × 3000 字）验证「单次查询 < 100ms」；仅覆盖单查询路径，写路径（seed INSERT）耗时由 `--nocapture` 观测，不作门禁（REV-012③）。

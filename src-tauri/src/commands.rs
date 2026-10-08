@@ -145,3 +145,17 @@ pub async fn update_character(app: AppHandle, id: i64, name: String, profile: St
 pub async fn delete_character(app: AppHandle, id: i64) -> Result<(), IpcError> {
     db::character::delete(&pool(&app).await?, id).await
 }
+
+// ---------- Ordering (T5) ----------
+#[tauri::command]
+pub async fn reorder_volumes(app: AppHandle, novel_id: i64, ordered_ids: Vec<i64>) -> Result<(), IpcError> {
+    db::ordering::reorder_volumes(&pool(&app).await?, novel_id, &ordered_ids).await
+}
+#[tauri::command]
+pub async fn reorder_chapters(app: AppHandle, volume_id: i64, ordered_ids: Vec<i64>) -> Result<(), IpcError> {
+    db::ordering::reorder_chapters(&pool(&app).await?, volume_id, &ordered_ids).await
+}
+#[tauri::command]
+pub async fn move_chapter(app: AppHandle, chapter_id: i64, to_volume_id: i64, to_index: i64) -> Result<(), IpcError> {
+    db::ordering::move_chapter(&pool(&app).await?, chapter_id, to_volume_id, to_index).await
+}

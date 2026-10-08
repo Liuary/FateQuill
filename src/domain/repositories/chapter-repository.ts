@@ -28,4 +28,8 @@ export interface ChapterRepository {
   create(input: ChapterCreateInput): Promise<Chapter>;
   update(id: number, input: ChapterUpdateInput): Promise<Chapter>;
   remove(id: number): Promise<void>;
+  /** 将章移动到目标卷的目标位置（0 起） */
+  move(id: number, toVolumeId: number, toIndex: number): Promise<void>;
+  /** 按给定顺序重排某卷下的章节（0..n-1，连续唯一） */
+  reorder(volumeId: number, orderedIds: number[]): Promise<void>;
 }

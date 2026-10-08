@@ -97,4 +97,23 @@ describe("chapter repository", () => {
     const err = await captureError(createChapterRepository().get(9));
     expect(err).toBeInstanceOf(IpcError);
   });
+
+  it("move 调用 move_chapter（camelCase 参数）", async () => {
+    invokeMock.mockResolvedValue(undefined);
+    await createChapterRepository().move(5, 9, 0);
+    expect(invokeMock).toHaveBeenCalledWith("move_chapter", {
+      chapterId: 5,
+      toVolumeId: 9,
+      toIndex: 0,
+    });
+  });
+
+  it("reorder 调用 reorder_chapters", async () => {
+    invokeMock.mockResolvedValue(undefined);
+    await createChapterRepository().reorder(3, [2, 1]);
+    expect(invokeMock).toHaveBeenCalledWith("reorder_chapters", {
+      volumeId: 3,
+      orderedIds: [2, 1],
+    });
+  });
 });

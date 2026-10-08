@@ -59,14 +59,29 @@ pub async fn update(pool: &SqlitePool, id: i64, title: &str, order_index: i64) -
 }
 
 pub async fn delete(pool: &SqlitePool, id: i64) -> Result<(), IpcError> {
-    let n = sqlx::query("DELETE FROM volume WHERE id=?")
+    // 事务内删除并按同作品紧凑化剩余卷的 order_index
+    let mut tx = pool.begin().await?;
+    let novel_id: Option<i64> = sqlx::query_scalar("SELECT novel_id FROM volume WHERE id=?")
         .bind(id)
-        .execute(pool)
-        .await?
-        .rows_affected();
-    if n == 0 {
-        return Err(IpcError::not_found("volume"));
+        .fetch_optional(&mut *tx)
+        .await?;
+    let novel_id = match novel_id {
+        Some(n) => n,
+        None => return Err(IpcError::not_found("volume")),
+    };
+    sqlx::query("DELETE FROM volume WHERE id=?").bind(id).execute(&mut *tx).await?;
+    let ids: Vec<i64> = sqlx::query_scalar("SELECT id FROM volume WHERE novel_id=? ORDER BY order_index")
+        .bind(novel_id)
+        .fetch_all(&mut *tx)
+        .await?;
+    for (i, vid) in ids.iter().enumerate() {
+        sqlx::query("UPDATE volume SET order_index=? WHERE id=?")
+            .bind(i as i64)
+            .bind(vid)
+            .execute(&mut *tx)
+            .await?;
     }
+    tx.commit().await?;
     Ok(())
 }
 

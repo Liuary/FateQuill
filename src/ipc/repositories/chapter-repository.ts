@@ -79,5 +79,11 @@ export function createChapterRepository(): ChapterRepository {
     async remove(id) {
       await invokeCommand<void>("delete_chapter", { id });
     },
+    async move(id, toVolumeId, toIndex) {
+      await invokeCommand<void>("move_chapter", { chapterId: id, toVolumeId, toIndex });
+    },
+    async reorder(volumeId, orderedIds) {
+      await invokeCommand<void>("reorder_chapters", { volumeId, orderedIds });
+    },
   };
 }

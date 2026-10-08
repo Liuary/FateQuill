@@ -49,5 +49,8 @@ export function createVolumeRepository(): VolumeRepository {
     async remove(id) {
       await invokeCommand<void>("delete_volume", { id });
     },
+    async reorder(novelId, orderedIds) {
+      await invokeCommand<void>("reorder_volumes", { novelId, orderedIds });
+    },
   };
 }
