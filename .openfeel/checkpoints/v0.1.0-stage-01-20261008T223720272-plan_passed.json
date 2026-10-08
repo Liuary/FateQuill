@@ -1,0 +1,310 @@
+{
+  "meta": {
+    "version": "1.0",
+    "project": "OpenFeel",
+    "updated": "2026-10-08T14:34:27.058Z",
+    "revision": 15
+  },
+  "pipeline": {
+    "phase": "active",
+    "current": {
+      "stage": "v0.1.0-stage-01",
+      "op": ""
+    },
+    "retry": 0
+  },
+  "stages": {
+    "v0.1.0-stage-01": {
+      "name": "v0.1.0-stage-01",
+      "phase": "plan_passed",
+      "status": "planned",
+      "deps": [],
+      "ops": {},
+      "stats": {
+        "start_time": "2026-10-08T14:29:01.816Z",
+        "end_time": "",
+        "duration_ms": 0
+      }
+    },
+    "v0.1.0-stage-02": {
+      "name": "v0.1.0-stage-02",
+      "phase": "plan_pending",
+      "status": "planned",
+      "deps": [
+        "v0.1.0-stage-01"
+      ],
+      "ops": {}
+    },
+    "v0.1.0-stage-03": {
+      "name": "v0.1.0-stage-03",
+      "phase": "plan_pending",
+      "status": "planned",
+      "deps": [
+        "v0.1.0-stage-01",
+        "v0.1.0-stage-02"
+      ],
+      "ops": {}
+    },
+    "v0.1.0-stage-04": {
+      "name": "v0.1.0-stage-04",
+      "phase": "plan_pending",
+      "status": "planned",
+      "deps": [
+        "v0.1.0-stage-01",
+        "v0.1.0-stage-02"
+      ],
+      "ops": {}
+    },
+    "v0.1.0-stage-05": {
+      "name": "v0.1.0-stage-05",
+      "phase": "plan_pending",
+      "status": "planned",
+      "deps": [
+        "v0.1.0-stage-03",
+        "v0.1.0-stage-04"
+      ],
+      "ops": {}
+    },
+    "v0.2.0-stage-06": {
+      "name": "v0.2.0-stage-06",
+      "phase": "plan_pending",
+      "status": "planned",
+      "deps": [
+        "v0.1.0-stage-03",
+        "v0.1.0-stage-05"
+      ],
+      "ops": {}
+    },
+    "v0.2.0-stage-07": {
+      "name": "v0.2.0-stage-07",
+      "phase": "plan_pending",
+      "status": "planned",
+      "deps": [
+        "v0.1.0-stage-03",
+        "v0.2.0-stage-06"
+      ],
+      "ops": {}
+    },
+    "v0.3.0-stage-08": {
+      "name": "v0.3.0-stage-08",
+      "phase": "plan_pending",
+      "status": "planned",
+      "deps": [
+        "v0.1.0-stage-03",
+        "v0.1.0-stage-05"
+      ],
+      "ops": {}
+    },
+    "v0.3.0-stage-09": {
+      "name": "v0.3.0-stage-09",
+      "phase": "plan_pending",
+      "status": "planned",
+      "deps": [
+        "v0.3.0-stage-08"
+      ],
+      "ops": {}
+    },
+    "v0.4.0-stage-10": {
+      "name": "v0.4.0-stage-10",
+      "phase": "plan_pending",
+      "status": "planned",
+      "deps": [
+        "v0.1.0-stage-03",
+        "v0.1.0-stage-05"
+      ],
+      "ops": {}
+    },
+    "v0.5.0-stage-11": {
+      "name": "v0.5.0-stage-11",
+      "phase": "plan_pending",
+      "status": "planned",
+      "deps": [
+        "v0.1.0-stage-05",
+        "v0.4.0-stage-10"
+      ],
+      "ops": {}
+    },
+    "v0.6.0-stage-12": {
+      "name": "v0.6.0-stage-12",
+      "phase": "plan_pending",
+      "status": "planned",
+      "deps": [
+        "v0.3.0-stage-09",
+        "v0.5.0-stage-11"
+      ],
+      "ops": {}
+    }
+  },
+  "reviews": [],
+  "log": [
+    {
+      "time": "2026-10-08T14:28:45.507Z",
+      "agent": "cli",
+      "action": "register_stage",
+      "detail": {
+        "stageName": "v0.1.0-stage-01",
+        "deps": []
+      }
+    },
+    {
+      "time": "2026-10-08T14:28:50.287Z",
+      "agent": "cli",
+      "action": "register_stage",
+      "detail": {
+        "stageName": "v0.1.0-stage-02",
+        "deps": [
+          "v0.1.0-stage-01"
+        ]
+      }
+    },
+    {
+      "time": "2026-10-08T14:28:50.566Z",
+      "agent": "cli",
+      "action": "register_stage",
+      "detail": {
+        "stageName": "v0.1.0-stage-03",
+        "deps": [
+          "v0.1.0-stage-01",
+          "v0.1.0-stage-02"
+        ]
+      }
+    },
+    {
+      "time": "2026-10-08T14:28:50.848Z",
+      "agent": "cli",
+      "action": "register_stage",
+      "detail": {
+        "stageName": "v0.1.0-stage-04",
+        "deps": [
+          "v0.1.0-stage-01",
+          "v0.1.0-stage-02"
+        ]
+      }
+    },
+    {
+      "time": "2026-10-08T14:28:51.109Z",
+      "agent": "cli",
+      "action": "register_stage",
+      "detail": {
+        "stageName": "v0.1.0-stage-05",
+        "deps": [
+          "v0.1.0-stage-03",
+          "v0.1.0-stage-04"
+        ]
+      }
+    },
+    {
+      "time": "2026-10-08T14:28:51.376Z",
+      "agent": "cli",
+      "action": "register_stage",
+      "detail": {
+        "stageName": "v0.2.0-stage-06",
+        "deps": [
+          "v0.1.0-stage-03",
+          "v0.1.0-stage-05"
+        ]
+      }
+    },
+    {
+      "time": "2026-10-08T14:28:51.654Z",
+      "agent": "cli",
+      "action": "register_stage",
+      "detail": {
+        "stageName": "v0.2.0-stage-07",
+        "deps": [
+          "v0.1.0-stage-03",
+          "v0.2.0-stage-06"
+        ]
+      }
+    },
+    {
+      "time": "2026-10-08T14:28:51.929Z",
+      "agent": "cli",
+      "action": "register_stage",
+      "detail": {
+        "stageName": "v0.3.0-stage-08",
+        "deps": [
+          "v0.1.0-stage-03",
+          "v0.1.0-stage-05"
+        ]
+      }
+    },
+    {
+      "time": "2026-10-08T14:28:52.206Z",
+      "agent": "cli",
+      "action": "register_stage",
+      "detail": {
+        "stageName": "v0.3.0-stage-09",
+        "deps": [
+          "v0.3.0-stage-08"
+        ]
+      }
+    },
+    {
+      "time": "2026-10-08T14:28:52.480Z",
+      "agent": "cli",
+      "action": "register_stage",
+      "detail": {
+        "stageName": "v0.4.0-stage-10",
+        "deps": [
+          "v0.1.0-stage-03",
+          "v0.1.0-stage-05"
+        ]
+      }
+    },
+    {
+      "time": "2026-10-08T14:28:52.754Z",
+      "agent": "cli",
+      "action": "register_stage",
+      "detail": {
+        "stageName": "v0.5.0-stage-11",
+        "deps": [
+          "v0.1.0-stage-05",
+          "v0.4.0-stage-10"
+        ]
+      }
+    },
+    {
+      "time": "2026-10-08T14:28:53.023Z",
+      "agent": "cli",
+      "action": "register_stage",
+      "detail": {
+        "stageName": "v0.6.0-stage-12",
+        "deps": [
+          "v0.3.0-stage-09",
+          "v0.5.0-stage-11"
+        ]
+      }
+    },
+    {
+      "time": "2026-10-08T14:29:01.816Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.1.0-stage-01",
+        "from": "plan_pending",
+        "to": "plan_review"
+      }
+    },
+    {
+      "time": "2026-10-08T14:33:32.981Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.1.0-stage-01",
+        "from": "plan_review",
+        "to": "plan_pending"
+      }
+    },
+    {
+      "time": "2026-10-08T14:34:27.058Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.1.0-stage-01",
+        "from": "plan_pending",
+        "to": "plan_review"
+      }
+    }
+  ]
+}

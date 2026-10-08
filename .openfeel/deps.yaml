@@ -1,0 +1,112 @@
+# .openfeel/deps.yaml
+# 阶段依赖声明（openfeel-planner 维护）
+# 语义：
+#   hard            硬依赖 —— 前置未 done 不得启动（写入 flow.json stages[].deps 的即 hard）
+#   soft            软依赖 —— 可并行，但缺失会降低产出质量（不写入 flow.json，仅作排期参考）
+#   mutual_exclusion 互斥 —— 不应与所列阶段并行执行
+# flow.json 的注册由 Feel 通过 CLI 执行：openfeel plan stage add <id> --deps <hard...>
+# 权威阶段 ID 为完整格式 v{X.Y.Z}-stage-NN；series = v0。
+
+series: v0
+registry:
+  # 注册顺序即建议执行顺序；括号内为 flow.json 应写入的 hard deps
+  "v0.1.0-stage-01": []
+  "v0.1.0-stage-02": ["v0.1.0-stage-01"]
+  "v0.1.0-stage-03": ["v0.1.0-stage-01", "v0.1.0-stage-02"]
+  "v0.1.0-stage-04": ["v0.1.0-stage-01", "v0.1.0-stage-02"]
+  "v0.1.0-stage-05": ["v0.1.0-stage-03", "v0.1.0-stage-04"]
+  "v0.2.0-stage-06": ["v0.1.0-stage-03", "v0.1.0-stage-05"]
+  "v0.2.0-stage-07": ["v0.1.0-stage-03", "v0.2.0-stage-06"]
+  "v0.3.0-stage-08": ["v0.1.0-stage-03", "v0.1.0-stage-05"]
+  "v0.3.0-stage-09": ["v0.3.0-stage-08"]
+  "v0.4.0-stage-10": ["v0.1.0-stage-03", "v0.1.0-stage-05"]
+  "v0.5.0-stage-11": ["v0.1.0-stage-05", "v0.4.0-stage-10"]
+  "v0.6.0-stage-12": ["v0.3.0-stage-09", "v0.5.0-stage-11"]
+
+stages:
+  "v0.1.0-stage-01":
+    title: 工程脚手架与工程化基础设施
+    version: v0.1
+    hard: []
+    soft: []
+    rationale: 一切阶段的基座，无前置依赖。
+
+  "v0.1.0-stage-02":
+    title: 核心领域模型与本地存储
+    version: v0.1
+    hard: ["v0.1.0-stage-01"]
+    soft: []
+    rationale: 需要脚手架提供 TS 工程与测试环境。
+
+  "v0.1.0-stage-03":
+    title: AI 编排引擎骨架与模型配置
+    version: v0.1
+    hard: ["v0.1.0-stage-01", "v0.1.0-stage-02"]
+    soft: []
+    rationale: 引擎需要工程基座；配置持久化依赖存储层。
+
+  "v0.1.0-stage-04":
+    title: 编辑器基础（Tiptap 章节文档 + 大纲树）
+    version: v0.1
+    hard: ["v0.1.0-stage-01", "v0.1.0-stage-02"]
+    soft: []
+    rationale: 编辑器独立于 AI 层，依赖存储层持久化章节。
+
+  "v0.1.0-stage-05":
+    title: 单 Agent 章节生成 + 设定卡
+    version: v0.1
+    hard: ["v0.1.0-stage-03", "v0.1.0-stage-04"]
+    soft: []
+    rationale: 需编排引擎产出文本、编辑器承载插入；v0.1 闭环终点。
+
+  "v0.2.0-stage-06":
+    title: 审查流水线
+    version: v0.2
+    hard: ["v0.1.0-stage-03", "v0.1.0-stage-05"]
+    soft: []
+    rationale: 审查以已生成章节为输入，复用编排引擎；需闭环产出样本。
+
+  "v0.2.0-stage-07":
+    title: 去 AI 味研究子系统 v1
+    version: v0.2
+    hard: ["v0.1.0-stage-03", "v0.2.0-stage-06"]
+    soft: []
+    rationale: 需要多模型调用（引擎）与交叉判断基础设施（审查模块的评判能力）。
+
+  "v0.3.0-stage-08":
+    title: 多温度并行推演引擎
+    version: v0.3
+    hard: ["v0.1.0-stage-03", "v0.1.0-stage-05"]
+    soft: ["v0.2.0-stage-06"]
+    rationale: 并行多 agent 依赖引擎；软依赖审查以筛选推演质量。
+
+  "v0.3.0-stage-09":
+    title: 易经卦象系统（六十四卦 + 爻变）
+    version: v0.3
+    hard: ["v0.3.0-stage-08"]
+    soft: []
+    rationale: 卦象作为推演的引导输入，需推演引擎承接。
+
+  "v0.4.0-stage-10":
+    title: 角色 Agent 多声部对话
+    version: v0.4
+    hard: ["v0.1.0-stage-03", "v0.1.0-stage-05"]
+    soft: ["v0.5.0-stage-11"]
+    rationale: 每角色独立 Agent 依赖引擎；软依赖设定分级以供给角色生平等设定。
+
+  "v0.5.0-stage-11":
+    title: 设定分级归档与一致性引擎
+    version: v0.5
+    hard: ["v0.1.0-stage-05", "v0.4.0-stage-10"]
+    soft: []
+    rationale: 归档对象来自生成产物与角色设定，故依赖生成闭环与角色模块。
+
+  "v0.6.0-stage-12":
+    title: 大六壬进阶 + 全自动创作 + 发布打磨
+    version: v0.6
+    hard: ["v0.3.0-stage-09", "v0.5.0-stage-11"]
+    soft: ["v0.2.0-stage-07"]
+    rationale: 大六壬承接卦象系统；全自动创作依赖一致性引擎保障长程质量；软依赖去 AI 味 skill 库注入。
+
+mutual_exclusion: []
+# 说明：本系列阶段之间均为串行/部分并行，无逻辑互斥；未来若出现同目录/同资源强约束，在此登记。
