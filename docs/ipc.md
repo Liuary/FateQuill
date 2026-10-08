@@ -77,3 +77,56 @@
    ```
 
 4. **预期**：点击按钮后显示 `pong`。
+
+## 8. 数据访问命令与错误结构
+
+### 8.1 命令清单（25 个）
+
+5 实体 × [list / get / create / update / delete]，命令名 snake_case：
+
+| 实体        | 命令                                                                                                      |
+| ----------- | --------------------------------------------------------------------------------------------------------- |
+| Novel       | `list_novels` `get_novel` `create_novel` `update_novel` `delete_novel`                                    |
+| Volume      | `list_volumes` `get_volume` `create_volume` `update_volume` `delete_volume`                               |
+| Chapter     | `list_chapters` `get_chapter` `create_chapter` `update_chapter` `delete_chapter`                          |
+| SettingCard | `list_setting_cards` `get_setting_card` `create_setting_card` `update_setting_card` `delete_setting_card` |
+| Character   | `list_characters` `get_character` `create_character` `update_character` `delete_character`                |
+
+- 参数：Rust 侧 snake_case（如 `novel_id`、`content_format`），前端 `invoke(cmd, { novelId, contentFormat })` 自动映射。
+- 返回：实体行对象（snake_case 列名，如 `novel_id`/`content_format`/`order_index`/`word_count`）；`delete_*` 返回空。
+
+### 8.2 错误结构与错误码表
+
+Rust 侧错误序列化为 `{ code, message, detail? }`；前端 `src/ipc/errors.ts` 归一化为 `IpcError`。
+
+| 错误码             | 触发场景                                   |
+| ------------------ | ------------------------------------------ |
+| `NOT_FOUND`        | get/update/delete 影响行数为 0             |
+| `VALIDATION`       | 标题为空、`content_format` / `status` 非法 |
+| `UNIQUE_VIOLATION` | 唯一约束冲突（SQLite 2067 / 1555）         |
+| `FK_VIOLATION`     | 外键无效（SQLite 787）                     |
+| `MIGRATION_FAILED` | 迁移失败（预留）                           |
+| `DB_LOCKED`        | 数据库锁定（SQLite 5 / 6）                 |
+| `INTERNAL`         | 其他内部错误（含连接池未就绪）             |
+
+### 8.3 前端调用客户端
+
+`src/ipc/client.ts` 的 `invokeCommand` 统一封装 `invoke` 并归一化错误：
+
+```ts
+import { invokeCommand } from "@/ipc/client";
+import { IpcError, IpcErrorCode } from "@/ipc/errors";
+
+try {
+  const novels = await invokeCommand<Novel[]>("list_novels");
+} catch (e) {
+  if (e instanceof IpcError && e.code === IpcErrorCode.NotFound) {
+    // 处理未找到
+  }
+}
+```
+
+### 8.4 边界声明
+
+- 前端**不 import** `@tauri-apps/plugin-sql`；SQL 语句与 Database 实例**不出现在前端**。
+- 前端数据访问**只经** `src/ipc/*` 封装的命令；组件层不直接 `invoke`。

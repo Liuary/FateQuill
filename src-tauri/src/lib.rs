@@ -1,4 +1,6 @@
 mod db;
+mod error;
+mod commands;
 
 use tauri_plugin_sql::Builder as SqlBuilder;
 
@@ -17,7 +19,14 @@ pub fn run() {
                 .add_migrations(db::DB_URL, migrations)
                 .build(),
         )
-        .invoke_handler(tauri::generate_handler![ping])
+        .invoke_handler(tauri::generate_handler![
+            ping,
+            commands::list_novels, commands::get_novel, commands::create_novel, commands::update_novel, commands::delete_novel,
+            commands::list_volumes, commands::get_volume, commands::create_volume, commands::update_volume, commands::delete_volume,
+            commands::list_chapters, commands::get_chapter, commands::create_chapter, commands::update_chapter, commands::delete_chapter,
+            commands::list_setting_cards, commands::get_setting_card, commands::create_setting_card, commands::update_setting_card, commands::delete_setting_card,
+            commands::list_characters, commands::get_character, commands::create_character, commands::update_character, commands::delete_character,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

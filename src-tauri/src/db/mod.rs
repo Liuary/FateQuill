@@ -1,6 +1,12 @@
 pub mod migrations;
+pub mod novel;
+pub mod volume;
+pub mod chapter;
+pub mod setting_card;
+pub mod character;
 #[cfg(test)]
 pub mod seed;
+// test_util 由 op-003 在本文件内联定义（见下方 `pub mod test_util`），无需再声明文件模块
 
 /// 数据库连接串（Tauri AppData 下的 sqlite 文件）
 pub const DB_URL: &str = "sqlite:fatequill.db";
