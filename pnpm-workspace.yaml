@@ -1,2 +1,3 @@
+# pnpm 12 supply-chain 防护（minimumReleaseAge）豁免：下列包发布未满最小发布时长而需立即使用
 minimumReleaseAgeExclude:
   - lucide-react@1.53.0

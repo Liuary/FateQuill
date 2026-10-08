@@ -199,9 +199,6 @@ importers:
       react-i18next:
         specifier: 17.0.16
         version: 17.0.16(i18next@26.4.2(typescript@6.0.3))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@6.0.3)
-      shadcn:
-        specifier: ^4.21.4
-        version: 4.21.4
       tailwind-merge:
         specifier: 3.7.0
         version: 3.7.0
@@ -257,6 +254,9 @@ importers:
       prettier-plugin-tailwindcss:
         specifier: 0.8.1
         version: 0.8.1(prettier@3.9.9)
+      shadcn:
+        specifier: 4.21.4
+        version: 4.21.4
       tailwindcss:
         specifier: 4.3.3
         version: 4.3.3

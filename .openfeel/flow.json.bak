@@ -2,22 +2,22 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-08T16:00:47.345Z",
-    "revision": 46
+    "updated": "2026-10-08T16:33:08.601Z",
+    "revision": 67
   },
   "pipeline": {
     "phase": "active",
     "current": {
-      "stage": "v0.1.0-stage-01",
-      "op": ""
+      "stage": "v0.1.0-stage-02",
+      "op": "op-001"
     },
     "retry": 0
   },
   "stages": {
     "v0.1.0-stage-01": {
       "name": "v0.1.0-stage-01",
-      "phase": "archiving",
-      "status": "archiving",
+      "phase": "done",
+      "status": "done",
       "deps": [],
       "ops": {
         "op-001": {
@@ -176,18 +176,143 @@
       },
       "stats": {
         "start_time": "2026-10-08T14:29:01.816Z",
-        "end_time": "",
-        "duration_ms": 0
+        "end_time": "2026-10-08T16:01:07.422Z",
+        "duration_ms": 5525606
       }
     },
     "v0.1.0-stage-02": {
       "name": "v0.1.0-stage-02",
-      "phase": "plan_pending",
+      "phase": "scheme_passed",
       "status": "planned",
       "deps": [
         "v0.1.0-stage-01"
       ],
-      "ops": {}
+      "ops": {
+        "op-001": {
+          "title": "清理 stage-01 遗留 REV-016~019（T7 chore）",
+          "state": "pending",
+          "assignee": "openfeel-executor",
+          "attempts": 0,
+          "max_attempts": 3,
+          "checkpoints": {
+            "plan": "pending",
+            "scheme": "pending",
+            "exec": {
+              "attempts": 0,
+              "self": "pending"
+            },
+            "review": "pending",
+            "test": "pending"
+          }
+        },
+        "op-002": {
+          "title": "领域模型、类型与不变量校验（T1）",
+          "state": "pending",
+          "assignee": "openfeel-executor",
+          "attempts": 0,
+          "max_attempts": 3,
+          "checkpoints": {
+            "plan": "pending",
+            "scheme": "pending",
+            "exec": {
+              "attempts": 0,
+              "self": "pending"
+            },
+            "review": "pending",
+            "test": "pending"
+          }
+        },
+        "op-003": {
+          "title": "SQLite schema、插件迁移注册与 seed 工厂（T2）",
+          "state": "pending",
+          "assignee": "openfeel-executor",
+          "attempts": 0,
+          "max_attempts": 3,
+          "checkpoints": {
+            "plan": "pending",
+            "scheme": "pending",
+            "exec": {
+              "attempts": 0,
+              "self": "pending"
+            },
+            "review": "pending",
+            "test": "pending"
+          }
+        },
+        "op-004": {
+          "title": "Rust IPC 命令、错误结构与前端 IPC 客户端（T4）",
+          "state": "pending",
+          "assignee": "openfeel-executor",
+          "attempts": 0,
+          "max_attempts": 3,
+          "checkpoints": {
+            "plan": "pending",
+            "scheme": "pending",
+            "exec": {
+              "attempts": 0,
+              "self": "pending"
+            },
+            "review": "pending",
+            "test": "pending"
+          }
+        },
+        "op-005": {
+          "title": "仓储接口与 IPC 实现（T3）",
+          "state": "pending",
+          "assignee": "openfeel-executor",
+          "attempts": 0,
+          "max_attempts": 3,
+          "checkpoints": {
+            "plan": "pending",
+            "scheme": "pending",
+            "exec": {
+              "attempts": 0,
+              "self": "pending"
+            },
+            "review": "pending",
+            "test": "pending"
+          }
+        },
+        "op-006": {
+          "title": "章节顺序维护与 word_count 回填（T5）",
+          "state": "pending",
+          "assignee": "openfeel-executor",
+          "attempts": 0,
+          "max_attempts": 3,
+          "checkpoints": {
+            "plan": "pending",
+            "scheme": "pending",
+            "exec": {
+              "attempts": 0,
+              "self": "pending"
+            },
+            "review": "pending",
+            "test": "pending"
+          }
+        },
+        "op-007": {
+          "title": "数据完整性：外键级联与事务（T6）",
+          "state": "pending",
+          "assignee": "openfeel-executor",
+          "attempts": 0,
+          "max_attempts": 3,
+          "checkpoints": {
+            "plan": "pending",
+            "scheme": "pending",
+            "exec": {
+              "attempts": 0,
+              "self": "pending"
+            },
+            "review": "pending",
+            "test": "pending"
+          }
+        }
+      },
+      "stats": {
+        "start_time": "2026-10-08T16:03:30.684Z",
+        "end_time": "",
+        "duration_ms": 0
+      }
     },
     "v0.1.0-stage-03": {
       "name": "v0.1.0-stage-03",
@@ -752,6 +877,209 @@
         "reviewsCount": 0,
         "knowledgeCount": 0,
         "archivePath": "C:\\Users\\Liuary\\Dev\\Mine\\AI\\Novel\\NovelCreate\\.openfeel\\log\\archive-v0.1.0-stage-01.md"
+      }
+    },
+    {
+      "time": "2026-10-08T16:01:07.422Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.1.0-stage-01",
+        "from": "archiving",
+        "to": "done"
+      }
+    },
+    {
+      "time": "2026-10-08T16:03:30.684Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.1.0-stage-02",
+        "from": "plan_pending",
+        "to": "plan_review"
+      }
+    },
+    {
+      "time": "2026-10-08T16:09:56.347Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.1.0-stage-02",
+        "from": "plan_review",
+        "to": "plan_pending"
+      }
+    },
+    {
+      "time": "2026-10-08T16:10:53.482Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.1.0-stage-02",
+        "from": "plan_pending",
+        "to": "plan_review"
+      }
+    },
+    {
+      "time": "2026-10-08T16:14:47.006Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.1.0-stage-02",
+        "from": "plan_review",
+        "to": "plan_passed"
+      }
+    },
+    {
+      "time": "2026-10-08T16:14:47.337Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.1.0-stage-02",
+        "from": "plan_passed",
+        "to": "scheme_pending"
+      }
+    },
+    {
+      "time": "2026-10-08T16:16:26.661Z",
+      "agent": "cli",
+      "action": "register_op",
+      "detail": {
+        "stageName": "v0.1.0-stage-02",
+        "opId": "op-001"
+      }
+    },
+    {
+      "time": "2026-10-08T16:16:26.994Z",
+      "agent": "cli",
+      "action": "register_op",
+      "detail": {
+        "stageName": "v0.1.0-stage-02",
+        "opId": "op-002"
+      }
+    },
+    {
+      "time": "2026-10-08T16:16:27.338Z",
+      "agent": "cli",
+      "action": "register_op",
+      "detail": {
+        "stageName": "v0.1.0-stage-02",
+        "opId": "op-003"
+      }
+    },
+    {
+      "time": "2026-10-08T16:16:27.679Z",
+      "agent": "cli",
+      "action": "register_op",
+      "detail": {
+        "stageName": "v0.1.0-stage-02",
+        "opId": "op-004"
+      }
+    },
+    {
+      "time": "2026-10-08T16:16:28.013Z",
+      "agent": "cli",
+      "action": "register_op",
+      "detail": {
+        "stageName": "v0.1.0-stage-02",
+        "opId": "op-005"
+      }
+    },
+    {
+      "time": "2026-10-08T16:16:28.326Z",
+      "agent": "cli",
+      "action": "register_op",
+      "detail": {
+        "stageName": "v0.1.0-stage-02",
+        "opId": "op-006"
+      }
+    },
+    {
+      "time": "2026-10-08T16:16:28.627Z",
+      "agent": "cli",
+      "action": "register_op",
+      "detail": {
+        "stageName": "v0.1.0-stage-02",
+        "opId": "op-007"
+      }
+    },
+    {
+      "time": "2026-10-08T16:19:31.931Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.1.0-stage-02",
+        "from": "scheme_pending",
+        "to": "scheme_review"
+      }
+    },
+    {
+      "time": "2026-10-08T16:24:24.315Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.1.0-stage-02",
+        "from": "scheme_review",
+        "to": "scheme_pending"
+      }
+    },
+    {
+      "time": "2026-10-08T16:26:33.495Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.1.0-stage-02",
+        "from": "scheme_pending",
+        "to": "scheme_review"
+      }
+    },
+    {
+      "time": "2026-10-08T16:29:16.867Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.1.0-stage-02",
+        "from": "scheme_review",
+        "to": "scheme_passed"
+      }
+    },
+    {
+      "time": "2026-10-08T16:29:17.189Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.1.0-stage-02",
+        "from": "scheme_passed",
+        "to": "exec_running"
+      }
+    },
+    {
+      "time": "2026-10-08T16:30:50.837Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.1.0-stage-02",
+        "from": "exec_running",
+        "to": "scheme_pending"
+      }
+    },
+    {
+      "time": "2026-10-08T16:31:47.382Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.1.0-stage-02",
+        "from": "scheme_pending",
+        "to": "scheme_review"
+      }
+    },
+    {
+      "time": "2026-10-08T16:33:08.601Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.1.0-stage-02",
+        "from": "scheme_review",
+        "to": "scheme_passed"
       }
     }
   ]

@@ -78,3 +78,4 @@ cargo test --manifest-path src-tauri/Cargo.toml
 
 - 目录分层与路径别名约定：[`docs/structure.md`](docs/structure.md)
 - IPC 通道（命令/事件流）约定：[`docs/ipc.md`](docs/ipc.md)
+- i18n 与命名空间约定：[`docs/i18n.md`](docs/i18n.md)
