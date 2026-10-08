@@ -50,3 +50,17 @@ plan v3 技术约束中的目录集为 `src/{app,components,features,domain,orch
 - 所有**外部 HTTP**、**密钥**、**SQLite** 访问**仅经 Rust 侧**（`src-tauri/`）；前端**只经 `@/ipc`** 封装的 `invoke` 调用后端。
 - **SQLite 访问**：经 `tauri-plugin-sql` v2（**仅 Rust 侧**）+ 自定义 `#[tauri::command]`；前端**不安装/不 import** `@tauri-apps/plugin-sql`（REV-009）；db 位置 `sqlite:fatequill.db`（Tauri AppData）。
 - 前端不得直接发起外部网络请求；IPC 封装的命令通道约定见 `docs/ipc.md`（T5 落地）。
+
+## 6. `repositories`（接口）↔ `ipc`（实现）对应关系
+
+三段式落点，组件只依赖**接口**，不感知命令名：
+
+| 层   | 路径                        | 职责                                                                                                     |
+| ---- | --------------------------- | -------------------------------------------------------------------------------------------------------- |
+| 接口 | `src/domain/repositories/*` | 纯 TS 仓储接口（仅依赖 `@/domain/models/*`，无实现细节、无 IPC 依赖）                                    |
+| 实现 | `src/ipc/repositories/*`    | 实现上述接口，经 `@/ipc/client` 的 `invokeCommand` 调 Rust 命令，并做 snake_case 行 ↔ camelCase 模型映射 |
+| 命令 | `src-tauri/src/commands.rs` | op-004 的 25 个 `#[tauri::command]`                                                                      |
+
+- **一一对齐**：5 个实体仓储接口各含 `list/get/create/update/delete` 五个方法，与 25 个命令一一对应（REV-010），`get` 不得缺省。
+- **就近过滤**：`list_*` 命令无过滤参数，`listByNovel` / `listByVolume` 在实现层按父 id 客户端过滤。
+- **无 `src/infra/`**：不设 infra 层（YAGNI）；实现层即 `src/ipc/repositories/`。
