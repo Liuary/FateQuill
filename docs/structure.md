@@ -5,20 +5,20 @@
 
 ## 1. 分层目录职责
 
-| 目录 | 职责 |
-|------|------|
-| `src/app/` | 应用入口与全局装配（`main.tsx`、`App.tsx`、i18n 初始化、Provider 等） |
-| `src/components/` | 应用级组合组件（自建） |
-| `src/components/ui/` | shadcn/ui 源码组件（由 shadcn CLI 管理，落库为可编辑源码） |
-| `src/ui/` | 通用可复用 UI 层（布局、非 shadcn 组合组件） |
-| `src/features/` | 面向用户的功能模块（按功能内聚） |
-| `src/domain/` | 纯 TS 领域模型与业务规则（无 UI、无网络） |
-| `src/orchestration/` | Agent 编排引擎（可插拔） |
-| `src/ipc/` | 前端 IPC 封装（`invoke` 包装） |
-| `src/store/` | 状态管理目录（Zustand 于 stage-04 接入） |
-| `src/lib/` | 通用工具（如 `cn`） |
-| `src/locales/` | i18n 资源（zh-CN / en） |
-| `src-tauri/` | Rust 后端（网络 / 密钥 / SQLite 边界） |
+| 目录                 | 职责                                                                  |
+| -------------------- | --------------------------------------------------------------------- |
+| `src/app/`           | 应用入口与全局装配（`main.tsx`、`App.tsx`、i18n 初始化、Provider 等） |
+| `src/components/`    | 应用级组合组件（自建）                                                |
+| `src/components/ui/` | shadcn/ui 源码组件（由 shadcn CLI 管理，落库为可编辑源码）            |
+| `src/ui/`            | 通用可复用 UI 层（布局、非 shadcn 组合组件）                          |
+| `src/features/`      | 面向用户的功能模块（按功能内聚）                                      |
+| `src/domain/`        | 纯 TS 领域模型与业务规则（无 UI、无网络）                             |
+| `src/orchestration/` | Agent 编排引擎（可插拔）                                              |
+| `src/ipc/`           | 前端 IPC 封装（`invoke` 包装）                                        |
+| `src/store/`         | 状态管理目录（Zustand 于 stage-04 接入）                              |
+| `src/lib/`           | 通用工具（如 `cn`）                                                   |
+| `src/locales/`       | i18n 资源（zh-CN / en）                                               |
+| `src-tauri/`         | Rust 后端（网络 / 密钥 / SQLite 边界）                                |
 
 > 空目录以 `.gitkeep` 占位，保证纳入版本管理。
 

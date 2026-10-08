@@ -35,3 +35,4 @@ dist-ssr
 *.key
 # Rust 构建产物
 src-tauri/target/
+.eslintcache
