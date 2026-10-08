@@ -2,8 +2,8 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-08T16:01:07.447Z",
-    "revision": 47
+    "updated": "2026-10-08T15:56:16.938Z",
+    "revision": 42
   },
   "pipeline": {
     "phase": "active",
@@ -16,8 +16,8 @@
   "stages": {
     "v0.1.0-stage-01": {
       "name": "v0.1.0-stage-01",
-      "phase": "done",
-      "status": "done",
+      "phase": "test_pending",
+      "status": "review_passed",
       "deps": [],
       "ops": {
         "op-001": {
@@ -176,8 +176,8 @@
       },
       "stats": {
         "start_time": "2026-10-08T14:29:01.816Z",
-        "end_time": "2026-10-08T16:01:07.422Z",
-        "duration_ms": 5525606
+        "end_time": "",
+        "duration_ms": 0
       }
     },
     "v0.1.0-stage-02": {
@@ -710,58 +710,6 @@
         "stageName": "v0.1.0-stage-01",
         "from": "review_pending",
         "to": "review_passed"
-      }
-    },
-    {
-      "time": "2026-10-08T15:56:17.254Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.1.0-stage-01",
-        "from": "review_passed",
-        "to": "test_pending"
-      }
-    },
-    {
-      "time": "2026-10-08T15:58:23.740Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.1.0-stage-01",
-        "from": "test_pending",
-        "to": "test_passed"
-      }
-    },
-    {
-      "time": "2026-10-08T15:58:24.043Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.1.0-stage-01",
-        "from": "test_passed",
-        "to": "archiving"
-      }
-    },
-    {
-      "time": "2026-10-08T16:00:47.345Z",
-      "agent": "openfeel-archiver",
-      "action": "archive_stage",
-      "detail": {
-        "stageName": "v0.1.0-stage-01",
-        "opsCount": 9,
-        "reviewsCount": 0,
-        "knowledgeCount": 0,
-        "archivePath": "C:\\Users\\Liuary\\Dev\\Mine\\AI\\Novel\\NovelCreate\\.openfeel\\log\\archive-v0.1.0-stage-01.md"
-      }
-    },
-    {
-      "time": "2026-10-08T16:01:07.422Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.1.0-stage-01",
-        "from": "archiving",
-        "to": "done"
       }
     }
   ]

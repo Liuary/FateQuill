@@ -16,3 +16,5 @@
 | [2026-10-08-Liuary-006.md](2026-10-08-Liuary-006.md) | Liuary | v0.1.0-stage-01.op-007 执行通过 |
 | [2026-10-08-Liuary-007.md](2026-10-08-Liuary-007.md) | Liuary | v0.1.0-stage-01.op-008 执行通过 |
 | [2026-10-08-Liuary-008.md](2026-10-08-Liuary-008.md) | Liuary | v0.1.0-stage-01.op-009 执行通过 |
+| [2026-10-08-Liuary-009.md](2026-10-08-Liuary-009.md) | Liuary | v0.1.0-stage-01.op-006 执行通过 |
+| [2026-10-08-Liuary-010.md](2026-10-08-Liuary-010.md) | Liuary | v0.1.0-stage-01 归档（kb×4 / manual×2 / code_review×2） |

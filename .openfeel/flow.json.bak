@@ -2,22 +2,22 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-08T15:33:56.266Z",
-    "revision": 38
+    "updated": "2026-10-08T16:00:47.345Z",
+    "revision": 46
   },
   "pipeline": {
     "phase": "active",
     "current": {
       "stage": "v0.1.0-stage-01",
-      "op": "op-006"
+      "op": ""
     },
     "retry": 0
   },
   "stages": {
     "v0.1.0-stage-01": {
       "name": "v0.1.0-stage-01",
-      "phase": "exec_running",
-      "status": "planned",
+      "phase": "archiving",
+      "status": "archiving",
       "deps": [],
       "ops": {
         "op-001": {
@@ -107,9 +107,9 @@
         },
         "op-006": {
           "title": "配置 GitHub Actions CI（windows-latest）（T6）",
-          "state": "pending",
+          "state": "done",
           "assignee": "openfeel-executor",
-          "attempts": 0,
+          "attempts": 1,
           "max_attempts": 3,
           "checkpoints": {
             "plan": "pending",
@@ -158,9 +158,9 @@
         },
         "op-009": {
           "title": "配置 GitHub 仓库托管与远程推送（T9）",
-          "state": "pending",
+          "state": "done",
           "assignee": "openfeel-executor",
-          "attempts": 0,
+          "attempts": 1,
           "max_attempts": 3,
           "checkpoints": {
             "plan": "pending",
@@ -672,6 +672,86 @@
       "detail": {
         "opId": "v0.1.0-stage-01.op-008",
         "attempts": 1
+      }
+    },
+    {
+      "time": "2026-10-08T15:48:53.368Z",
+      "agent": "openfeel-executor",
+      "action": "attempt_pass",
+      "detail": {
+        "opId": "v0.1.0-stage-01.op-009",
+        "attempts": 1
+      }
+    },
+    {
+      "time": "2026-10-08T15:49:47.908Z",
+      "agent": "openfeel-executor",
+      "action": "attempt_pass",
+      "detail": {
+        "opId": "v0.1.0-stage-01.op-006",
+        "attempts": 1
+      }
+    },
+    {
+      "time": "2026-10-08T15:49:54.083Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.1.0-stage-01",
+        "from": "exec_running",
+        "to": "review_pending"
+      }
+    },
+    {
+      "time": "2026-10-08T15:56:16.938Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.1.0-stage-01",
+        "from": "review_pending",
+        "to": "review_passed"
+      }
+    },
+    {
+      "time": "2026-10-08T15:56:17.254Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.1.0-stage-01",
+        "from": "review_passed",
+        "to": "test_pending"
+      }
+    },
+    {
+      "time": "2026-10-08T15:58:23.740Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.1.0-stage-01",
+        "from": "test_pending",
+        "to": "test_passed"
+      }
+    },
+    {
+      "time": "2026-10-08T15:58:24.043Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.1.0-stage-01",
+        "from": "test_passed",
+        "to": "archiving"
+      }
+    },
+    {
+      "time": "2026-10-08T16:00:47.345Z",
+      "agent": "openfeel-archiver",
+      "action": "archive_stage",
+      "detail": {
+        "stageName": "v0.1.0-stage-01",
+        "opsCount": 9,
+        "reviewsCount": 0,
+        "knowledgeCount": 0,
+        "archivePath": "C:\\Users\\Liuary\\Dev\\Mine\\AI\\Novel\\NovelCreate\\.openfeel\\log\\archive-v0.1.0-stage-01.md"
       }
     }
   ]
