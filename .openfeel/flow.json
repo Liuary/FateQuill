@@ -2,14 +2,14 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-08T15:08:34.283Z",
-    "revision": 31
+    "updated": "2026-10-08T15:21:44.249Z",
+    "revision": 33
   },
   "pipeline": {
     "phase": "active",
     "current": {
       "stage": "v0.1.0-stage-01",
-      "op": "op-001"
+      "op": "op-003"
     },
     "retry": 0
   },
@@ -22,9 +22,9 @@
       "ops": {
         "op-001": {
           "title": "初始化 Tauri 2 + React + Vite + TS 工程骨架与 Git 仓库（T1）",
-          "state": "pending",
+          "state": "done",
           "assignee": "openfeel-executor",
-          "attempts": 0,
+          "attempts": 1,
           "max_attempts": 3,
           "checkpoints": {
             "plan": "pending",
@@ -39,9 +39,9 @@
         },
         "op-002": {
           "title": "接入 TailwindCSS v4 与 shadcn/ui（T2）",
-          "state": "pending",
+          "state": "done",
           "assignee": "openfeel-executor",
-          "attempts": 0,
+          "attempts": 1,
           "max_attempts": 3,
           "checkpoints": {
             "plan": "pending",
@@ -609,6 +609,24 @@
         "stageName": "v0.1.0-stage-01",
         "from": "scheme_passed",
         "to": "exec_running"
+      }
+    },
+    {
+      "time": "2026-10-08T15:21:43.884Z",
+      "agent": "openfeel-executor",
+      "action": "attempt_pass",
+      "detail": {
+        "opId": "v0.1.0-stage-01.op-001",
+        "attempts": 1
+      }
+    },
+    {
+      "time": "2026-10-08T15:21:44.213Z",
+      "agent": "openfeel-executor",
+      "action": "attempt_pass",
+      "detail": {
+        "opId": "v0.1.0-stage-01.op-002",
+        "attempts": 1
       }
     }
   ]

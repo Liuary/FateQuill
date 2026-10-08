@@ -2,29 +2,29 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-08T15:07:06.880Z",
-    "revision": 30
+    "updated": "2026-10-08T15:21:43.912Z",
+    "revision": 32
   },
   "pipeline": {
     "phase": "active",
     "current": {
       "stage": "v0.1.0-stage-01",
-      "op": "op-001"
+      "op": "op-002"
     },
     "retry": 0
   },
   "stages": {
     "v0.1.0-stage-01": {
       "name": "v0.1.0-stage-01",
-      "phase": "scheme_passed",
+      "phase": "exec_running",
       "status": "planned",
       "deps": [],
       "ops": {
         "op-001": {
           "title": "初始化 Tauri 2 + React + Vite + TS 工程骨架与 Git 仓库（T1）",
-          "state": "pending",
+          "state": "done",
           "assignee": "openfeel-executor",
-          "attempts": 0,
+          "attempts": 1,
           "max_attempts": 3,
           "checkpoints": {
             "plan": "pending",
@@ -599,6 +599,25 @@
         "stageName": "v0.1.0-stage-01",
         "from": "scheme_review",
         "to": "scheme_passed"
+      }
+    },
+    {
+      "time": "2026-10-08T15:08:34.283Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.1.0-stage-01",
+        "from": "scheme_passed",
+        "to": "exec_running"
+      }
+    },
+    {
+      "time": "2026-10-08T15:21:43.884Z",
+      "agent": "openfeel-executor",
+      "action": "attempt_pass",
+      "detail": {
+        "opId": "v0.1.0-stage-01.op-001",
+        "attempts": 1
       }
     }
   ]
