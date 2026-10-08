@@ -4,7 +4,7 @@ use crate::error::IpcError;
 /// 按给定顺序重写某作品下卷的 order_index（0..n-1），保证连续唯一。
 /// 两阶段（先置负值再落定）以避免 UNIQUE(novel_id, order_index) 中途冲突。
 pub async fn reorder_volumes(pool: &SqlitePool, novel_id: i64, ordered_ids: &[i64]) -> Result<(), IpcError> {
-    let mut tx = pool.begin().await?;
+    let mut tx = crate::db::begin(pool).await?;
     for (i, id) in ordered_ids.iter().enumerate() {
         sqlx::query("UPDATE volume SET order_index=? WHERE id=? AND novel_id=?")
             .bind(-1 - (i as i64))
@@ -27,7 +27,7 @@ pub async fn reorder_volumes(pool: &SqlitePool, novel_id: i64, ordered_ids: &[i6
 
 /// 按给定顺序重写某卷下章的 order_index（0..n-1），保证连续唯一。
 pub async fn reorder_chapters(pool: &SqlitePool, volume_id: i64, ordered_ids: &[i64]) -> Result<(), IpcError> {
-    let mut tx = pool.begin().await?;
+    let mut tx = crate::db::begin(pool).await?;
     for (i, id) in ordered_ids.iter().enumerate() {
         sqlx::query("UPDATE chapter SET order_index=? WHERE id=? AND volume_id=?")
             .bind(-1 - (i as i64))
@@ -50,7 +50,7 @@ pub async fn reorder_chapters(pool: &SqlitePool, volume_id: i64, ordered_ids: &[
 
 /// 将章移动到目标卷的目标位置（事务内：更新 volume_id → 重排源卷与目标卷为连续）。
 pub async fn move_chapter(pool: &SqlitePool, chapter_id: i64, to_volume_id: i64, to_index: i64) -> Result<(), IpcError> {
-    let mut tx = pool.begin().await?;
+    let mut tx = crate::db::begin(pool).await?;
     let src_volume: Option<i64> = sqlx::query_scalar("SELECT volume_id FROM chapter WHERE id=?")
         .bind(chapter_id)
         .fetch_optional(&mut *tx)

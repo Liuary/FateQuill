@@ -10,6 +10,8 @@ pub mod ordering;
 pub mod seed;
 #[cfg(test)]
 pub mod bench;
+#[cfg(test)]
+pub mod integrity;
 // test_util 由 op-003 在本文件内联定义（见下方 `pub mod test_util`），无需再声明文件模块
 
 /// 数据库连接串（Tauri AppData 下的 sqlite 文件）
@@ -17,6 +19,13 @@ pub const DB_URL: &str = "sqlite:fatequill.db";
 
 use tauri::Manager;
 use tauri_plugin_sql::{DbInstances, DbPool};
+use sqlx::{Sqlite, SqlitePool, Transaction};
+use crate::error::IpcError;
+
+/// 开启事务（多步写入统一入口；`Transaction` drop 即回滚，成功时显式 commit）
+pub async fn begin(pool: &SqlitePool) -> Result<Transaction<'_, Sqlite>, IpcError> {
+    Ok(pool.begin().await?)
+}
 
 /// 从插件管理的连接池取出 SqlitePool（Rust 侧访问入口）
 pub async fn get_pool(app: &tauri::AppHandle) -> Option<sqlx::SqlitePool> {

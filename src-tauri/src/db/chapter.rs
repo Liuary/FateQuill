@@ -108,7 +108,7 @@ pub async fn update(
 
 pub async fn delete(pool: &SqlitePool, id: i64) -> Result<(), IpcError> {
     // 事务内删除并按同卷紧凑化 order_index（保持不变量①）
-    let mut tx = pool.begin().await?;
+    let mut tx = crate::db::begin(pool).await?;
     let volume_id: Option<i64> = sqlx::query_scalar("SELECT volume_id FROM chapter WHERE id=?")
         .bind(id)
         .fetch_optional(&mut *tx)
