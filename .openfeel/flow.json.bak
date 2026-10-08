@@ -2,8 +2,8 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-08T15:31:27.044Z",
-    "revision": 37
+    "updated": "2026-10-08T15:33:56.266Z",
+    "revision": 38
   },
   "pipeline": {
     "phase": "active",
@@ -141,9 +141,9 @@
         },
         "op-008": {
           "title": "接入 i18n 基建与命名空间约定（T8）",
-          "state": "pending",
+          "state": "done",
           "assignee": "openfeel-executor",
-          "attempts": 0,
+          "attempts": 1,
           "max_attempts": 3,
           "checkpoints": {
             "plan": "pending",
@@ -662,6 +662,15 @@
       "action": "attempt_pass",
       "detail": {
         "opId": "v0.1.0-stage-01.op-007",
+        "attempts": 1
+      }
+    },
+    {
+      "time": "2026-10-08T15:33:56.233Z",
+      "agent": "openfeel-executor",
+      "action": "attempt_pass",
+      "detail": {
+        "opId": "v0.1.0-stage-01.op-008",
         "attempts": 1
       }
     }
