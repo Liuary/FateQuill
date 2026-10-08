@@ -11,6 +11,7 @@ FateQuill（命笔）的可运行、可构建、可测试、可复现的跨平�
 - **样式**：TailwindCSS v4（CSS-first）+ shadcn/ui（组件源码入库于 `src/components/ui/`）。
 - **i18n**：i18next + react-i18next（默认 zh-CN，可切 en，缺 en 回退 zh-CN）。
 - **质量**：ESLint（flat config）+ Prettier + Vitest（Testing Library/jsdom）+ `cargo test`。
+- **数据存储**：SQLite 经 `tauri-plugin-sql` v2（**仅 Rust 侧**），db 位置 `sqlite:fatequill.db`（Tauri AppData）；迁移内置（sqlx `_sqlx_migrations`，幂等）。
 - **包管理**：pnpm（corepack 提供，`packageManager` 固定 12.10.1）。
 
 ## 目录结构

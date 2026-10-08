@@ -74,6 +74,10 @@ corepack pnpm test
 cargo test --manifest-path src-tauri/Cargo.toml
 ```
 
+## 数据存储
+
+应用数据存放于本机 SQLite 数据库 **`fatequill.db`**（Tauri AppData 目录，Windows 为 `%APPDATA%\com.fatequill.app\fatequill.db`）。数据库 schema 由内置迁移在启动时自动创建（`tauri-plugin-sql`，仅 Rust 侧使用）。
+
 ## 更多文档
 
 - 目录分层与路径别名约定：[`docs/structure.md`](docs/structure.md)

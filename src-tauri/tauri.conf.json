@@ -3,6 +3,9 @@
   "productName": "FateQuill",
   "version": "0.1.0",
   "identifier": "com.fatequill.app",
+  "plugins": {
+    "sql": { "preload": ["sqlite:fatequill.db"] }
+  },
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1420",

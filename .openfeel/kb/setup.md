@@ -41,3 +41,9 @@ cargo test --manifest-path src-tauri/Cargo.toml   # Rust 测试
 - 缓存：pnpm（setup-node cache）+ `Swatinem/rust-cache@v2`（workspaces: src-tauri）。
 
 **仓库托管**：https://github.com/Liuary/FateQuill （`git remote origin`，main 分支）。
+
+## [+] 数据存储位置与重置 (2026-10-09)
+
+- 开发库位置：`sqlite:fatequill.db` → Windows `%APPDATA%\com.fatequill.app\fatequill.db`。
+- **重置**：关闭应用后删除该 `fatequill.db` 文件，下次启动时插件 `preload` 迁移会重新建库与建表。
+- 迁移由 `tauri-plugin-sql` 内置 sqlx migrator 管理（`_sqlx_migrations` 表），天然幂等；测试使用 `sqlite::memory:`，不触达开发库。

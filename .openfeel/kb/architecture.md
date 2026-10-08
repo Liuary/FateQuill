@@ -38,3 +38,12 @@
 - **命令通道**：Rust 侧用 `#[tauri::command]` 定义，统一在 `tauri::Builder::default().invoke_handler(tauri::generate_handler![...])` 注册；前端统一经 `src/ipc/*.ts` 封装 `invoke`，**组件不直接调用**（约束 C-04）。示例链路 `ping` → `"pong"`。
 - **命名约定**：命令名小写下划线（如 `ping`、后续 `list_novels`）；前端封装函数 camelCase；返回 `Result<T, E>`，错误经 `invoke` 的 catch 处理；Rust snake_case 参数与前端 `invoke(cmd, { camelCase })` 自动映射。
 - **事件流通道**（`emit` / `Channel`，SSE 流式中继）归属 **stage-03**，本阶段仅确立通道约定不实现（`docs/ipc.md` 已声明）。
+
+## [+] SQLite 选型与封装边界 (2026-10-09)
+
+- **插件**：`tauri-plugin-sql` v2（Cargo feature `sqlite`），**仅在 Rust 侧使用**；`tauri.conf.json` 的 `plugins.sql.preload` 于启动即应用迁移。
+- **迁移**：插件内置 migrations（Rust 注册 `Migration` 数组），底层 sqlx `_sqlx_migrations` 表管理版本、天然幂等；**不自研执行器**（C-08）。SQL 单一来源 `src-tauri/migrations/0001_init.sql`（`include_str!` 引用）。
+- **前端边界（REV-009）**：**不安装** `@tauri-apps/plugin-sql`，前端不 import 插件 JS API（零引用即死依赖）；前端数据访问一律经自定义 `#[tauri::command]`（封装于 `src/ipc/`）。
+- **Rust 侧取池**：插件以 state 暴露 `DbInstances`，自定义命令经 `app.state::<DbInstances>()` 取 `sqlx::SqlitePool`（故直接依赖 `sqlx 0.8`，与插件同版本）。
+- **db 位置**：`sqlite:fatequill.db`（Tauri AppData，Windows `%APPDATA%/com.fatequill.app/fatequill.db`）；测试用 `sqlite::memory:`，禁止触达开发库。
+- **FK**：迁移 SQL 顶部显式 `PRAGMA foreign_keys = ON;`（意图声明），运行时由 sqlx 默认 `foreign_keys=true` 保证。

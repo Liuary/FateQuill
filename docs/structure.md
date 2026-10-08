@@ -48,4 +48,5 @@ plan v3 技术约束中的目录集为 `src/{app,components,features,domain,orch
 ## 5. IPC 边界
 
 - 所有**外部 HTTP**、**密钥**、**SQLite** 访问**仅经 Rust 侧**（`src-tauri/`）；前端**只经 `@/ipc`** 封装的 `invoke` 调用后端。
+- **SQLite 访问**：经 `tauri-plugin-sql` v2（**仅 Rust 侧**）+ 自定义 `#[tauri::command]`；前端**不安装/不 import** `@tauri-apps/plugin-sql`（REV-009）；db 位置 `sqlite:fatequill.db`（Tauri AppData）。
 - 前端不得直接发起外部网络请求；IPC 封装的命令通道约定见 `docs/ipc.md`（T5 落地）。

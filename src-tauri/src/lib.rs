@@ -1,3 +1,7 @@
+mod db;
+
+use tauri_plugin_sql::Builder as SqlBuilder;
+
 // 命令通道示例：前端 invoke("ping") 返回 "pong"
 #[tauri::command]
 fn ping() -> String {
@@ -6,7 +10,13 @@ fn ping() -> String {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    let migrations = db::migrations::migrations();
     tauri::Builder::default()
+        .plugin(
+            SqlBuilder::default()
+                .add_migrations(db::DB_URL, migrations)
+                .build(),
+        )
         .invoke_handler(tauri::generate_handler![ping])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
