@@ -16,4 +16,35 @@ export default tseslint.config(
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
     },
   },
+  {
+    files: ["src/domain/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: [
+                "react",
+                "react/*",
+                "react-*",
+                "@tauri-apps/*",
+                "@/ipc",
+                "@/ipc/*",
+                "@/components",
+                "@/components/*",
+                "@/ui",
+                "@/ui/*",
+                "@/features",
+                "@/features/*",
+                "@/store",
+                "@/store/*",
+              ],
+              message: "领域层必须保持纯 TS（C-04/C-07）：禁止导入 UI/网络/Tauri/IPC。",
+            },
+          ],
+        },
+      ],
+    },
+  },
 );
