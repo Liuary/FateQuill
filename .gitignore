@@ -33,6 +33,7 @@ dist-ssr
 !.env.example
 *.pem
 *.key
+*.p12
 # Rust 构建产物
 src-tauri/target/
 .eslintcache
