@@ -8,7 +8,10 @@
 - **engineering/** — 工程化基础设施（stage-01 建立）
   - [`scaffold.md`](engineering/scaffold.md)：工程脚手架 —— Tauri 2 + React 19 + Vite + TS(strict) 骨架、目录分层、工具链、i18n 基建、CI
 
-> 后续模块（`core/` 领域模型与存储、`features/` 用户功能、`orchestration/` 编排引擎等）随对应阶段建立后在此登记。
+- **core/** — 领域模型与本地存储（stage-02 建立）
+  - [`domain-storage.md`](core/domain-storage.md)：领域模型（作品/卷/章/设定卡/角色）、SQLite schema 与插件迁移、仓储接口↔IPC 命令、错误结构与事务约定
+
+> 后续模块（`features/` 用户功能、`orchestration/` 编排引擎等）随对应阶段建立后在此登记。
 
 ## 维护约定
 

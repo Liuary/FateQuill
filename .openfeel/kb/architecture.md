@@ -47,3 +47,17 @@
 - **Rust 侧取池**：插件以 state 暴露 `DbInstances`，自定义命令经 `app.state::<DbInstances>()` 取 `sqlx::SqlitePool`（故直接依赖 `sqlx 0.8`，与插件同版本）。
 - **db 位置**：`sqlite:fatequill.db`（Tauri AppData，Windows `%APPDATA%/com.fatequill.app/fatequill.db`）；测试用 `sqlite::memory:`，禁止触达开发库。
 - **FK**：迁移 SQL 顶部显式 `PRAGMA foreign_keys = ON;`（意图声明），运行时由 sqlx 默认 `foreign_keys=true` 保证。
+- **迁移单一来源（stage-02 落地）**：建表脚本 `src-tauri/migrations/0001_init.sql` 为唯一 SQL 源；插件运行时经 `include_str!` 消费，`cargo test` 经 `sqlx::migrate!("./migrations")` 同源消费，保证测试库与生产库 schema 完全一致。
+
+## [+] 领域层三段式分层与仓储接口/实现分离 (2026-10-09)
+
+- **三段式落点（不新建 `src/infra/`）**：`src/domain/repositories/*`（纯 TS 仓储接口）→ `src/ipc/repositories/*`（实现接口，经 `invokeCommand` 调 Rust 命令）→ `src-tauri/`（Rust `#[tauri::command]` + 插件）。组件/feature 只依赖接口，不感知命令名；`snake_case` 行 ↔ `camelCase` 领域模型的映射由 `src/ipc/` 承担。
+- **领域层纯度工具化**：ESLint `no-restricted-imports` 约束 `src/domain/**` **禁止导入** `react*`、`@tauri-apps/*`、`@/ipc`、`@/components`、`@/ui`、`@/features`、`@/store`；接入 `pnpm lint` / CI，并以「注入违禁导入 → eslint 非 0 退出」作**负向判定**（规则确实生效，非仅声明）。
+- **不变量校验**：`src/domain/invariants.ts` 纯函数覆盖 5 条清单（order_index 连续唯一、外键有效、content 非空、枚举值域、删除后统计一致），Vitest 覆盖含边界。
+
+## [+] IPC 错误结构约定与统一事务入口 (2026-10-09)
+
+- **错误结构**：跨 IPC 边界的错误统一为 `{ code: string; message: string; detail?: unknown }`（Rust `IpcError` 序列化，`detail` 用 `#[serde(skip_serializing_if = "Option::is_none")]` 省略）。
+- **错误码表**（7 个）：`NOT_FOUND` / `VALIDATION` / `UNIQUE_VIOLATION` / `FK_VIOLATION` / `MIGRATION_FAILED` / `DB_LOCKED` / `INTERNAL`。Rust `impl From<sqlx::Error> for IpcError` 按 SQLite 原生错误码映射：`2067`/`1555` → `UNIQUE_VIOLATION`、`787` → `FK_VIOLATION`、`5`/`6` → `DB_LOCKED`，其余 → `INTERNAL`。
+- **前端归一化**：`src/ipc/errors.ts` 将任意 reject 归一化为 `IpcError`（`code`/`detail`），`src/ipc/client.ts` 的 `invokeCommand` 统一 `try/catch → parseIpcError`；消费方按 `IpcError.code` 分支。
+- **统一事务入口**：`src-tauri/src/db/mod.rs` 的 `db::begin(pool) -> Result<Transaction<'_, Sqlite>, IpcError>` 作为所有多步写入（移动/删除后重排等）的唯一入口；出错经 `?` 提前返回（`Transaction` drop 即回滚），仅成功时 `commit()`。

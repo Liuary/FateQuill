@@ -10,3 +10,6 @@
 | [2026-10-09-Liuary-005.md](2026-10-09-Liuary-005.md) | Liuary | v0.1.0-stage-02.op-004 执行通过 |
 | [2026-10-09-Liuary-006.md](2026-10-09-Liuary-006.md) | Liuary | v0.1.0-stage-02.op-005 执行通过 |
 | [2026-10-09-Liuary-007.md](2026-10-09-Liuary-007.md) | Liuary | v0.1.0-stage-02.op-006 执行通过 |
+| [2026-10-09-Liuary-008.md](2026-10-09-Liuary-008.md) | Liuary | v0.1.0-stage-02.op-007 执行通过 |
+| [2026-10-09-Liuary-009.md](2026-10-09-Liuary-009.md) | Liuary | v0.1.0-stage-02 归档完成（知识库/模块手册/审查索引） |
+| [2026-10-09-Liuary-010.md](2026-10-09-Liuary-010.md) | Liuary | 阶段 v0.1.0-stage-02 完成 |

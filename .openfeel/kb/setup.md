@@ -47,3 +47,11 @@ cargo test --manifest-path src-tauri/Cargo.toml   # Rust 测试
 - 开发库位置：`sqlite:fatequill.db` → Windows `%APPDATA%\com.fatequill.app\fatequill.db`。
 - **重置**：关闭应用后删除该 `fatequill.db` 文件，下次启动时插件 `preload` 迁移会重新建库与建表。
 - 迁移由 `tauri-plugin-sql` 内置 sqlx migrator 管理（`_sqlx_migrations` 表），天然幂等；测试使用 `sqlite::memory:`，不触达开发库。
+
+## [+] Rust 数据层测试：内存库隔离与迁移幂等 (2026-10-09)
+
+- **隔离**：`cargo test` 一律使用 `sqlite::memory:`（`db::test_util::test_pool/test_pool_migrated` 共享 helper）：`foreign_keys(true)` + `max_connections(1)`，**禁止触达 AppData 开发库**；与运行中的 `tauri dev` 并发前先关闭 dev（否则争抢 `src-tauri/target` 构建锁 / 文件锁）。
+- **迁移幂等断言**：`cargo test` 对内存库连续运行迁移两次，断言 `_sqlx_migrations` 计数为 1、5 张业务表齐备、`PRAGMA foreign_keys`=1；测试经 `sqlx::migrate!("./migrations")` 消费与生产**同源**的 `0001_init.sql`。
+- **数据工厂**：`db::seed`（`#[cfg(test)]`）按参数生成 50 章 × 3000 字数据集；基准 `bench::seed_query_under_100ms` 断言单次查询 < 100ms。
+- **命令**：`cargo test --manifest-path src-tauri/Cargo.toml`（基准耗时用 `-- --nocapture` 观测，写路径耗时仅观测不作门禁）。
+- **当前基线**：`cargo test` 28/28、Vitest 36/36、`pnpm lint` 0 errors、`pnpm build` 通过。

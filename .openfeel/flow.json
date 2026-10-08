@@ -2,14 +2,14 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-08T16:46:58.801Z",
-    "revision": 74
+    "updated": "2026-10-08T16:58:49.151Z",
+    "revision": 82
   },
   "pipeline": {
     "phase": "active",
     "current": {
       "stage": "v0.1.0-stage-02",
-      "op": "op-007"
+      "op": ""
     },
     "retry": 0
   },
@@ -182,8 +182,8 @@
     },
     "v0.1.0-stage-02": {
       "name": "v0.1.0-stage-02",
-      "phase": "exec_running",
-      "status": "planned",
+      "phase": "done",
+      "status": "done",
       "deps": [
         "v0.1.0-stage-01"
       ],
@@ -292,9 +292,9 @@
         },
         "op-007": {
           "title": "数据完整性：外键级联与事务（T6）",
-          "state": "pending",
+          "state": "done",
           "assignee": "openfeel-executor",
-          "attempts": 0,
+          "attempts": 1,
           "max_attempts": 3,
           "checkpoints": {
             "plan": "pending",
@@ -310,8 +310,8 @@
       },
       "stats": {
         "start_time": "2026-10-08T16:03:30.684Z",
-        "end_time": "",
-        "duration_ms": 0
+        "end_time": "2026-10-08T16:58:49.131Z",
+        "duration_ms": 3318447
       }
     },
     "v0.1.0-stage-03": {
@@ -1144,6 +1144,87 @@
       "detail": {
         "opId": "v0.1.0-stage-02.op-006",
         "attempts": 1
+      }
+    },
+    {
+      "time": "2026-10-08T16:48:16.020Z",
+      "agent": "openfeel-executor",
+      "action": "attempt_pass",
+      "detail": {
+        "opId": "v0.1.0-stage-02.op-007",
+        "attempts": 1
+      }
+    },
+    {
+      "time": "2026-10-08T16:48:16.362Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.1.0-stage-02",
+        "from": "exec_running",
+        "to": "review_pending"
+      }
+    },
+    {
+      "time": "2026-10-08T16:54:55.221Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.1.0-stage-02",
+        "from": "review_pending",
+        "to": "review_passed"
+      }
+    },
+    {
+      "time": "2026-10-08T16:54:55.562Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.1.0-stage-02",
+        "from": "review_passed",
+        "to": "test_pending"
+      }
+    },
+    {
+      "time": "2026-10-08T16:56:42.032Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.1.0-stage-02",
+        "from": "test_pending",
+        "to": "test_passed"
+      }
+    },
+    {
+      "time": "2026-10-08T16:56:42.344Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.1.0-stage-02",
+        "from": "test_passed",
+        "to": "archiving"
+      }
+    },
+    {
+      "time": "2026-10-08T16:58:31.662Z",
+      "agent": "openfeel-archiver",
+      "action": "archive_stage",
+      "detail": {
+        "stageName": "v0.1.0-stage-02",
+        "opsCount": 7,
+        "reviewsCount": 0,
+        "knowledgeCount": 0,
+        "archivePath": "C:\\Users\\Liuary\\Dev\\Mine\\AI\\Novel\\NovelCreate\\.openfeel\\log\\archive-v0.1.0-stage-02.md"
+      }
+    },
+    {
+      "time": "2026-10-08T16:58:49.131Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.1.0-stage-02",
+        "from": "archiving",
+        "to": "done"
       }
     }
   ]
