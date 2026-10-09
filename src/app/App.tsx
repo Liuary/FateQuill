@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/ui/LanguageSwitcher";
 import { SettingsPage } from "@/features/settings/SettingsPage";
+import { BenchPanel } from "@/features/editor/perf/BenchPanel";
 import { ping } from "@/ipc/ping";
 
 function App() {
@@ -37,6 +38,7 @@ function App() {
       ) : (
         <SettingsPage />
       )}
+      {import.meta.env.DEV && <BenchPanel />}
     </main>
   );
 }

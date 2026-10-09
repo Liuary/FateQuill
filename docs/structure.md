@@ -111,3 +111,12 @@ plan v3 技术约束中的目录集为 `src/{app,components,features,domain,orch
 - **`content_format = 'html'`**：编辑器保存用 `editor.getHTML()` → `chapter.content`；加载用 `editor.commands.setContent(html)`。**零迁移**（复用 stage-02 schema）。
 - `word_count` 走 §7 的 `html` 分支（Rust 侧计算）。
 - 落点：`src/features/editor/`（`RichTextEditor` / `ChapterEditor` / `useChapter` / `editor-extensions`）；`editorStore` 见 §4。
+
+## 11. 编辑器性能基准口径与 editorStore 边界
+
+- **性能基准（stage-04 T6）**：脚本入库于 `src/features/editor/perf/`（`seed.ts` / `editor-bench.ts` / `BenchPanel.tsx` / `README.md`）。
+  - 指标：按键/插入 → dispatch → DOM 更新耗时的 **P95**；目标 **P95 < 16ms**（单章 5000 字）。
+  - 环境：**真实 WebView**（`pnpm tauri dev` 的 BenchPanel）；**jsdom 无布局，不可用于延迟测量**。
+  - 内存/实例：切 **20 章**后 `.ProseMirror` 实例数 **= 1**、堆增幅 **< 20%**；**IME 口径单独**。
+  - 操作手册与实测记录见 `src/features/editor/perf/README.md`（真实 WebView 实测为**人工协验项**）。
+- **`editorStore` 边界（单一事实源）**：`src/store/editorStore.ts` 仅持元状态（`currentNovelId`/`currentChapterId`/`saveStatus`/`lastSavedAt`），**不含文档正文**（无 `content`/`html`/`doc` 键）；边界由 `src/store/editorStore.boundary.test.ts` 守护。文档内容唯一事实源在 Tiptap 实例（见 §4）。

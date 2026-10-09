@@ -1,0 +1,79 @@
+import { useRef, useState } from "react";
+import { EditorContent, useEditor } from "@tiptap/react";
+import { editorExtensions } from "../editor-extensions";
+import { runEditorBench } from "./editor-bench";
+import { makeHtml } from "./seed";
+
+interface PerfMemory {
+  usedJSHeapSize: number;
+}
+
+/** 读取堆用量（Chrome/WebView2 `performance.memory`，非标准） */
+function heapUsed(): number | null {
+  const mem = (performance as Performance & { memory?: PerfMemory }).memory;
+  return mem ? mem.usedJSHeapSize : null;
+}
+
+/**
+ * 真实 WebView 性能基准面板（**仅 DEV**）。
+ * jsdom 无布局，不可用于延迟测量；请在 `pnpm tauri dev` 窗口内使用。
+ */
+export function BenchPanel() {
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const editor = useEditor({ extensions: editorExtensions, content: makeHtml(5000) });
+  const [p95ms, setP95ms] = useState<number | null>(null);
+  const [instances, setInstances] = useState<number | null>(null);
+  const [heapDelta, setHeapDelta] = useState<number | null>(null);
+
+  if (!import.meta.env.DEV) return null;
+
+  async function runLatency() {
+    if (!editor) return;
+    setP95ms(await runEditorBench(editor, 200));
+  }
+
+  /** 统计本草稿外部的 `.ProseMirror` 实例数（即编辑区实例数，应为 1） */
+  function measureInstances() {
+    const root = panelRef.current;
+    const count = Array.from(document.querySelectorAll(".ProseMirror")).filter(
+      (el) => !root?.contains(el),
+    ).length;
+    setInstances(count);
+  }
+
+  function measureHeap() {
+    const before = heapUsed();
+    if (editor) {
+      for (let i = 0; i < 50; i++) editor.commands.insertContent("字");
+    }
+    const after = heapUsed();
+    if (before != null && after != null && before > 0) {
+      setHeapDelta((after - before) / before);
+    }
+  }
+
+  return (
+    <div ref={panelRef} className="border-border m-4 rounded border p-3 text-xs">
+      <div className="font-medium">Editor Benchmark (DEV only)</div>
+      <div className="mt-2 flex flex-wrap gap-2">
+        <button type="button" onClick={runLatency}>
+          运行延迟基准（200 次插入）
+        </button>
+        <button type="button" onClick={measureInstances}>
+          统计 .ProseMirror 实例数
+        </button>
+        <button type="button" onClick={measureHeap}>
+          记录堆增幅
+        </button>
+      </div>
+      <ul className="mt-2">
+        <li>P95: {p95ms == null ? "—" : `${p95ms.toFixed(2)} ms`}（目标 &lt; 16ms）</li>
+        <li>.ProseMirror 实例数: {instances ?? "—"}（切 20 章后应 = 1）</li>
+        <li>
+          堆增幅: {heapDelta == null ? "—" : `${(heapDelta * 100).toFixed(1)}%`}（目标 &lt; 20%）
+        </li>
+      </ul>
+      <EditorContent editor={editor} />
+    </div>
+  );
+}
