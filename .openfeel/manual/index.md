@@ -13,7 +13,7 @@
   - [`model-config.md`](core/model-config.md)：模型配置持久化（迁移 v2）、OS 密钥链（keyring）封装、设置页 UI（stage-03 建立）
 
 - **orchestration/** — AI 编排引擎（stage-03 建立）
-  - [`engine.md`](orchestration/engine.md)：可插拔 Provider/Agent/Pipeline 注册表、自研 SSE 协议适配器、Rust 侧流式中继与消费工具；**审查评估（`review/`）**；**多温度推演（`exploration/`）**；**起卦解卦（`iching/`）**；**多声部对话（`dialogue/`：persona / agents / context 白名单 / assemble / generate / cost / concurrency / review-bridge）**（stage-06/08/09/10 补）；**一致性（`consistency/`：extract / dedupe / run / rules（L1 纯函数）/ judge（L2 经 provider）/ report / inject（白名单恒排 `dark`））**（stage-11 补）；**研究域（`research/`：采样/交叉判断契约与算法，provider 无关）**（stage-07 补）
+  - [`engine.md`](orchestration/engine.md)：可插拔 Provider/Agent/Pipeline 注册表、自研 SSE 协议适配器、Rust 侧流式中继与消费工具；**审查评估（`review/`）**；**多温度推演（`exploration/`）**；**起卦解卦（`iching/`）**；**多声部对话（`dialogue/`：persona / agents / context 白名单 / assemble / generate / cost / concurrency / review-bridge）**（stage-06/08/09/10 补）；**一致性（`consistency/`：extract / dedupe / run / rules（L1 纯函数）/ judge（L2 经 provider）/ report / inject（白名单恒排 `dark`））**（stage-11 补）；**大六壬（`liuren/`：纯函数课体 / 引导，与 `iching/` 并列，stage-12）**；**全自动（`autopilot/`：决策规则表 / 链路编排 / 熔断三层，stage-12）**；**研究域（`research/`：采样/交叉判断契约与算法，provider 无关）**（stage-07 补）
 
 - **features/** — 用户功能模块（stage-04 建立）
   - [`editor.md`](features/editor.md)：章节编辑器（Tiptap 一章一实例、HTML 存储）、卷章大纲树与 dnd-kit 排序、自动保存、AI 增量插入接口（stage-04 建立）
@@ -26,6 +26,8 @@
   - [`characters.md`](features/characters.md)：角色档案 —— `profile` JSON 契约（`normalizeProfile` / `toProfileRecord` / `major` 标记）、CRUD 面板（复用既有 `Character` 命令，**无增量**）（stage-10 建立）
   - [`dialogue.md`](features/dialogue.md)：多声部对话（**可选**）—— 旁白/台词分离生成、**防串味白名单**、双路径落章（含快照安全网）、成本与并发上限、**可选接入 stage-06 评审**（千人一腔互认）（stage-10 建立）
   - [`consistency.md`](features/consistency.md)：设定分级与一致性 —— 四级分级（与 `kind` 正交，迁移 v5）、归档抽取（`evidence` 回查 + 确认后**事务批落库**）、**L1 规则（零幻觉）/ L2 语义（建议非结论）**冲突检出、冲突面板与四动作处置（`conflict_record` 落库）、**分级注入（白名单排除 `dark`，硬隔离）**（stage-11 建立）
+  - [`liuren.md`](features/liuren.md)：大六壬 —— 静态白文数据与手写校验、课体推导与月将/时辰装配、引导卡、**可选可关**（与易经并列）（stage-12 建立，详文于 op-008 收尾）
+  - [`autopilot.md`](features/autopilot.md)：全自动创作（**可续跑**）—— 决策规则表 / 链路编排 / **熔断三层** / 迁移 v6 断点落库 / 无人值守冲突策略（默认暂停 + 可授权忽略留痕）（stage-12 建立，详文于 op-008 收尾）
 
 ## 维护约定
 

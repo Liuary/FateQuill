@@ -209,3 +209,45 @@ plan v3 技术约束中的目录集为 `src/{app,components,features,domain,orch
 - **与评审的边界**：一致性引擎 = **设定库内冲突（设定 vs 设定）**；四维评审「世界观」= **正文 vs 设定（文本质量）**——职责切分、**同一 rubric 引用**（见 `docs/review-rubric.md` §4.2）。
 - **误报率验收**：`MISREPORT_THRESHOLD = 0.2`（**占位，待用户拍板**）+ ≥3 章预埋冲突样本集（`src/features/consistency/experiments/`，L1 自动口径实测见其 `report.md`；L2 与人工核验待回填）。
 - **详文**：模块手册 `manual/features/consistency.md`（建立并收尾于 **op-007**）。
+
+## 19. 大六壬（stage-12）
+
+> 本阶段 **v0.6.0-stage-12** 的骨架登记（`op-001`）；实现随 op-002 落地，模块详文由 **op-008** 收尾（遵「未建立模块不提前占位」的例外：本节仅登记**计划落点**，不含实现声明）。
+
+- **落点（计划）**：
+  - `src/data/liuren/`：**只读静态数据**（公有领域白文；口径见 `docs/liuren-data.md`）+ **手写校验**（无第三方历法库）。
+  - `src/orchestration/liuren/`（**纯函数**，provider 无关）：课体推导 / 月将与时辰装配 / 引导卡与文本渲染 / 宿命卡构造（同 stage-09 `iching/` 范式）。
+  - `src/features/exploration/`（或新增 `src/features/liuren/`）：**可选可关**面板（起课 + 解读）；开关 `liurenEnabled` **入 store（状态单源）**，`localStorage` 持久化，**缺省关闭**。
+- **历法方案（待拍板，建议默认）**：**手动月将 + 时辰起步**（不引历法库）→ 由 op-002 落地。
+- **注入**：引导文本经 `buildExplorationOptions.liurenGuide?` **可选**并入推演 **system 约束段**（与 `hexagramGuide?` **并列可选**、互不覆盖）；**缺省 / 未传 → 输出与基线逐字段一致（零副作用）**。
+- **IPC**：**无新增 Rust 命令**（前端静态数据 + 纯函数；宿命卡经**既有** `create_setting_card` 落库）。
+- **i18n**：新增 `liuren` 命名空间。
+- **详文**：`manual/features/liuren.md`（stage-12 建立，**详文于 op-008 收尾**）。
+
+## 20. 全自动创作（stage-12）
+
+> 同上：**op-001 骨架登记**；实现随 op-003（编排 / 决策规则表）、op-004（熔断三层 + 迁移 v6 断点）、op-005（冲突策略）落地；详文由 **op-008** 收尾。
+
+- **落点（计划）**：
+  - `src/orchestration/autopilot/`（provider 无关；仅经既有 provider 调用）：**决策规则表**（推演择优 / 生成 / 审查阈值 / 重写 ≤ 2 / 降级收录 / 自动归档）、**链路编排**（阶段机）、**熔断三层**（预算 / 连续失败 K / 章数）。
+  - `src/features/autopilot/`：**编排器 UI**（启动 / 暂停 / 续跑 / 进度 / 熔断原因），第三栏新增 `autopilot` tab。
+  - `src/store/autopilot*.ts`：**编排器状态**（进度、断点、熔断），会话态 + 断点经 IPC 落库。
+  - **迁移 v6**（`src-tauri/migrations/0006_autopilot.sql`）：`autopilot_run`（`status` / `config_json`）+ `autopilot_chapter`（`state` / `score` / `degraded_reason` / `attempt`，`UNIQUE(run_id, order_index)`）+ 索引 → **可续跑**。
+- **事件**：进度以**前端编排器状态**（`autopilotStore`）承载，**不新增 Rust 事件通道**（复用既有 `Channel<StreamEvent>` 仅承载 LLM 流）。
+- **冲突策略（待拍板，建议默认）**：无人值守遇一致性冲突 → **默认暂停 + 通知**；用户可**授权自动 `ignored` 继续**（**留痕**：`conflict_record.action`）。
+- **IPC**：**计划新增 5 命令**（`save_autopilot_run` / `get_autopilot_run` / `list_autopilot_runs` + `save_autopilot_chapter` / `list_autopilot_chapters` 断点读写）——**计数与明细由 op-004 与实现同提交回填**（见 `docs/ipc.md` §8.4）。
+- **i18n**：新增 `autopilot` 命名空间。
+- **详文**：`manual/features/autopilot.md`（stage-12 建立，**详文于 op-008 收尾**）。
+
+## 21. 开关矩阵（stage-12）
+
+> 三个可选能力**独立可叠加**、**缺省关闭**、**关闭即基线**（零调用零副作用）；**暗线保密优先级最高**（无开关可绕过）。
+
+| 能力           | 开关（状态单源）                             | 缺省 | 关闭时基线口径                                    | 注入落点 / 优先级                                                      |
+| -------------- | -------------------------------------------- | ---- | ------------------------------------------------- | ---------------------------------------------------------------------- |
+| 易经卦象       | `useIChingEnabled`（`ichingEnabled`，store） | 关   | `hexagramGuide` 不构建 → 输出与基线**逐字段一致** | 推演 `system` 约束段（与 `liurenGuide` **并列可选**）                  |
+| 大六壬         | `liurenEnabled`（**入 store**，状态单源）    | 关   | `liurenGuide` 不构建 → 输出与基线**逐字段一致**   | 推演 `system` 约束段（与 `hexagramGuide` **并列可选**）                |
+| 一致性分级注入 | `injectSettings`（可选参数，默认 `true`）    | 开   | 关 = **完全不注入**设定卡（纯净基线）             | 三装载点（生成 / 推演 / 对话）；**`dark` / `temp` 恒不注入（硬隔离）** |
+
+- **叠加性**：三者可同时开启，互不覆盖（各有独立入参 / 独立段落，缺省不产生空段）。
+- **纪律**：开关**状态单源**（禁多份 `useState` 各自为政 → 参见 stage-09 BUG-001）；关闭路径**可判定**（零调用断言）。

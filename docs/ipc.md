@@ -249,3 +249,10 @@ try {
 >   - **§8.1 口径（数据访问命令子集）** = 5 实体 × 5（25）+ ordering 3 + model_config 5 + keyring 3 + review_record 2 + material 3 + skill 4 + setting_card 扩展 1 + conflict_record 5 = **51**；
 >   - **全仓口径（含流式 2 条）** = §8.1 + §6 流式通道 2（`http_stream` / `abort_stream`）= **53**。
 > - **计数演进（与实现同提交）**：op-003 后 `45→46` / `47→48`；**op-005 后 `46→51` / `48→53`（本段已兑现）**。
+
+> **Stage-12（大六壬 + 全自动创作）占位声明**：**本 op（op-001）不改计数数值**——§8.1 仍为 **51 个**、全仓仍为 **53 条**（命令明细与计数由 **op-004** 与实现**同提交**回填）。
+>
+> - **大六壬 = 前端静态数据 + 纯函数**（同 stage-09 `iching/` 范式）→ **无新增 Rust 命令**（宿命卡经既有 `create_setting_card` 落库）。
+> - **全自动创作：计划新增 5 命令**（`save_autopilot_run` / `get_autopilot_run` / `list_autopilot_runs` + `save_autopilot_chapter` / `list_autopilot_chapters`，**op-004 落地**）→ 计划终态 **§8.1=56 / 全仓=58**，由 **op-004 随实现同提交更新计数**（`51→56` / `53→58`）——**本 op 不改计数数值**。
+> - **事件**：全自动进度以**前端编排器状态**（`autopilotStore`）承载，**不新增 Rust 事件通道**；既有 `Channel<StreamEvent>`（§6）**仅承载 LLM 流**。
+> - **口径参照**：§8.1 = **数据访问命令子集**；全仓 = §8.1 + §6 流式通道 2（`http_stream` / `abort_stream`）（双口径定义见本文件 Stage-11 段）。

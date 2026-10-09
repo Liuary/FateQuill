@@ -2,14 +2,14 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-09T22:50:03.837Z",
-    "revision": 427
+    "updated": "2026-10-09T22:43:42.675Z",
+    "revision": 414
   },
   "pipeline": {
     "phase": "active",
     "current": {
       "stage": "v0.6.0-stage-12",
-      "op": "op-001"
+      "op": ""
     },
     "retry": 0
   },
@@ -1632,150 +1632,13 @@
     },
     "v0.6.0-stage-12": {
       "name": "v0.6.0-stage-12",
-      "phase": "exec_running",
+      "phase": "plan_passed",
       "status": "planned",
       "deps": [
         "v0.3.0-stage-09",
         "v0.5.0-stage-11"
       ],
-      "ops": {
-        "op-001": {
-          "title": "遗留登记与总清算表 + 结构/IPC 文档回写（T7）(chore)",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        },
-        "op-002": {
-          "title": "大六壬系统：数据校验与课体引导（T1）",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        },
-        "op-003": {
-          "title": "全自动创作编排：决策规则表与链路（T2）",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        },
-        "op-004": {
-          "title": "熔断三层与迁移 v6 断点续跑（T3）",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        },
-        "op-005": {
-          "title": "无人值守冲突策略：暂停/授权忽略留痕（T4）",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        },
-        "op-006": {
-          "title": "发布工程：bundle、许可清单与 Release（T5）",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        },
-        "op-007": {
-          "title": "英文收口：键完整性与豁免清单（T6）",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        },
-        "op-008": {
-          "title": "总清算终稿与 manual 文档（T7 收尾）",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        }
-      },
+      "ops": {},
       "stats": {
         "start_time": "2026-10-09T22:40:32.167Z",
         "end_time": "",
@@ -5797,128 +5660,6 @@
         "stageName": "v0.6.0-stage-12",
         "from": "plan_pending",
         "to": "plan_review"
-      }
-    },
-    {
-      "time": "2026-10-09T22:45:54.758Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.6.0-stage-12",
-        "from": "plan_review",
-        "to": "plan_passed"
-      }
-    },
-    {
-      "time": "2026-10-09T22:45:55.091Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.6.0-stage-12",
-        "from": "plan_passed",
-        "to": "scheme_pending"
-      }
-    },
-    {
-      "time": "2026-10-09T22:46:21.884Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.6.0-stage-12",
-        "opId": "op-001"
-      }
-    },
-    {
-      "time": "2026-10-09T22:46:22.218Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.6.0-stage-12",
-        "opId": "op-002"
-      }
-    },
-    {
-      "time": "2026-10-09T22:46:22.535Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.6.0-stage-12",
-        "opId": "op-003"
-      }
-    },
-    {
-      "time": "2026-10-09T22:46:22.851Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.6.0-stage-12",
-        "opId": "op-004"
-      }
-    },
-    {
-      "time": "2026-10-09T22:46:23.158Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.6.0-stage-12",
-        "opId": "op-005"
-      }
-    },
-    {
-      "time": "2026-10-09T22:46:23.474Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.6.0-stage-12",
-        "opId": "op-006"
-      }
-    },
-    {
-      "time": "2026-10-09T22:46:23.825Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.6.0-stage-12",
-        "opId": "op-007"
-      }
-    },
-    {
-      "time": "2026-10-09T22:46:24.135Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.6.0-stage-12",
-        "opId": "op-008"
-      }
-    },
-    {
-      "time": "2026-10-09T22:47:53.696Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.6.0-stage-12",
-        "from": "scheme_pending",
-        "to": "scheme_review"
-      }
-    },
-    {
-      "time": "2026-10-09T22:50:03.521Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.6.0-stage-12",
-        "from": "scheme_review",
-        "to": "scheme_passed"
-      }
-    },
-    {
-      "time": "2026-10-09T22:50:03.837Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.6.0-stage-12",
-        "from": "scheme_passed",
-        "to": "exec_running"
       }
     }
   ]
