@@ -15,6 +15,9 @@ pub const MIGRATION_V4_SQL: &str = include_str!("../../migrations/0004_material_
 /// v5 设定分级（setting_card.tier）与一致性冲突记录（conflict_record）
 pub const MIGRATION_V5_SQL: &str = include_str!("../../migrations/0005_setting_tier_conflict.sql");
 
+/// v6 全自动创作断点（autopilot_run + autopilot_chapter）
+pub const MIGRATION_V6_SQL: &str = include_str!("../../migrations/0006_autopilot.sql");
+
 pub fn migrations() -> Vec<Migration> {
     vec![
         Migration {
@@ -47,6 +50,12 @@ pub fn migrations() -> Vec<Migration> {
             sql: MIGRATION_V5_SQL,
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 6,
+            description: "autopilot",
+            sql: MIGRATION_V6_SQL,
+            kind: MigrationKind::Up,
+        },
     ]
 }
 
@@ -60,10 +69,10 @@ mod tests {
         let pool = test_pool().await;
         sqlx::migrate!("./migrations").run(&pool).await.unwrap();
         let rows = pool
-            .fetch_all("SELECT name FROM sqlite_master WHERE type='table' AND name IN ('novel','volume','chapter','setting_card','character','model_config','review_record','material','skill_entry','conflict_record')")
+            .fetch_all("SELECT name FROM sqlite_master WHERE type='table' AND name IN ('novel','volume','chapter','setting_card','character','model_config','review_record','material','skill_entry','conflict_record','autopilot_run','autopilot_chapter')")
             .await
             .unwrap();
-        assert_eq!(rows.len(), 10); // v5 新增 conflict_record
+        assert_eq!(rows.len(), 12); // v6 新增 autopilot_run / autopilot_chapter
     }
 
     #[tokio::test]
@@ -87,7 +96,7 @@ mod tests {
         migrator.run(&pool).await.unwrap(); // 第二次应为 no-op
         let count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM _sqlx_migrations")
             .fetch_one(&pool).await.unwrap();
-        assert_eq!(count, 5, "_sqlx_migrations 应有 v1~v5 五条，且不重复记录");
+        assert_eq!(count, 6, "_sqlx_migrations 应有 v1~v6 六条，且不重复记录");
     }
 
     #[tokio::test]

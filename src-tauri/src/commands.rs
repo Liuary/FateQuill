@@ -183,6 +183,60 @@ pub async fn delete_conflict_record(app: AppHandle, id: i64) -> Result<(), IpcEr
     db::conflict::delete(&pool(&app).await?, id).await
 }
 
+// ---------- Autopilot（stage-12 T3：断点续跑） ----------
+#[tauri::command]
+pub async fn save_autopilot_run(
+    app: AppHandle,
+    id: Option<i64>,
+    novel_id: i64,
+    status: String,
+    config_json: String,
+) -> Result<db::autopilot::AutopilotRunRow, IpcError> {
+    db::autopilot::save_run(&pool(&app).await?, id, novel_id, &status, &config_json).await
+}
+#[tauri::command]
+pub async fn get_autopilot_run(app: AppHandle, id: i64) -> Result<db::autopilot::AutopilotRunRow, IpcError> {
+    db::autopilot::get_run(&pool(&app).await?, id).await
+}
+#[tauri::command]
+pub async fn list_autopilot_runs(
+    app: AppHandle,
+    novel_id: i64,
+) -> Result<Vec<db::autopilot::AutopilotRunRow>, IpcError> {
+    db::autopilot::list_runs(&pool(&app).await?, novel_id).await
+}
+#[tauri::command]
+#[allow(clippy::too_many_arguments)]
+pub async fn save_autopilot_chapter(
+    app: AppHandle,
+    run_id: i64,
+    chapter_id: Option<i64>,
+    order_index: i64,
+    state: String,
+    score: Option<f64>,
+    degraded_reason: String,
+    attempt: i64,
+) -> Result<db::autopilot::AutopilotChapterRow, IpcError> {
+    db::autopilot::save_chapter(
+        &pool(&app).await?,
+        run_id,
+        chapter_id,
+        order_index,
+        &state,
+        score,
+        &degraded_reason,
+        attempt,
+    )
+    .await
+}
+#[tauri::command]
+pub async fn list_autopilot_chapters(
+    app: AppHandle,
+    run_id: i64,
+) -> Result<Vec<db::autopilot::AutopilotChapterRow>, IpcError> {
+    db::autopilot::list_chapters(&pool(&app).await?, run_id).await
+}
+
 // ---------- Character ----------
 #[tauri::command]
 pub async fn list_characters(app: AppHandle) -> Result<Vec<db::character::CharacterRow>, IpcError> {

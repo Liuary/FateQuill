@@ -54,6 +54,31 @@ beforeEach(async () => {
     if (cmd === "keyring_exists") return Promise.resolve(true);
     if (cmd === "list_setting_cards") return Promise.resolve([]);
     if (cmd === "list_chapters") return Promise.resolve([]);
+    // 断点落库（迁移 v6）：run upsert 返回行（含 id），chapter upsert 返回行
+    if (cmd === "list_autopilot_runs") return Promise.resolve([]);
+    if (cmd === "save_autopilot_run") {
+      return Promise.resolve({
+        id: 9,
+        novel_id: 1,
+        status: "running",
+        config_json: "{}",
+        created_at: "c",
+        updated_at: "u",
+      });
+    }
+    if (cmd === "save_autopilot_chapter") {
+      return Promise.resolve({
+        id: 1,
+        run_id: 9,
+        chapter_id: null,
+        order_index: 0,
+        state: "done",
+        score: 80,
+        degraded_reason: "",
+        attempt: 0,
+        updated_at: "u",
+      });
+    }
     return Promise.resolve(undefined);
   });
   hoisted.streamOptions.length = 0;
@@ -79,6 +104,111 @@ describe("AutopilotPanel（全自动创作；生产接线）", () => {
       { index: 1, title: "第二章", instruction: "灯塔熄灭" },
     ]);
     expect(parseOutline("   ")).toEqual([]);
+  });
+
+  it("可续跑入口：存在未完成轮次 → 「继续上次」出现并可续跑（`autopilot-resume`）", async () => {
+    hoisted.invokeMock.mockImplementation((cmd: string) => {
+      if (cmd === "list_model_configs") return Promise.resolve([cfgRow]);
+      if (cmd === "keyring_exists") return Promise.resolve(true);
+      if (cmd === "list_setting_cards") return Promise.resolve([]);
+      if (cmd === "list_chapters") return Promise.resolve([]);
+      if (cmd === "list_autopilot_runs") {
+        return Promise.resolve([
+          {
+            id: 9,
+            novel_id: 1,
+            status: "paused",
+            config_json: JSON.stringify({
+              config: {
+                maxChapters: 3,
+                maxRewriteRounds: 2,
+                passThreshold: 60,
+                autoConfirmArchive: true,
+                pauseOnConflict: true,
+                consecutiveFailureLimit: 3,
+              },
+              outline: [
+                { index: 0, title: "第一章", instruction: "初遇" },
+                { index: 1, title: "第二章", instruction: "灯塔熄灭" },
+              ],
+            }),
+            created_at: "c",
+            updated_at: "u",
+          },
+        ]);
+      }
+      if (cmd === "get_autopilot_run") {
+        return Promise.resolve({
+          id: 9,
+          novel_id: 1,
+          status: "paused",
+          config_json: JSON.stringify({
+            config: {
+              maxChapters: 3,
+              maxRewriteRounds: 2,
+              passThreshold: 60,
+              autoConfirmArchive: true,
+              pauseOnConflict: true,
+              consecutiveFailureLimit: 3,
+            },
+            outline: [{ index: 0, title: "第一章", instruction: "初遇" }],
+          }),
+          created_at: "c",
+          updated_at: "u",
+        });
+      }
+      // 续跑：第 0 章已完成 → 不重跑；第 1 章续跑（大纲仅 1 章时无新章）
+      if (cmd === "list_autopilot_chapters") {
+        return Promise.resolve([
+          {
+            id: 1,
+            run_id: 9,
+            chapter_id: null,
+            order_index: 0,
+            state: "done",
+            score: 80,
+            degraded_reason: "",
+            attempt: 0,
+            updated_at: "u",
+          },
+        ]);
+      }
+      if (cmd === "save_autopilot_run") {
+        return Promise.resolve({
+          id: 9,
+          novel_id: 1,
+          status: "completed",
+          config_json: "{}",
+          created_at: "c",
+          updated_at: "u",
+        });
+      }
+      if (cmd === "save_autopilot_chapter") {
+        return Promise.resolve({
+          id: 1,
+          run_id: 9,
+          chapter_id: null,
+          order_index: 0,
+          state: "done",
+          score: 80,
+          degraded_reason: "",
+          attempt: 0,
+          updated_at: "u",
+        });
+      }
+      return Promise.resolve(undefined);
+    });
+
+    render(<AutopilotPanel novelId={1} chapterId={null} />);
+    await waitFor(() => expect(screen.getByTestId("autopilot-resume")).toBeInTheDocument());
+
+    // 续跑：载入断点（已完成章**不重跑**）→ 正常结束
+    fireEvent.click(screen.getByTestId("autopilot-resume"));
+    await waitFor(() =>
+      expect(hoisted.invokeMock).toHaveBeenCalledWith("get_autopilot_run", { id: 9 }),
+    );
+    await waitFor(() => expect(useAutopilotStore.getState().status).toBe("done"));
+    expect(useAutopilotStore.getState().chapters).toHaveLength(1); // 已完成章被 seed
   });
 
   it("启动 → 经 store 反馈进度与报告；真机依赖装配复用既有契约（推演/审查/抽取/生成）", async () => {

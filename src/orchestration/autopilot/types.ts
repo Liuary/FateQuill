@@ -70,8 +70,41 @@ export interface RunOutcome {
   passed: number;
   /** 降级章数 */
   degraded: number;
-  /** 是否被中止 */
+  /** 是否被中止（用户 `abort`） */
   aborted: boolean;
+  /** **熔断原因**（三层任一触发即停时写入；未触发为缺省） */
+  trippedBy?: "budget" | "consecutive-failure" | "max-chapters";
+  /** 熔断细节（可读） */
+  trippedDetail?: string;
+}
+
+/** 续跑：已完成章（**不重跑**，用于 seed 报告与跳过） */
+export interface SettledChapter {
+  orderIndex: number;
+  status: "done" | "degraded";
+  score?: number | null;
+  degradedReason?: string;
+}
+
+/**
+ * 断点持久化（**注入**）：真机经 `repositories.autopilot`（迁移 v6）；mock/离线不注入（纯内存链路）。
+ */
+export interface AutopilotPersistence {
+  /** upsert run（`runId` 缺省 → 新建）；返回 run id */
+  saveRun(input: {
+    runId?: number;
+    status: "running" | "paused" | "completed" | "aborted" | "failed";
+    configJson: string;
+  }): Promise<number>;
+  /** upsert 单章断点（键 = `runId + orderIndex`） */
+  saveChapter(input: {
+    runId: number;
+    orderIndex: number;
+    state: "pending" | "running" | "done" | "degraded" | "failed";
+    score?: number | null;
+    degradedReason?: string;
+    attempt?: number;
+  }): Promise<void>;
 }
 
 /** 生成期上下文（真机由 stage-05 装配输入提供；缺省空） */
@@ -96,6 +129,8 @@ export interface AutopilotDeps {
   archiveFn: (chapter: AutopilotChapterInput, content: string) => Promise<void>;
   reviewFn?: (content: string) => Promise<EvaluationBundle>;
   contextFor?: (chapter: AutopilotChapterInput) => Promise<AutopilotPromptContext>;
+  /** 断点持久化（**可选**：真机注入 → 可续跑；mock/离线缺省 → 纯内存链路） */
+  persistence?: AutopilotPersistence;
 }
 
 /** 缺省配置（可部分覆盖） */

@@ -8,6 +8,8 @@
   "passThreshold": "Pass threshold",
   "autoConfirmArchive": "Auto-confirm archive",
   "start": "Start autopilot",
+  "resume": "Resume run #{{id}}",
+  "resumeHint": "{{count}} unfinished run(s) found (resume from the breakpoint after a trip/abort; finished chapters are not re-run).",
   "stop": "Stop",
   "chapters": "Chapter progress",
   "passed": "Passed",

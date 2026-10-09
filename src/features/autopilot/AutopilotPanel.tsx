@@ -7,11 +7,13 @@
  * **零人工交互**：启动后链路自行推进（面板不弹确认、不等待点击）；停止是唯一的用户动作。
  */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { defaultAutopilotConfig, shouldAutoConfirmArchive } from "@/orchestration/autopilot";
+import type { AutopilotRun } from "@/domain/models/autopilot";
+import { repositories } from "@/ipc/repositories";
 import { useGenerationAvailability } from "@/features/generation/useGenerationAvailability";
 import { useAutopilotStore } from "@/store/autopilotStore";
 import { parseOutline } from "./parse-outline";
@@ -46,13 +48,41 @@ export function AutopilotPanel({ novelId, chapterId = null }: AutopilotPanelProp
     chapterId,
     autoConfirmArchive: shouldAutoConfirmArchive(autopilotConfig),
   });
-  const { run, stop } = useAutopilotRun(deps);
+  const { run, resume, stop } = useAutopilotRun(deps);
 
   const status = useAutopilotStore((s) => s.status);
   const currentIndex = useAutopilotStore((s) => s.currentIndex);
   const total = useAutopilotStore((s) => s.total);
   const chapters = useAutopilotStore((s) => s.chapters);
   const report = useAutopilotStore((s) => s.report);
+
+  const [resumable, setResumable] = useState<AutopilotRun[]>([]);
+
+  // 可续跑轮次（`running` / `paused`）——「继续上次」入口的数据源（运行状态变化时刷新）
+  useEffect(() => {
+    let alive = true;
+    if (novelId == null) {
+      return;
+    }
+    void repositories.autopilot.listRuns(novelId).then(
+      (runs) => {
+        if (alive) {
+          setResumable(
+            runs.filter((entry) => entry.status === "running" || entry.status === "paused"),
+          );
+        }
+      },
+      () => {
+        // 读取失败（IPC 未就绪）：无续跑入口，不阻断启动
+        if (alive) {
+          setResumable([]);
+        }
+      },
+    );
+    return () => {
+      alive = false;
+    };
+  }, [novelId, status]);
 
   const outline = parseOutline(outlineText);
   const running = status === "running";
@@ -143,7 +173,23 @@ export function AutopilotPanel({ novelId, chapterId = null }: AutopilotPanelProp
             {t("stop")}
           </Button>
         )}
+        {!running &&
+          resumable.map((entry) => (
+            <Button
+              key={entry.id}
+              data-testid="autopilot-resume"
+              variant="outline"
+              disabled={deps == null}
+              onClick={() => void resume(entry.id)}
+            >
+              {t("resume", { id: entry.id })}
+            </Button>
+          ))}
       </div>
+
+      {!running && resumable.length > 0 && (
+        <p className="text-xs opacity-70">{t("resumeHint", { count: resumable.length })}</p>
+      )}
 
       {status !== "idle" && (
         <p data-testid="autopilot-progress" className="text-xs opacity-70">

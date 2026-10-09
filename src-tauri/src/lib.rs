@@ -40,6 +40,8 @@ pub fn run() {
             commands::save_extracted_settings,
             commands::save_conflict_record, commands::list_conflict_records, commands::get_conflict_record,
             commands::resolve_conflict_record, commands::delete_conflict_record,
+            commands::save_autopilot_run, commands::get_autopilot_run, commands::list_autopilot_runs,
+            commands::save_autopilot_chapter, commands::list_autopilot_chapters,
         ])
         .manage(Arc::new(stream::StreamRegistry::default()))
         .run(tauri::generate_context!())

@@ -82,6 +82,28 @@ export function useAutopilot(opts: {
       streamFor: (options) => provider.stream(options),
       evaluators,
       contextFor: () => loadContext(),
+      // 断点持久化（迁移 v6）：run / chapter 落库 → **中断后可续跑**
+      persistence: {
+        saveRun: async ({ runId, status, configJson }) => {
+          const saved = await repositories.autopilot.saveRun({
+            ...(runId === undefined ? {} : { id: runId }),
+            novelId,
+            status,
+            configJson,
+          });
+          return saved.id;
+        },
+        saveChapter: async (input) => {
+          await repositories.autopilot.saveChapter({
+            runId: input.runId,
+            orderIndex: input.orderIndex,
+            state: input.state,
+            score: input.score ?? null,
+            degradedReason: input.degradedReason ?? "",
+            attempt: input.attempt ?? 0,
+          });
+        },
+      },
       archiveFn: async (_chapter, content) => {
         const chapterText = toPlainText(content);
         if (!chapterText) {

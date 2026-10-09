@@ -8,6 +8,8 @@
   "passThreshold": "通过阈值",
   "autoConfirmArchive": "归档自动确认",
   "start": "启动全自动",
+  "resume": "继续上次（#{{id}}）",
+  "resumeHint": "检测到 {{count}} 个未完成的轮次（熔断/中止后可从断点续跑，已完成章不重跑）。",
   "stop": "停止",
   "chapters": "章节进度",
   "passed": "已通过",

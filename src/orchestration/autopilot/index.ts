@@ -6,4 +6,5 @@
 
 export * from "./types";
 export * from "./decide";
+export * from "./breaker";
 export * from "./chain";

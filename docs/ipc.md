@@ -86,9 +86,9 @@
 
 ## 8. 数据访问命令与错误结构
 
-### 8.1 数据访问命令清单（51 个）
+### 8.1 数据访问命令清单（56 个）
 
-> 另见 §6 流式通道命令（`http_stream` / `abort_stream`）——故全仓实际注册命令共 53 条。
+> 另见 §6 流式通道命令（`http_stream` / `abort_stream`）——故全仓实际注册命令共 58 条。
 
 5 实体 × [list / get / create / update / delete]，命令名 snake_case：
 
@@ -167,6 +167,16 @@ skill 命令（skill_entry，共 4 个；stage-07 T5）：
 | ConflictRecord | `get_conflict_record`     | `{ id }`                                                  | 按 id 获取                                                                                                                |
 | ConflictRecord | `resolve_conflict_record` | `{ id, action }`                                          | 处置留痕：`action ∈ change_tier\|edit\|false_positive\|ignore`；前两者 → `resolved`，后两者 → `ignored`；写 `resolved_at` |
 | ConflictRecord | `delete_conflict_record`  | `{ id }`                                                  | 删除冲突记录                                                                                                              |
+
+全自动创作断点命令（autopilot，共 5 个；stage-12 T3/op-004）：
+
+| 类别      | 命令                      | 参数（前端 camelCase）                                                      | 语义                                                                                                   |
+| --------- | ------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Autopilot | `save_autopilot_run`      | `{ id?, novelId, status, configJson }`                                      | **upsert** 一轮全自动（`id` 缺省 → 新建；`status ∈ running\|paused\|completed\|aborted\|failed`）      |
+| Autopilot | `get_autopilot_run`       | `{ id }`                                                                    | 按 id 获取 run                                                                                         |
+| Autopilot | `list_autopilot_runs`     | `{ novelId }`                                                               | 按作品列出（**最新在前**）                                                                             |
+| Autopilot | `save_autopilot_chapter`  | `{ runId, chapterId?, orderIndex, state, score?, degradedReason, attempt }` | **upsert** 单章断点（键 = `run_id + order_index`；`state ∈ pending\|running\|done\|degraded\|failed`） |
+| Autopilot | `list_autopilot_chapters` | `{ runId }`                                                                 | 按 run 列出章断点（`orderIndex` 升序）——**续跑依据**                                                   |
 
 #### 素材与存储语义（stage-07 T4）
 
@@ -250,9 +260,9 @@ try {
 >   - **全仓口径（含流式 2 条）** = §8.1 + §6 流式通道 2（`http_stream` / `abort_stream`）= **53**。
 > - **计数演进（与实现同提交）**：op-003 后 `45→46` / `47→48`；**op-005 后 `46→51` / `48→53`（本段已兑现）**。
 
-> **Stage-12（大六壬 + 全自动创作）占位声明**：**本 op（op-001）不改计数数值**——§8.1 仍为 **51 个**、全仓仍为 **53 条**（命令明细与计数由 **op-004** 与实现**同提交**回填）。
+> **Stage-12（大六壬 + 全自动创作）**：**大六壬 = 前端静态数据 + 纯函数 → 无新增 Rust 命令**；**全自动创作新增 5 命令**（`save/get/list_autopilot_run` + `save/list_autopilot_chapter`，**op-004**，见 §8.1）——计数已**与实现同提交**回填：§8.1 **51→56** / 全仓 **53→58**。
 >
 > - **大六壬 = 前端静态数据 + 纯函数**（同 stage-09 `iching/` 范式）→ **无新增 Rust 命令**（宿命卡经既有 `create_setting_card` 落库）。
-> - **全自动创作：计划新增 5 命令**（`save_autopilot_run` / `get_autopilot_run` / `list_autopilot_runs` + `save_autopilot_chapter` / `list_autopilot_chapters`，**op-004 落地**）→ 计划终态 **§8.1=56 / 全仓=58**，由 **op-004 随实现同提交更新计数**（`51→56` / `53→58`）——**本 op 不改计数数值**。
+> - **全自动创作：已落地 5 命令**（`save_autopilot_run` / `get_autopilot_run` / `list_autopilot_runs` + `save_autopilot_chapter` / `list_autopilot_chapters`，**op-004**）→ 终态 **§8.1=56 / 全仓=58**（**op-004 与实现同提交回填**）。
 > - **事件**：全自动进度以**前端编排器状态**（`autopilotStore`）承载，**不新增 Rust 事件通道**；既有 `Channel<StreamEvent>`（§6）**仅承载 LLM 流**。
 > - **口径参照**：§8.1 = **数据访问命令子集**；全仓 = §8.1 + §6 流式通道 2（`http_stream` / `abort_stream`）（双口径定义见本文件 Stage-11 段）。

@@ -27,6 +27,7 @@ import { rewriteChapter, type FailedDimensionFeedback } from "@/orchestration/re
 import { REVIEW_DIMENSIONS } from "@/orchestration/review/types";
 import type { ChatOptions, Chunk, ModelProvider } from "@/orchestration/types";
 import { isPassed, markDegraded, pickBranch, shouldRewrite, type BranchScore } from "./decide";
+import { checkBreakers, estimateTokens } from "./breaker";
 import type {
   AutopilotChapterInput,
   AutopilotConfig,
@@ -35,6 +36,7 @@ import type {
   AutopilotPromptContext,
   ChapterOutcome,
   RunOutcome,
+  SettledChapter,
 } from "./types";
 
 /** 生成期温度（单次生成，收敛优先） */
@@ -227,30 +229,100 @@ export async function runChapter(
   return outcome;
 }
 
-/** 整轮编排：逐章串行（**零人工交互**），逐章回调进度；单章失败降级不阻塞 */
+/** 续跑 seed：已完成章 → 章结果（不重跑，仅为报告与统计） */
+function seedOutcome(chapter: AutopilotChapterInput, settled: SettledChapter): ChapterOutcome {
+  const outcome: ChapterOutcome = {
+    index: chapter.index,
+    title: chapter.title,
+    content: "",
+    degraded: settled.status === "degraded",
+    rounds: 0,
+  };
+  if (typeof settled.score === "number") {
+    outcome.score = settled.score;
+  }
+  if (settled.degradedReason) {
+    outcome.degradedReason = settled.degradedReason;
+  }
+  return outcome;
+}
+
+/** 整轮编排：逐章串行（**零人工交互**）+ **熔断三层**（任一触发即停 + 出报告）+ 断点落库（可续跑） */
 export async function runAutopilot(opts: {
   outline: AutopilotChapterInput[];
   config: AutopilotConfig;
   deps: AutopilotDeps;
   onProgress?: (progress: AutopilotProgress) => void;
   signal?: AbortSignal;
+  /** 续跑：既有 run id（缺省 → 新建并落库） */
+  runId?: number;
+  /** 续跑：已完成章（**不重跑**；用于 seed 报告与跳过） */
+  completed?: SettledChapter[];
+  /** 续跑：已花费 token（预算熔断累计） */
+  spentTokens?: number;
 }): Promise<RunOutcome> {
   const { config, deps, onProgress, signal } = opts;
-  const chapters = opts.outline.slice(0, Math.max(0, config.maxChapters));
+  const chapters = opts.outline;
+  const persistence = deps.persistence;
+  const settled = new Map((opts.completed ?? []).map((entry) => [entry.orderIndex, entry]));
+
+  let runId = opts.runId;
+  if (persistence && runId === undefined) {
+    runId = await persistence.saveRun({
+      status: "running",
+      configJson: JSON.stringify({ config, outline: chapters }),
+    });
+  }
+
   const outcomes: ChapterOutcome[] = [];
+  let spentTokens = opts.spentTokens ?? 0;
+  let consecutiveFailures = 0;
+  let trippedBy: RunOutcome["trippedBy"];
+  let trippedDetail: string | undefined;
+  let aborted = false;
 
   const emit = (status: AutopilotProgress["status"], currentIndex: number) => {
     onProgress?.({ status, currentIndex, total: chapters.length, chapters: [...outcomes] });
   };
 
   for (const [position, chapter] of chapters.entries()) {
-    if (signal?.aborted) {
-      emit("aborted", position);
-      return summarize(outcomes, config, true);
+    // 续跑：已完成章**直接跳过**（不重跑）
+    const seed = settled.get(chapter.index);
+    if (seed) {
+      outcomes.push(seedOutcome(chapter, seed));
+      continue;
     }
+
+    if (signal?.aborted) {
+      aborted = true;
+      break;
+    }
+
+    // 熔断三层：**启动新章前**判定（触发即停 + 出报告）
+    const verdict = checkBreakers(
+      { spentTokens, consecutiveFailures, producedChapters: outcomes.length },
+      config,
+    );
+    if (verdict.tripped) {
+      trippedBy = verdict.reason;
+      trippedDetail = verdict.detail;
+      break;
+    }
+
     emit("running", position);
+    if (persistence && runId !== undefined) {
+      // 章起点：落 running（中断后据此识别未完成章）
+      await persistence.saveChapter({
+        runId,
+        orderIndex: chapter.index,
+        state: "running",
+        attempt: 0,
+      });
+    }
+
+    let outcome: ChapterOutcome;
     try {
-      outcomes.push(await runChapter(chapter, config, deps, signal));
+      outcome = await runChapter(chapter, config, deps, signal);
     } catch (error) {
       // 单章异常（含 abort）：降级收录 + 记录原因，**不阻塞续跑**
       const reason = error instanceof Error ? error.message : String(error);
@@ -261,16 +333,61 @@ export async function runAutopilot(opts: {
         rounds: 0,
         ...markDegraded(`章生成失败：${reason}`),
       });
+      outcome = outcomes[outcomes.length - 1];
       if (signal?.aborted) {
-        emit("aborted", position);
-        return summarize(outcomes, config, true);
+        aborted = true;
+        if (persistence && runId !== undefined) {
+          await persistence.saveChapter({
+            runId,
+            orderIndex: chapter.index,
+            state: "failed",
+            degradedReason: outcome.degradedReason ?? "",
+            attempt: 0,
+          });
+        }
+        break;
       }
+    }
+
+    if (outcome !== outcomes[outcomes.length - 1]) {
+      outcomes.push(outcome);
+    }
+    spentTokens += estimateTokens(outcome.content);
+    consecutiveFailures = outcome.degraded ? consecutiveFailures + 1 : 0;
+
+    if (persistence && runId !== undefined) {
+      // 章终点：落 done / degraded（含分数与原因）——续跑依据
+      await persistence.saveChapter({
+        runId,
+        orderIndex: chapter.index,
+        state: outcome.degraded ? "degraded" : "done",
+        score: outcome.score ?? null,
+        degradedReason: outcome.degradedReason ?? "",
+        attempt: outcome.rounds,
+      });
     }
     emit("running", position + 1);
   }
 
-  emit("done", chapters.length);
-  return summarize(outcomes, config, false);
+  // 落库终态：中止 → `aborted`；熔断 → **`paused`（可续跑）**；正常 → `completed`
+  const finalStatus = aborted ? "aborted" : trippedBy ? "paused" : "completed";
+  if (persistence && runId !== undefined) {
+    await persistence.saveRun({
+      runId,
+      status: finalStatus,
+      configJson: JSON.stringify({ config, outline: chapters }),
+    });
+  }
+
+  emit(aborted ? "aborted" : trippedBy ? "paused" : "done", outcomes.length);
+  const summary = summarize(outcomes, config, aborted);
+  if (trippedBy) {
+    summary.trippedBy = trippedBy;
+    if (trippedDetail) {
+      summary.trippedDetail = trippedDetail;
+    }
+  }
+  return summary;
 }
 
 /** 汇总（过阈 / 降级计数） */

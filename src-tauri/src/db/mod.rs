@@ -11,6 +11,7 @@ pub mod review;
 pub mod material;
 pub mod skill;
 pub mod conflict;
+pub mod autopilot;
 #[cfg(test)]
 pub mod seed;
 #[cfg(test)]
