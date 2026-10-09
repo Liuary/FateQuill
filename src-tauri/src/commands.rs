@@ -131,6 +131,15 @@ pub async fn update_setting_card(
 pub async fn delete_setting_card(app: AppHandle, id: i64) -> Result<(), IpcError> {
     db::setting_card::delete(&pool(&app).await?, id).await
 }
+/// 归档批量落库（stage-11 T2）：**事务内**批创建抽取候选（前端待确认队列确认后调用）
+#[tauri::command]
+pub async fn save_extracted_settings(
+    app: AppHandle,
+    novel_id: i64,
+    items: Vec<db::setting_card::NewSettingCard>,
+) -> Result<Vec<db::setting_card::SettingCardRow>, IpcError> {
+    db::setting_card::create_many(&pool(&app).await?, novel_id, &items).await
+}
 
 // ---------- Character ----------
 #[tauri::command]

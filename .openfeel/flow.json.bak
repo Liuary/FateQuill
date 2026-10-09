@@ -2,14 +2,14 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-09T21:57:10.008Z",
-    "revision": 387
+    "updated": "2026-10-09T21:58:41.266Z",
+    "revision": 388
   },
   "pipeline": {
     "phase": "active",
     "current": {
       "stage": "v0.5.0-stage-11",
-      "op": "op-001"
+      "op": "op-002"
     },
     "retry": 0
   },
@@ -1489,9 +1489,9 @@
       "ops": {
         "op-001": {
           "title": "遗留登记与结构/IPC 文档回写（stage-10 REV-007 + stage-08 REV-009 联动）(chore)",
-          "state": "pending",
+          "state": "done",
           "assignee": "openfeel-executor",
-          "attempts": 0,
+          "attempts": 1,
           "max_attempts": 3,
           "checkpoints": {
             "plan": "pending",
@@ -5375,6 +5375,15 @@
         "stageName": "v0.5.0-stage-11",
         "from": "scheme_passed",
         "to": "exec_running"
+      }
+    },
+    {
+      "time": "2026-10-09T21:58:41.235Z",
+      "agent": "openfeel-executor",
+      "action": "attempt_pass",
+      "detail": {
+        "opId": "v0.5.0-stage-11.op-001",
+        "attempts": 1
       }
     }
   ]

@@ -1,0 +1,20 @@
+{
+  "tab": "Archive",
+  "title": "Setting archive",
+  "guidance": "Click \"Archive chapter\" to extract new settings from the current chapter (each with verbatim evidence; items failing the evidence check are dropped). Confirm to save them in one batch.",
+  "archive": "Archive chapter",
+  "stop": "Stop",
+  "empty": "No candidates yet",
+  "extractFailed": "Extraction failed, please retry",
+  "confirmSave": "Confirm and save ({{count}})",
+  "saved": "Saved {{count}} item(s)",
+  "remove": "Remove",
+  "duplicate": "Same name as an existing setting (not created twice)",
+  "tier": "Tier",
+  "evidence": "Evidence: {{text}}",
+  "guideSettings": "Configure a model and store an API key in Settings first",
+  "tier.main": "Mainline (book-wide)",
+  "tier.dark": "Hidden (not injected)",
+  "tier.short": "Recent (near chapters)",
+  "tier.temp": "Temporary (one-off)"
+}

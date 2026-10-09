@@ -28,4 +28,9 @@ export interface SettingCardRepository {
     },
   ): Promise<SettingCard>;
   remove(id: number): Promise<void>;
+  /** 归档批量落库（**事务**：全成功或全回滚）；返回按输入顺序创建的行 */
+  saveExtracted(
+    novelId: number,
+    items: { title: string; content: string; kind: string; tier?: SettingCardTier }[],
+  ): Promise<SettingCard[]>;
 }

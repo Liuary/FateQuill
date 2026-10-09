@@ -37,6 +37,7 @@ pub fn run() {
             commands::save_review_record, commands::list_review_records,
             commands::save_material, commands::list_materials, commands::delete_material,
             commands::save_skill_entry, commands::list_skill_entries, commands::update_skill_entry, commands::delete_skill_entry,
+            commands::save_extracted_settings,
         ])
         .manage(Arc::new(stream::StreamRegistry::default()))
         .run(tauri::generate_context!())

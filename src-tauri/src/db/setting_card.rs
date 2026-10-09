@@ -90,6 +90,49 @@ pub async fn create(
     get(pool, id).await
 }
 
+/// 批量落库输入项（IPC 反序列化；字段名与前端 payload 一致）
+#[derive(Debug, serde::Deserialize)]
+pub struct NewSettingCard {
+    pub title: String,
+    pub content: String,
+    pub kind: String,
+    pub tier: Option<String>,
+}
+
+/// **事务内批量创建**（全成功或全回滚）：返回按输入顺序创建的行
+pub async fn create_many(
+    pool: &SqlitePool,
+    novel_id: i64,
+    items: &[NewSettingCard],
+) -> Result<Vec<SettingCardRow>, IpcError> {
+    let mut tx = pool.begin().await?;
+    let mut ids: Vec<i64> = Vec::with_capacity(items.len());
+    for item in items {
+        // 逐条校验（任一非法 → 返回 Err，事务未提交 **全部回滚**）
+        validate_title(&item.title)?;
+        let tier = item.tier.as_deref().unwrap_or(DEFAULT_TIER);
+        validate_tier(tier)?;
+        let id: i64 = sqlx::query_scalar(
+            "INSERT INTO setting_card (novel_id,title,content,kind,tier) VALUES (?,?,?,?,?) RETURNING id",
+        )
+        .bind(novel_id)
+        .bind(&item.title)
+        .bind(&item.content)
+        .bind(&item.kind)
+        .bind(tier)
+        .fetch_one(&mut *tx)
+        .await?;
+        ids.push(id);
+    }
+    tx.commit().await?;
+
+    let mut created = Vec::with_capacity(ids.len());
+    for id in ids {
+        created.push(get(pool, id).await?);
+    }
+    Ok(created)
+}
+
 /// 更新设定卡；`tier` 为 `None` → **保留既有分级**（部分更新不静默降级）
 pub async fn update(
     pool: &SqlitePool,
@@ -191,5 +234,53 @@ mod tests {
         // 非法分级 → VALIDATION
         let bad = setting_card::create(&pool, n.id, "非法", "", "general", Some("bogus")).await.unwrap_err();
         assert_eq!(bad.code, codes::VALIDATION);
+    }
+
+    #[tokio::test]
+    async fn setting_card_create_many_is_transactional() {
+        let pool = test_pool_migrated().await;
+        let n = novel::create(&pool, "N", "").await.unwrap();
+        let items = vec![
+            setting_card::NewSettingCard {
+                title: "潮汐律".into(),
+                content: "潮汐随月相起落".into(),
+                kind: "世界观".into(),
+                tier: Some("main".into()),
+            },
+            setting_card::NewSettingCard {
+                title: "暗线身份".into(),
+                content: "未揭示".into(),
+                kind: "身份".into(),
+                tier: None, // 缺省 → short
+            },
+        ];
+        let created = setting_card::create_many(&pool, n.id, &items).await.unwrap();
+        assert_eq!(created.len(), 2);
+        assert_eq!(created[0].tier, "main");
+        assert_eq!(created[1].tier, "short");
+
+        // 全回滚：第二条非法（空标题）→ 无任何写入
+        let bad_items = vec![
+            setting_card::NewSettingCard {
+                title: "合法".into(),
+                content: "".into(),
+                kind: "类型".into(),
+                tier: Some("short".into()),
+            },
+            setting_card::NewSettingCard {
+                title: "  ".into(),
+                content: "".into(),
+                kind: "类型".into(),
+                tier: Some("short".into()),
+            },
+        ];
+        let err = setting_card::create_many(&pool, n.id, &bad_items).await.unwrap_err();
+        assert_eq!(err.code, codes::VALIDATION);
+        let all = setting_card::list(&pool, None).await.unwrap();
+        assert_eq!(all.len(), 2, "失败批次不得留下部分写入：{all:?}");
+
+        // 空批次：合法 no-op
+        let empty = setting_card::create_many(&pool, n.id, &[]).await.unwrap();
+        assert!(empty.is_empty());
     }
 }

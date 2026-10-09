@@ -70,5 +70,17 @@ export function createSettingCardRepository(): SettingCardRepository {
     async remove(id) {
       await invokeCommand<void>("delete_setting_card", { id });
     },
+    async saveExtracted(novelId, items) {
+      const rows = await invokeCommand<SettingCardRow[]>("save_extracted_settings", {
+        novelId,
+        items: items.map((item) => ({
+          title: item.title,
+          content: item.content,
+          kind: item.kind,
+          ...tierArgs(item.tier),
+        })),
+      });
+      return rows.map(toSettingCard);
+    },
   };
 }
