@@ -2,14 +2,14 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-09T20:23:23.421Z",
-    "revision": 307
+    "updated": "2026-10-09T20:14:28.386Z",
+    "revision": 295
   },
   "pipeline": {
     "phase": "active",
     "current": {
       "stage": "v0.3.0-stage-09",
-      "op": "op-001"
+      "op": ""
     },
     "retry": 0
   },
@@ -1177,115 +1177,12 @@
     },
     "v0.3.0-stage-09": {
       "name": "v0.3.0-stage-09",
-      "phase": "exec_running",
+      "phase": "plan_review",
       "status": "planned",
       "deps": [
         "v0.3.0-stage-08"
       ],
-      "ops": {
-        "op-001": {
-          "title": "六十四卦数据建模与手写校验（T1）",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        },
-        "op-002": {
-          "title": "起卦与朱熹变爻推导（T2）",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        },
-        "op-003": {
-          "title": "卦象引导卡：剧情映射（T3）",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        },
-        "op-004": {
-          "title": "角色宿命映射与写入设定卡（T4）",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        },
-        "op-005": {
-          "title": "接入推演引擎：hexagramGuide 可选注入与开关（T5）",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        },
-        "op-006": {
-          "title": "遗留登记与文档回写（T6）",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        }
-      },
+      "ops": {},
       "stats": {
         "start_time": "2026-10-09T20:12:15.618Z",
         "end_time": "",
@@ -4188,120 +4085,6 @@
         "stageName": "v0.3.0-stage-09",
         "from": "plan_review",
         "to": "plan_pending"
-      }
-    },
-    {
-      "time": "2026-10-09T20:15:12.552Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.3.0-stage-09",
-        "from": "plan_pending",
-        "to": "plan_review"
-      }
-    },
-    {
-      "time": "2026-10-09T20:18:37.573Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.3.0-stage-09",
-        "from": "plan_review",
-        "to": "plan_passed"
-      }
-    },
-    {
-      "time": "2026-10-09T20:18:37.894Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.3.0-stage-09",
-        "from": "plan_passed",
-        "to": "scheme_pending"
-      }
-    },
-    {
-      "time": "2026-10-09T20:19:06.559Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.3.0-stage-09",
-        "opId": "op-001"
-      }
-    },
-    {
-      "time": "2026-10-09T20:19:06.881Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.3.0-stage-09",
-        "opId": "op-002"
-      }
-    },
-    {
-      "time": "2026-10-09T20:19:07.209Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.3.0-stage-09",
-        "opId": "op-003"
-      }
-    },
-    {
-      "time": "2026-10-09T20:19:07.543Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.3.0-stage-09",
-        "opId": "op-004"
-      }
-    },
-    {
-      "time": "2026-10-09T20:19:07.860Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.3.0-stage-09",
-        "opId": "op-005"
-      }
-    },
-    {
-      "time": "2026-10-09T20:19:08.179Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.3.0-stage-09",
-        "opId": "op-006"
-      }
-    },
-    {
-      "time": "2026-10-09T20:20:49.008Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.3.0-stage-09",
-        "from": "scheme_pending",
-        "to": "scheme_review"
-      }
-    },
-    {
-      "time": "2026-10-09T20:23:23.103Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.3.0-stage-09",
-        "from": "scheme_review",
-        "to": "scheme_passed"
-      }
-    },
-    {
-      "time": "2026-10-09T20:23:23.421Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.3.0-stage-09",
-        "from": "scheme_passed",
-        "to": "exec_running"
       }
     }
   ]

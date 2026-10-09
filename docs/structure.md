@@ -17,6 +17,7 @@
 | `src/features/research/`         | 研究/采样工作台（多模型无限制创作采样 + 素材候选；stage-07 建立）                                 |
 | `src/features/exploration/`      | 多温度并行推演（走向意向 → 分支推演 → 走向卡；stage-08 建立）                                     |
 | `src/domain/`                    | 纯 TS 领域模型与业务规则（无 UI、无网络）                                                         |
+| `src/data/iching/`               | 六十四卦只读静态数据（公有领域《周易》白文）+ **手写校验**（无第三方校验库；stage-09 建立）       |
 | `src/orchestration/`             | Agent 编排引擎（可插拔）                                                                          |
 | `src/orchestration/research/`    | 研究契约与采样调度器（**串行逐模型**；无预算裁剪 / 不触发审查 / 不进正文；stage-07 建立）         |
 | `src/orchestration/exploration/` | 推演引擎契约（温度集与 per-provider clamp / 走向卡解析 / **并行 + 乱序归位**编排；stage-08 建立） |
