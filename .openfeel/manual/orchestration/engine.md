@@ -76,6 +76,21 @@ consistency/           # 设定分级与一致性（stage-11；**L1 纯函数**�
 ├── inject.ts          # INJECTABLE_TIERS / isInjectableTier / selectInjectableCards（白名单 `{main,short}`，**恒排 dark**）
 └── index.ts
 
+liuren/                # 大六壬（stage-12，**纯函数**，provider 无关）
+├── types.ts           # LiurenLesson / LiurenTransmission / LiurenPatternResult / LiurenChart / CastLiurenResult
+├── cast.ts            # castLiuren（月将加时 → 四课 → 取用（伏吟/返吟 → 贼克）→ 三传 → 天将；非法输入早返回）
+├── guide.ts           # buildLiurenCard / renderLiurenText（课体引导卡与注入文本）
+└── index.ts
+
+autopilot/             # 全自动创作（stage-12；**不 import @/ipc / store**，依赖全注入）
+├── types.ts           # AutopilotConfig / ChapterOutcome / RunOutcome / AutopilotDeps（注入端口）
+│                      # + AutopilotPersistence（迁移 v6 断点）/ AutopilotConflictSink（stage-11 冲突落库）
+├── decide.ts          # 决策规则表：pickBranch / shouldRewrite / markDegraded / shouldAutoConfirmArchive / isPassed
+├── breaker.ts         # 熔断三层：checkBreakers（预算 / 连续失败 K / 章数）+ estimateTokens
+├── conflict-policy.ts # decideConflictPolicy（pause / ignore-continue）+ conflictKey
+├── chain.ts           # runChapter / runAutopilot（逐章串行 + 熔断 + 冲突策略 + 断点落库 + 续跑）
+└── index.ts
+
 src/ipc/stream.ts       # httpStream()：Tauri Channel 封装 + StreamEvent TS 契约（requestId 缺省生成，返回 abort）
 tests/fixtures/*.sse    # SSE 录制回放夹具（openai-compatible / anthropic，各含分块/错误/终止帧）
 ```
@@ -95,6 +110,8 @@ tests/fixtures/*.sse    # SSE 录制回放夹具（openai-compatible / anthropic
 - **研究域（stage-07）**：`src/orchestration/research/`（provider 无关）——采样调度 `runSampling`（**串行逐模型**，产出仅入会话候选 `MaterialCandidate`，**不进正文/不自动保存/不触发审查/无预算裁剪/跳过合规**）、交叉判断 `extractFlavorExcerpts`（复用 `review/json` 的 `extractJson`）与 `mergeByExcerpt`（**verbatim 引文精确交集** + 命中分级）、受控标签枚举 `tags.ts`。研究采样与生成路径**故意解耦**（详见 `manual/features/research.md`）。
 - **多声部对话（`dialogue/`，stage-10）**：`src/orchestration/dialogue/`（provider 无关，**非流式收口**）——`profile` 契约（`normalizeProfile` / `toProfileRecord`）、`persona` 装配、角色/旁白 Agent、**`context` 白名单**（他人仅公开身份摘要 → **防串味**）、`assembleDialogue`（条目 → HTML，`orderIndex` 保序）、`generateLine` / `generateBatch`、成本 `estimateDialogueCost` + `selectParticipants`、并发 `runWithConcurrency`、**`review-bridge`（可选对齐 stage-06 `ReviewInput`，不新增评估器）**。会话态在 `src/store/dialogueStore.ts`（内存），UI 在 `src/features/dialogue/`；**无新增 IPC / 无迁移**（详见 `manual/features/dialogue.md`）。
 - **设定分级与一致性（`consistency/`，stage-11）**：`src/orchestration/consistency/`——`extract`（归档抽取：LLM + **`evidence` 原文回查** + 名称精确去重）、`rules`（**L1 纯函数**：结构化断言比对，零幻觉 / 零成本）、`judge`（**L2 经 provider**：语义判定 `advisory:true` **建议非结论**，失败降级 `uncertain`）、`report`（冲突报告 + 严重度 + 去重合并）、`inject`（**分级注入白名单** `{main,short}`，**恒排 `dark`**）。会话态 `archiveStore`（待确认队列）/ `consistencyStore`（定位请求），UI 在 `src/features/consistency/`；持久化 = 迁移 v5（`setting_card.tier` + `conflict_record`）+ **6 条新命令**（详见 `manual/features/consistency.md`）。
+- **大六壬（`liuren/`，stage-12）**：`src/orchestration/liuren/`（**纯函数**，provider 无关）——`castLiuren`（**月将加时 → 四课 → 取用（先伏吟/返吟；再贼克法）→ 三传 → 天将（昼夜贵人顺逆布）**；`dayGanzhi` **必填**、非法早返回）、`buildLiurenCard` / `renderLiurenText`；数据与手写校验在 `src/data/liuren/`。引导经 `liurenGuide?` 与易经**并列可选**注入（推演 + 生成）；**零第三方依赖 / 无新增 IPC**（详见 `manual/features/liuren.md`）。
+- **全自动创作（`autopilot/`，stage-12）**：`src/orchestration/autopilot/`（**依赖全注入**，不 import `@/ipc`/store）——`decide`（决策规则表）、`breaker`（**熔断三层**）、`conflict-policy`（冲突策略两路径 + 留痕）、`chain`（`runChapter` / `runAutopilot`：推演择优 → 生成 → 审查 → 重写 ≤ N → 过阈/降级 → 归档；**断点落库 + 续跑**）。复用 stage-05/06/08/11 契约（**不重写**）；进度态 `src/store/autopilotStore.ts`（单源）；断点经**迁移 v6** + **5 命令**（详见 `manual/features/autopilot.md`）。
 
 ## 测试基线（v0.1.0-stage-03）
 

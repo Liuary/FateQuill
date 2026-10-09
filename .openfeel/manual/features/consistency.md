@@ -54,6 +54,9 @@ src/ipc/repositories/conflict-record-repository.ts   # 5 命令映射（snake_ca
 - **冲突落库与处置**：`conflict_record`（迁移 v5）；`resolve_conflict_record { id, action }`，`action ∈ change_tier | edit | false_positive | ignore`
   （前两者 → `resolved`，后两者 → `ignored`；均写 `action` 与 `resolved_at` **留痕**）。
   `edit` = **跳转设定卡面板 + `evidence` verbatim 定位**（`「…」` 引文优先，缺失 → **回退卡首**）。
+  **stage-11 REV-009（已决策 · 采纳「③ 文档声明」）**：`conflict_record.a_id/b_id` 为 `ON DELETE CASCADE` 外键——
+  **关联设定卡被删除时，其冲突记录与处置留痕（`action` / `resolved_at`）随之删除**（**已知边界**；留痕**不构成审计日志**）。
+  **DoD 措辞据此下调**：「冲突可检出、可处置、**处置状态在记录存续期内**可查」，**不含**「处置留痕永久留存」（同一句见 `docs/ipc.md` §8.1 冲突命令表下注）。
 - **分级注入（`selectInjectableCards`）**：白名单 **`{main, short}`**；**`dark`（暗线）恒排除**（硬隔离、开关不可绕过）、`temp` 亦不注入；
   **未标注**（历史数据）→ 按默认 `short` 注入；**未知值 → fail-closed 排除**。三处装载点：`buildExplorationOptions` /
   `buildChapterGenerationOptions` / `useSceneContext`（均支持可选 `injectSettings`，默认 `true`；关 = **完全不注入**）。

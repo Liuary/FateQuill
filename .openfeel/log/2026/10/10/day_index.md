@@ -80,3 +80,4 @@
 | [2026-10-10-Liuary-075.md](2026-10-10-Liuary-075.md) | Liuary | v0.6.0-stage-12.op-004 执行通过 |
 | [2026-10-10-Liuary-076.md](2026-10-10-Liuary-076.md) | Liuary | v0.6.0-stage-12.op-005 执行通过 |
 | [2026-10-10-Liuary-077.md](2026-10-10-Liuary-077.md) | Liuary | v0.6.0-stage-12.op-006 执行通过 |
+| [2026-10-10-Liuary-078.md](2026-10-10-Liuary-078.md) | Liuary | v0.6.0-stage-12.op-007 执行通过 |

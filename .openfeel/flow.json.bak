@@ -2,14 +2,14 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-09T23:16:03.918Z",
-    "revision": 432
+    "updated": "2026-10-09T23:20:44.547Z",
+    "revision": 433
   },
   "pipeline": {
     "phase": "active",
     "current": {
       "stage": "v0.6.0-stage-12",
-      "op": "op-006"
+      "op": "op-007"
     },
     "retry": 0
   },
@@ -1726,9 +1726,9 @@
         },
         "op-006": {
           "title": "发布工程：bundle、许可清单与 Release（T5）",
-          "state": "pending",
+          "state": "done",
           "assignee": "openfeel-executor",
-          "attempts": 0,
+          "attempts": 1,
           "max_attempts": 3,
           "checkpoints": {
             "plan": "pending",
@@ -5963,6 +5963,15 @@
       "action": "attempt_pass",
       "detail": {
         "opId": "v0.6.0-stage-12.op-005",
+        "attempts": 1
+      }
+    },
+    {
+      "time": "2026-10-09T23:20:44.526Z",
+      "agent": "openfeel-executor",
+      "action": "attempt_pass",
+      "detail": {
+        "opId": "v0.6.0-stage-12.op-006",
         "attempts": 1
       }
     }

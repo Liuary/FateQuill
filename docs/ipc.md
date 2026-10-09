@@ -168,6 +168,11 @@ skill 命令（skill_entry，共 4 个；stage-07 T5）：
 | ConflictRecord | `resolve_conflict_record` | `{ id, action }`                                          | 处置留痕：`action ∈ change_tier\|edit\|false_positive\|ignore`；前两者 → `resolved`，后两者 → `ignored`；写 `resolved_at` |
 | ConflictRecord | `delete_conflict_record`  | `{ id }`                                                  | 删除冲突记录                                                                                                              |
 
+> **stage-11 REV-009（已决策 · 采纳「③ 文档声明」）**：`conflict_record.a_id/b_id` 为 `ON DELETE CASCADE` 外键——
+> **关联设定卡被删除时，其冲突记录与处置留痕（`action` / `resolved_at`）随之删除**（跨会话留痕的**已知边界**）。
+> 影响面：留痕**不构成审计日志**（非不可篡改）；需要长期留存的处置结论，请另存于章节正文 / 设定卡或导出笔记。
+> **DoD 措辞据此下调**：本能力承诺为「**冲突可检出、可处置、处置状态在记录存续期内可查**」，**不含**「处置留痕永久留存」。
+
 全自动创作断点命令（autopilot，共 5 个；stage-12 T3/op-004）：
 
 | 类别      | 命令                      | 参数（前端 camelCase）                                                      | 语义                                                                                                   |
