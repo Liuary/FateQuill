@@ -4,5 +4,13 @@
   "saving": "Saving…",
   "dirty": "Unsaved",
   "error": "Save failed",
-  "empty": "No content"
+  "empty": "No content",
+  "addVolume": "Add volume",
+  "addChapter": "Add chapter",
+  "rename": "Rename",
+  "delete": "Delete",
+  "drag": "Drag to sort",
+  "outlineEmpty": "No chapters",
+  "newVolume": "New volume",
+  "newChapter": "New chapter"
 }

@@ -4,5 +4,13 @@
   "saving": "保存中…",
   "dirty": "未保存",
   "error": "保存失败",
-  "empty": "暂无内容"
+  "empty": "暂无内容",
+  "addVolume": "新增卷",
+  "addChapter": "新增章",
+  "rename": "重命名",
+  "delete": "删除",
+  "drag": "拖拽排序",
+  "outlineEmpty": "暂无章节",
+  "newVolume": "新卷",
+  "newChapter": "新章"
 }
