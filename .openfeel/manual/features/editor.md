@@ -18,7 +18,7 @@ src/features/editor/
 ├── OutlineVolumeNode.tsx / OutlineChapterNode.tsx
 ├── useOutline.ts            # 大纲加载 + computeDropAction 纯函数
 ├── useNovels.ts / NewNovelPanel.tsx / WorkspaceLayout.tsx  # 工作区外壳与选书
-├── EditorController.ts      # AI 增量插入接口（appendChunk/flushPending/dispose）
+├── EditorController.ts      # 编辑器命令面（appendChunk/flushPending/replaceContent/dispose）
 ├── useChunkInjection.ts     # 桥接 stage-03 subscribeChunks → 编辑器
 └── perf/                    # 长文性能基准（真实 WebView；jsdom 不可测延迟）
 ```
@@ -27,7 +27,8 @@ src/features/editor/
 
 - **存储格式 `content_format='html'`**：保存 `editor.getHTML()` → `chapter.content`；加载 `setContent(html)`；零迁移（复用 stage-02 schema）。
 - **一章一实例（C-01）**：切章 `key={chapterId}` 重挂载，实例数恒为 1。
-- **`EditorController`（T8）**：`appendChunk(text, options?)` / `flushPending()` / `dispose()`；`options.addToHistory` 为**预留**（当前恒入历史）。
+- **`EditorController`（T8 / stage-06 T3）**：`appendChunk(text, options?)` / `flushPending()` / **`replaceContent(html)`** / `dispose()`；`options.addToHistory` 为**预留**（当前恒入历史）。
+  - **`replaceContent(html)`（stage-06 T3）**：整章替换（`setContent` 整文档替换，**单条撤销历史**；替换前丢弃未 flush 的 `appendChunk` 缓冲）；供审查「采纳版本」落地；`appendChunk` 的**追加语义不变**。属**前端命令面，非 IPC**。
 - **撤销会话合并（REV-009）**：流式插入**恒入历史**，由 prosemirror-history `newGroupDelay=5000`（`editor-extensions.ts`）把生成期间相邻插入合并为单条 → **一次 `Ctrl+Z` 撤销整段生成**；用户编辑自然断组。
 - **IME 排队（REV-010）**：监听 `editor.view.dom` 的 `compositionstart/end`，组合期间入队、`compositionend` 后 flush；`dispose()` 移除监听。
 - **切章前 flush（BUG-001 修复，stage-04 op-010）**：唯一合法切章入口 = `WorkspaceLayout.requestSelectChapter` —— 先 `await flushRef.current()`（保存**旧**章）**成功才** `setCurrentChapter`；失败置 `saveStatus='error'` 并**阻断切章**（不丢数据）。`OutlineTree` **不直连** store 切章，改用注入的 `onSelectChapter`；`useAutoSave.flush()` 返回 `Promise<boolean>` 且带 `chapterIdRef` 章号守卫（旧实例闭包不回写当前章）；重命名/删除当前章卷前亦先 flush。

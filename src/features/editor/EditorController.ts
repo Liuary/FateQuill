@@ -13,6 +13,8 @@ export interface AppendOptions {
 export interface EditorController {
   appendChunk(text: string, options?: AppendOptions): void;
   flushPending(): void;
+  /** 整章替换为给定 HTML（**单条撤销历史**，见 REV-003）；`appendChunk` 追加语义不变 */
+  replaceContent(html: string): void;
   dispose(): void; // 卸载时移除 DOM 监听（REV-010）
 }
 
@@ -60,6 +62,15 @@ export function createEditorController(
         timer = null;
       }
       apply();
+    },
+    replaceContent(html) {
+      // 整章替换：先丢弃待插入缓冲（替换语义优先），再整文档替换并默认入历史
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
+      buffer = "";
+      editor.commands.setContent(html, { emitUpdate: true });
     },
     dispose() {
       if (timer) clearTimeout(timer);

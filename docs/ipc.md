@@ -34,6 +34,7 @@
 - **所有外部 HTTP、密钥、SQLite 访问仅在 Rust 侧**（`src-tauri/`）。
 - 前端**只经 IPC**（`src/ipc/*`）调用后端，不直接发起外部网络请求、不直连数据库或读取密钥。
 - 该边界与 `docs/structure.md` §5 一致。
+- **澄清（stage-06 T3）**：`EditorController.replaceContent(html)` 是**前端 `EditorController` 命令面**（Tiptap 文档整章替换，非 IPC 命令）——审查采纳版本时的正文替换**不新增 IPC**，仍经既有 `update_chapter` 持久化。
 
 ## 6. 事件流通道约定（stage-03 落地）
 

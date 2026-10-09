@@ -13,6 +13,7 @@
 | `src/ui/`              | 通用可复用 UI 层（布局、非 shadcn 组合组件）                                  |
 | `src/features/`        | 面向用户的功能模块（按功能内聚）                                              |
 | `src/features/editor/` | 编辑器与大纲树（Tiptap 基础编辑器；同域功能模块；i18n `editor` 命名空间启用） |
+| `src/features/review/` | 审查 UI（权重配置 + 版本池回看；stage-06，**暂未接入 i18n**）                 |
 | `src/domain/`          | 纯 TS 领域模型与业务规则（无 UI、无网络）                                     |
 | `src/orchestration/`   | Agent 编排引擎（可插拔）                                                      |
 | `src/ipc/`             | 前端 IPC 封装（`invoke` 包装）                                                |
@@ -44,6 +45,7 @@ plan v3 技术约束中的目录集为 `src/{app,components,features,domain,orch
 
 - **`editorStore`（stage-04 T2 接入）**：仅持**元状态** `currentNovelId` / `currentChapterId` / `saveStatus`（`saved`/`saving`/`dirty`/`error`）/ `lastSavedAt`；**不持有 ProseMirror 文档正文**（单一事实源在 Tiptap 实例）。
 - **stage-05** 新增 `generationStore`（订阅 `src/orchestration/stream` 的 `subscribeChunks` 输出，见 §9）。
+- **stage-06** 新增 `reviewStore`（`src/store/reviewStore.ts`）：**会话级版本池**（初版 + 重写轮次产物）+ 用户可调权重 + `autoRewrite`（默认开）/`maxRounds`；**不持正文**；与 `editorStore` / `generationStore` **各自独立 `create()`，不互相 setState**。
 - **一章一实例（C-01）**：切章时 `key={chapterId}` 重挂载 Tiptap 实例（销毁旧、重建新），同一时刻实例数恒为 1。
 
 ## 5. IPC 边界
@@ -132,3 +134,10 @@ plan v3 技术约束中的目录集为 `src/{app,components,features,domain,orch
 - **模式 A 流式直插**：`generationStore` 订阅 stage-03 `subscribeChunks` → 节流 → stage-04 `EditorController.appendChunk`；编辑器流式期间**零 React 重渲染**（C-03 Profiler 断言）。
 - 生成流程**复用**现有 IPC（`http_stream`/`abort_stream` + 仓储命令），**不新增命令**（见 `docs/ipc.md`）。
 - **设定卡面板（stage-05 T5）**：落点 `src/features/setting-cards/`（`SettingCardsPanel.tsx` / `SettingCardForm.tsx` / `useSettingCards.ts`）；第三栏以 **tab** 承载「生成 / 设定卡」（`WorkspaceLayout`）；CRUD 复用 stage-02 设定卡仓储（`list_setting_cards`/`create_setting_card`/`update_setting_card`/`delete_setting_card`），**不新增 IPC 命令**；设定卡与生成上下文（`buildChapterGenerationOptions` 的 `ChapterSettingCard`）共用同一仓储 `repositories.settingCard`。
+
+## 13. 审查、版本池与命令面（stage-06 T3）
+
+- **加权评分（纯函数）**：`src/orchestration/review/aggregate.ts` —— `weightedTotal(results, weights) = Σ(score×weight)/Σweight`（**仅计已评审且权重 > 0 的维度**，归一至 0–100；缺维 / 零权不参与）；`DEFAULT_WEIGHTS` 四维平衡；用户可调权重**改变总分与排序**。
+- **版本池（`src/store/reviewStore.ts`）**：`ReviewVersion { id, label, content, round, results, totalScore }`；`addVersion` 按当前权重算总分，`setWeights` **重算全部版本总分**，`setActive` 选中待采纳版本；非最优版本**保留在池中可回看**；`clear()` 清空版本池与选中态（保留权重/开关）。
+- **审查 UI 落点**：`src/features/review/WeightConfig.tsx`（四维权重输入 → `setWeights`；展示按加权总分的版本排序）。
+- **`EditorController` 命令面**：`appendChunk(text, options?)`（增量**追加**语义不变）/ `flushPending()` / **`replaceContent(html)`**（整章替换 = **单条撤销历史**，供审查采纳落地）/ `dispose()`。**`replaceContent` 是前端 `EditorController` 命令面，非 IPC 命令**——正文替换**不新增 IPC**（见 `docs/ipc.md`）。
