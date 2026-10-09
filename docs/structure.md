@@ -177,3 +177,14 @@ plan v3 技术约束中的目录集为 `src/{app,components,features,domain,orch
 - **不覆盖设定卡硬约束**：卦象引导**不进入 `converge` 的设定卡覆盖判据**（设定卡约束最高优先；`settingCardIds` 不变）。
 - **IPC**：**无新增 Rust 命令**——卦象为**前端静态数据 + 纯函数**（见 `docs/ipc.md`）。
 - **范围排除**：**大六壬**等其它术数**显式排除**，**留 stage-12** 评估（本阶段仅六十四卦）。
+
+## 17. 多声部对话（stage-10）
+
+- **落点**：
+  - `src/features/characters/`：角色档案（复用既有 `Character` 仓储，**无新增 IPC**）。
+  - `src/features/dialogue/`：多声部对话 UI（角色选角 → 生成 → 会话内存条目 → 合并落章）。
+  - `src/orchestration/dialogue/`：对话编排契约（provider 无关；复用 `http_stream` 非流式收口）。
+  - `src/store/dialogueStore.ts`：对话条目**会话内存**（独立 `create`）。
+- **i18n**：新增 `characters` / `dialogue` 命名空间。
+- **IPC**：**无 IPC 增量**——复用既有 `Character` 五命令（`list/get/create/update/delete_character`）与 `chapter` 命令；对话条目**会话内存**、合并落章走既有 `update_chapter`（见 `docs/ipc.md`）。
+- **详文**：模块手册 `features/characters.md` / `features/dialogue.md`（随对应模块建立于 **op-008** 收尾）。

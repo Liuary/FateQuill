@@ -2,6 +2,7 @@
 
 > 最多 30 条，最新在上。格式：`{yyyy-mm-dd} {username}: 变更描述`（含跳转链接）。
 
+- **2026-10-10** Liuary（openfeel-planner）：依 REV-v0.4.0-stage-10（5 条，4 blocking）按 v2 范式重写 stage-10 计划至 v2：定稿多声部运行机制（场景上下文/用户主导轮次/上下文白名单/串味判据）、角色数据与 persona 契约（profile JSON 零迁移 + stage-11 边界 + persona 模板）、产物形态与合并算法（dialogueStore 条目 + orderIndex + 格式规范 + 双路径）、IPC/持久化/成本（无增量/会话内存+合并落库/无 v5/estimateCost+major）；补 C-07 验证列、i18n、文档回写、遗留处置（stage-08 REV-009/010、stage-09 REV-009）、审查衔接、待拍板/需 schemer 两节；同步 stage-10 `overview.md` 与 `roadmap/v0.md`。
 - **2026-10-10** Liuary（openfeel-planner）：依 REV-v0.3.0-stage-09（5 条，4 blocking）按 stage-07/08 v2 范式重写 stage-09 计划至 v2：定稿易经数据（公有领域经文/`src/data/iching/`/无迁移/64·384·8×8·King Wen·二进制校验）、算法（朱熹变爻规则纯函数 + 随机/手动起卦、时间起卦推迟）、引导契约（引导卡结构 + `buildExplorationOptions.hexagramGuide?` 注入 + 不进入设定卡覆盖判据 + 关闭零副作用）、角色宿命（会话内存 + 写入设定卡，零迁移）；补 C-07 验证列、i18n `iching`、IPC 声明、遗留处置（stage-08 REV-009/010）、可选可关落地、待拍板/需 schemer 两节；同步 stage-09 `overview.md` 与 `roadmap/v0.md`。
 - **2026-10-10** Liuary（openfeel-planner）：轻量对齐 stage-08「采纳双路径」——plan.md 技术约束「持久化与落地」、T4 验收、DoD 第 2 条改为：主路径「新建下一章草稿」（`chapter.create`，不改当前章，不适用 `Ctrl+Z`）+ 次路径「替换当前章」（确认 + 强制入池快照 + 单次 `Ctrl+Z`）；同步 stage-08 `overview.md` 与 `roadmap/v0.md`。
 - **2026-10-10** Liuary（openfeel-planner）：依 REV-v0.3.0-stage-08（6 条，3 blocking）按 stage-07 v2 范式重写 stage-08 计划至 v2：定稿克制收敛两层机制（约束注入 + 覆盖检查偏离标注 + 终选权归用户）、推演契约（温度集/clamp/同模型多温度/走向卡/非流式收口）、持久化方案 A（会话内存 + replaceContent 采纳/丢弃无残留）、并行工程细节（上限/排队/成本预估/部分结果）；补 C-07 验证列、i18n `exploration`、IPC 声明、遗留处置（REV-015 chunk 兑现 T6 + v0.2 BLOCKED 跟踪）与「待用户拍板」三节；同步 stage-08 `overview.md` 与 `roadmap/v0.md`。

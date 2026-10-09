@@ -9,5 +9,11 @@
   "kind": "类型",
   "name": "名称",
   "content": "内容",
-  "empty": "暂无设定卡"
+  "empty": "暂无设定卡",
+  "kinds": {
+    "general": "通用",
+    "fate": "宿命",
+    "character": "角色",
+    "settingCard": "设定卡"
+  }
 }

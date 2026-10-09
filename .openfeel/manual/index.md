@@ -13,7 +13,7 @@
   - [`model-config.md`](core/model-config.md)：模型配置持久化（迁移 v2）、OS 密钥链（keyring）封装、设置页 UI（stage-03 建立）
 
 - **orchestration/** — AI 编排引擎（stage-03 建立）
-  - [`engine.md`](orchestration/engine.md)：可插拔 Provider/Agent/Pipeline 注册表、自研 SSE 协议适配器、Rust 侧流式中继与消费工具；**审查评估（`review/`）**；**多温度推演（`exploration/`）**；**起卦解卦（`iching/`）**（stage-06/08/09 补）；**研究域（`research/`：采样/交叉判断契约与算法，provider 无关）**（stage-07 补）
+  - [`engine.md`](orchestration/engine.md)：可插拔 Provider/Agent/Pipeline 注册表、自研 SSE 协议适配器、Rust 侧流式中继与消费工具；**审查评估（`review/`）**；**多温度推演（`exploration/`）**；**起卦解卦（`iching/`）**；**多声部对话（`dialogue/`，stage-10，详文于 op-008）**（stage-06/08/09/10 补）；**研究域（`research/`：采样/交叉判断契约与算法，provider 无关）**（stage-07 补）
 
 - **features/** — 用户功能模块（stage-04 建立）
   - [`editor.md`](features/editor.md)：章节编辑器（Tiptap 一章一实例、HTML 存储）、卷章大纲树与 dnd-kit 排序、自动保存、AI 增量插入接口（stage-04 建立）
@@ -23,6 +23,8 @@
   - [`research.md`](features/research.md)：研究工作台 —— 多模型采样 / 交叉判断 / 用户标注 / 素材库（迁移 v4 + 导出）/ 规避 skill 库 / 闭环回注与度量实验（stage-07 建立）
   - [`exploration.md`](features/exploration.md)：多温度并行推演 —— 契约与温度 clamp / 走向卡 / 分支对比视图 / 克制收敛 / 采纳丢弃安全网 / 并发与成本（stage-08 建立）
   - [`iching.md`](features/iching.md)：易经卦象系统 —— 64 卦数据与手写校验 / 朱熹变爻推导 / 起卦 / 引导卡 / 角色宿命卡写入设定卡 / **可选可关**（stage-09 建立）
+  - [`characters.md`](features/characters.md)：角色档案（复用既有 `Character` 仓储）（stage-10 建立，详文收尾于 op-008）
+  - [`dialogue.md`](features/dialogue.md)：多声部对话（选角 → 生成 → 会话内存条目 → 合并落章）（stage-10 建立，详文收尾于 op-008）
 
 ## 维护约定
 

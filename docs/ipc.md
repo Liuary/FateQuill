@@ -224,3 +224,5 @@ try {
 > **推演（stage-08 T1）**：多温度并行推演复用 `http_stream`（§6，非流式收口）+ 既有仓储命令；**无新命令**（前端命令面无新增，仅前端并行编排）。
 
 > **易经卦象（stage-09）**：卦象系统为**前端静态数据 + 纯函数**（`src/data/iching/` + `src/orchestration/iching/`）；**无新增 Rust 命令**——起卦/解卦/引导卡/宿命卡均在前端完成，宿命卡经**既有** `create_setting_card` 落库（`kind="fate"`），可选开关存 `localStorage`。
+
+> **多声部对话（stage-10）**：**无 IPC 增量**——复用 §8.1 既有 **`Character` 五命令**（`list_characters` / `get_character` / `create_character` / `update_character` / `delete_character`）；对话条目为**会话内存**（`dialogueStore`），**合并落章**走既有 `chapter` 命令（`update_chapter`）。

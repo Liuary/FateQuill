@@ -9,5 +9,11 @@
   "kind": "Kind",
   "name": "Name",
   "content": "Content",
-  "empty": "No setting cards"
+  "empty": "No setting cards",
+  "kinds": {
+    "general": "General",
+    "fate": "Fate",
+    "character": "Character",
+    "settingCard": "Setting card"
+  }
 }

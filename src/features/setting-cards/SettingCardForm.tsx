@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import type { SettingCard } from "@/domain/models/setting-card";
+import { SETTING_CARD_KINDS, type SettingCard } from "@/domain/models/setting-card";
 import type { SettingCardInput } from "./useSettingCards";
 
 export interface SettingCardFormProps {
@@ -19,6 +19,13 @@ export function SettingCardForm({ initial, onSubmit, onCancel }: SettingCardForm
   const [content, setContent] = useState(initial?.content ?? "");
   const [kind, setKind] = useState(initial?.kind ?? "general");
   const [busy, setBusy] = useState(false);
+
+  // 受控枚举选项；若既有卡的 kind 不在值域内，**追加保留选项**（不丢历史值）
+  const knownKinds = SETTING_CARD_KINDS as readonly string[];
+  const kindOptions = knownKinds.includes(kind) ? [...knownKinds] : [kind, ...knownKinds];
+
+  /** 选项展示：受控值走 i18n，历史自定义值原样显示 */
+  const kindLabel = (value: string) => (knownKinds.includes(value) ? t(`kinds.${value}`) : value);
 
   async function submit() {
     if (!title.trim()) return;
@@ -39,7 +46,17 @@ export function SettingCardForm({ initial, onSubmit, onCancel }: SettingCardForm
         </label>
         <label className="flex flex-col gap-1 text-sm">
           {t("kind")}
-          <Input value={kind} onChange={(e) => setKind(e.target.value)} />
+          <select
+            className="border-input rounded border p-1 text-sm"
+            value={kind}
+            onChange={(e) => setKind(e.target.value)}
+          >
+            {kindOptions.map((value) => (
+              <option key={value} value={value}>
+                {kindLabel(value)}
+              </option>
+            ))}
+          </select>
         </label>
         <label className="flex flex-col gap-1 text-sm">
           {t("content")}
