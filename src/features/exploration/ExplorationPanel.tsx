@@ -32,7 +32,11 @@ export function ExplorationPanel({ novelId, chapterId, editor = null }: Explorat
   const setIntent = useExplorationStore((s) => s.setIntent);
   const branches = useExplorationStore((s) => s.branches);
   const running = useExplorationStore((s) => s.running);
-  const { run, stop } = useExploration({ novelId, chapterId, config });
+  const { run, retryBranch, abort, concurrency, setConcurrency, cost } = useExploration({
+    novelId,
+    chapterId,
+    config,
+  });
 
   const canRun = state === "ready" && novelId != null && intent.trim().length > 0 && !running;
 
@@ -51,12 +55,35 @@ export function ExplorationPanel({ novelId, chapterId, editor = null }: Explorat
 
       <TemperatureConfig />
 
+      <div className="flex flex-wrap items-center gap-2 text-xs">
+        <label className="flex items-center gap-1">
+          {t("concurrency")}
+          <Input
+            type="number"
+            min={1}
+            max={10}
+            className="w-16"
+            value={concurrency}
+            onChange={(event) => {
+              const value = Number(event.target.value);
+              if (Number.isFinite(value) && value >= 1) {
+                setConcurrency(Math.trunc(value));
+              }
+            }}
+          />
+        </label>
+        {/* 成本预估：启动前显示（口径注明） */}
+        <span data-testid="cost-estimate" className="opacity-70">
+          {t("costEstimate")}: {cost.tokens} tokens（{cost.note}）
+        </span>
+      </div>
+
       <div className="flex flex-wrap gap-2">
         <Button disabled={!canRun} onClick={() => void run()}>
           {t("run")}
         </Button>
         {running && (
-          <Button variant="outline" onClick={stop}>
+          <Button variant="outline" onClick={abort}>
             {t("stop")}
           </Button>
         )}
@@ -67,7 +94,7 @@ export function ExplorationPanel({ novelId, chapterId, editor = null }: Explorat
         <h3 className="text-xs opacity-70">
           {t("branch")}（{branches.length}）
         </h3>
-        <BranchCompare editor={editor} currentChapterId={chapterId} />
+        <BranchCompare editor={editor} currentChapterId={chapterId} onRetry={retryBranch} />
       </section>
     </div>
   );

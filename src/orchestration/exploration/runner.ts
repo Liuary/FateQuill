@@ -66,11 +66,14 @@ export async function runExploration(opts: RunExplorationOptions): Promise<Explo
     }
   };
 
-  // 工作池：并发上限内并行拉取分支索引
+  // 工作池：并发上限内并行拉取分支索引；`signal.aborted` → **停止排队**（不再启动新分支）
   let cursor = 0;
   const workerCount = Math.min(concurrency, results.length);
   const workers = Array.from({ length: workerCount }, async () => {
     for (;;) {
+      if (opts.signal?.aborted) {
+        return; // 已中止：排队中的分支不再启动（未启动分支保持 pending）
+      }
       const index = cursor;
       cursor += 1;
       if (index >= opts.branches.length) {

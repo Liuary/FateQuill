@@ -37,5 +37,9 @@
   "confirm": "确认",
   "cancel": "取消",
   "snapshotSaved": "替换前正文已入池快照",
-  "discard": "丢弃"
+  "discard": "丢弃",
+  "concurrency": "并发上限",
+  "costEstimate": "成本预估",
+  "retry": "重试",
+  "partialAvailable": "部分结果可用（≥1 分支成功即可对比/采纳）"
 }

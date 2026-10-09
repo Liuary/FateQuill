@@ -26,6 +26,8 @@ export interface BranchCardProps {
   onReplaceCurrent: (branchId: string) => boolean;
   /** 丢弃分支 */
   onDiscard: (branchId: string) => void;
+  /** 失败分支单独重试（T5） */
+  onRetry: (branchId: string) => Promise<boolean> | void;
 }
 
 /** 单分支走向卡 */
@@ -39,6 +41,7 @@ export function BranchCard({
   onAdoptNextChapter,
   onReplaceCurrent,
   onDiscard,
+  onRetry,
 }: BranchCardProps) {
   const { t } = useTranslation("exploration");
   const uniqueTurns = new Set(diff.uniqueKeyTurns);
@@ -151,7 +154,13 @@ export function BranchCard({
             )}
           </>
         ) : branch.error ? (
-          <p className="text-destructive text-xs">{branch.error}</p>
+          <>
+            <p className="text-destructive text-xs">{branch.error}</p>
+            {/* 部分结果可用：失败分支单独重试 */}
+            <Button variant="outline" onClick={() => void onRetry(branch.id)}>
+              {t("retry")}
+            </Button>
+          </>
         ) : (
           <p className="text-xs opacity-70">{t("statusPending")}</p>
         ))}

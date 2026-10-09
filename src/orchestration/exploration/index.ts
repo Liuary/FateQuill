@@ -5,3 +5,4 @@ export * from "./parse";
 export * from "./runner";
 export * from "./diff";
 export * from "./converge";
+export * from "./cost";

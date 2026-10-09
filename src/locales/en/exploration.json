@@ -37,5 +37,9 @@
   "confirm": "Confirm",
   "cancel": "Cancel",
   "snapshotSaved": "Pre-replace text saved to the version pool",
-  "discard": "Discard"
+  "discard": "Discard",
+  "concurrency": "Concurrency cap",
+  "costEstimate": "Cost estimate",
+  "retry": "Retry",
+  "partialAvailable": "Partial results available (>=1 branch is enough to compare/adopt)"
 }

@@ -131,6 +131,7 @@ describe("useAdoptBranch（双路径 + 防丢失安全网）", () => {
         onReplaceCurrent: (id: string) =>
           hook.result.current.replaceCurrentChapter(id, editor.getHTML()),
         onDiscard: hook.result.current.discard,
+        onRetry: () => Promise.resolve(false),
       });
     }
     render(createElement(Harness));

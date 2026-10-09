@@ -24,10 +24,16 @@ export interface BranchCompareProps {
   editor?: Editor | null;
   /** 当前章 id（主路径新建下一章需要其卷） */
   currentChapterId?: number | null;
+  /** 失败分支单独重试（T5） */
+  onRetry?: (branchId: string) => Promise<boolean> | void;
 }
 
-/** 分支对比视图（并排 + 折叠 + 差异标注 + 采纳/替换/丢弃） */
-export function BranchCompare({ editor = null, currentChapterId = null }: BranchCompareProps) {
+/** 分支对比视图（并排 + 折叠 + 差异标注 + 采纳/替换/丢弃 + 失败重试） */
+export function BranchCompare({
+  editor = null,
+  currentChapterId = null,
+  onRetry,
+}: BranchCompareProps) {
   const { t } = useTranslation("exploration");
   const branches = useExplorationStore((s) => s.branches);
   const collapsedIds = useExplorationStore((s) => s.collapsedIds);
@@ -81,6 +87,7 @@ export function BranchCompare({ editor = null, currentChapterId = null }: Branch
               replaceCurrentChapter(branchId, editor?.getHTML() ?? "")
             }
             onDiscard={discard}
+            onRetry={onRetry ?? (() => Promise.resolve(false))}
           />
         ))}
       </div>
