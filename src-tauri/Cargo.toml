@@ -1,6 +1,6 @@
 [package]
 name = "fatequill"
-version = "0.1.0"
+version = "0.6.0"
 description = "FateQuill (命笔) — AI-assisted novel writing desktop app"
 authors = ["FateQuill contributors"]
 edition = "2021"

@@ -42,6 +42,21 @@ corepack pnpm install
 
 > 若提示 pnpm 不可用，先执行 `corepack enable` 启用 corepack 提供的包管理器。
 
+## 分发与安装（Windows）
+
+> **平台清单**：**Windows（nsis）为主**；macOS / Linux 为 **best-effort（未验证）/ 不支持**。
+> 发布产物由 `.github/workflows/release.yml` 在干净环境构建（`pnpm tauri build --bundles nsis`，等价于 `tauri bundle --bundles nsis`）。
+
+1. 从 [Releases](https://github.com/Liuary/FateQuill/releases) 下载 `FateQuill_<版本>_x64-setup.exe`（nsis 安装包）；
+2. 双击安装（可自定义安装目录）；
+3. **WebView2 依赖**：安装包按 `bundle.windows.webviewInstallMode = downloadBootstrapper` 处理——
+   目标机**已装** WebView2 Evergreen Runtime 时直接使用；**未装**时由安装程序**在线引导下载**（需联网）；
+   离线部署可改 `webviewInstallMode.type` 为 `offlineInstaller` 并随包分发 WebView2 离线安装器；
+4. 首次启动后在应用内「设置」配置模型并写入 API Key。
+
+> 版本号三处同步（`package.json` / `src-tauri/tauri.conf.json` / `src-tauri/Cargo.toml`）：`pnpm version:sync`（校验 `pnpm version:check`）；
+> 依赖许可清单：`pnpm licenses:gen` → `docs/dependency-licenses.md`（MIT 兼容白名单 + 例外登记）。
+
 ## 开发（dev）
 
 启动桌面应用（Tauri dev，自动拉起 Vite 开发服务器）：

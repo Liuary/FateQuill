@@ -4,3 +4,5 @@ pnpm-lock.yaml
 src-tauri/target
 src-tauri/gen
 .openfeel
+# 生成物：由 pnpm licenses:gen 生成（勿手改，不参与格式检查）
+docs/dependency-licenses.md
