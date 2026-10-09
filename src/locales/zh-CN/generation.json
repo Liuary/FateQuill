@@ -1,5 +1,6 @@
 {
   "title": "AI 生成",
+  "tabGeneration": "生成",
   "start": "开始生成",
   "stop": "停止",
   "retry": "重试",

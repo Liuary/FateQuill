@@ -1,5 +1,6 @@
 {
   "title": "AI generation",
+  "tabGeneration": "Generate",
   "start": "Start",
   "stop": "Stop",
   "retry": "Retry",

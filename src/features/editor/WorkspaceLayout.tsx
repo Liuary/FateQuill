@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { Editor } from "@tiptap/react";
 import { useEditorStore } from "@/store/editorStore";
 import { GenerationPanel } from "@/features/generation/GenerationPanel";
+import { SettingCardsPanel } from "@/features/setting-cards/SettingCardsPanel";
 import { useNovels } from "./useNovels";
 import { OutlineTree } from "./OutlineTree";
 import { ChapterEditor } from "./ChapterEditor";
@@ -22,6 +24,8 @@ export function WorkspaceLayout({ onEditorReady }: WorkspaceLayoutProps = {}) {
   const setCurrentChapter = useEditorStore((s) => s.setCurrentChapter);
   const setSaveStatus = useEditorStore((s) => s.setSaveStatus);
   const [editor, setEditor] = useState<Editor | null>(null);
+  const [tab, setTab] = useState<"generation" | "settingCards">("generation");
+  const { t } = useTranslation();
   // 指向「当前渲染的 ChapterEditor 的 flush」，其闭包绑定当前 chapterId/editor
   const flushRef = useRef<() => Promise<boolean>>(() => Promise.resolve(true));
 
@@ -72,7 +76,27 @@ export function WorkspaceLayout({ onEditorReady }: WorkspaceLayoutProps = {}) {
         />
       </section>
       <aside className="border-border overflow-auto border-l">
-        <GenerationPanel novelId={currentNovelId} chapterId={currentChapterId} editor={editor} />
+        <div className="border-border flex gap-2 border-b p-1 text-sm">
+          <button
+            type="button"
+            className={tab === "generation" ? "font-medium" : "opacity-70"}
+            onClick={() => setTab("generation")}
+          >
+            {t("generation:tabGeneration")}
+          </button>
+          <button
+            type="button"
+            className={tab === "settingCards" ? "font-medium" : "opacity-70"}
+            onClick={() => setTab("settingCards")}
+          >
+            {t("settingCards:tab")}
+          </button>
+        </div>
+        {tab === "generation" ? (
+          <GenerationPanel novelId={currentNovelId} chapterId={currentChapterId} editor={editor} />
+        ) : (
+          <SettingCardsPanel novelId={currentNovelId} />
+        )}
       </aside>
     </div>
   );

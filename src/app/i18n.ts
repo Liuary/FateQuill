@@ -10,6 +10,8 @@ import zhSettings from "@/locales/zh-CN/settings.json";
 import enSettings from "@/locales/en/settings.json";
 import zhGeneration from "@/locales/zh-CN/generation.json";
 import enGeneration from "@/locales/en/generation.json";
+import zhSettingCards from "@/locales/zh-CN/settingCards.json";
+import enSettingCards from "@/locales/en/settingCards.json";
 
 export const DEFAULT_LANG = "zh-CN";
 
@@ -23,8 +25,15 @@ void i18n
         editor: zhEditor,
         settings: zhSettings,
         generation: zhGeneration,
+        settingCards: zhSettingCards,
       },
-      en: { common: enCommon, editor: enEditor, settings: enSettings, generation: enGeneration },
+      en: {
+        common: enCommon,
+        editor: enEditor,
+        settings: enSettings,
+        generation: enGeneration,
+        settingCards: enSettingCards,
+      },
     },
     fallbackLng: DEFAULT_LANG, // 英文缺失回退中文
     supportedLngs: ["zh-CN", "en"],
