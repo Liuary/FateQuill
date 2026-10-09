@@ -256,3 +256,30 @@
 - **公开身份摘要**：`buildPublicSummary(profile, fallbackName)` 仅取 `identity`（缺省回退角色名），**私有字段一律不参与**。
 - **判据（可判定，非语义）**：自动判据 = **装配层 prompt 不含他人私有**（构造「角色 A persona 含秘密 X」→ 断言角色 B 的 `system+user` 不含 `X`）；**产出文本语义符合度**（「千人一腔」「符合人设」）走 stage-06 评审**人工协验**，**不在装配层断言**。
 - **生产接线（BUG-001 教训）**：声明白名单后须核验**生产可达**——`useDialogue` 经 `useSceneContext` 装载四块、调 `context.buildPublicContext`（**单源**，见 `kb/troubleshooting.md`）；否则白名单仅在单元函数层成立、生产零调用（场景上下文仅落地 1/4）。
+
+## [+] 设定分级模型（四级 tier，与 kind 正交，迁移 v5 加列） (2026-10-10)
+
+- **定位**：M5「设定分级归档 + 一致性」的模型基座（stage-11 / v0.5 收官）。设定卡按**叙事层级**分四级：`main`（主线，贯穿全书核心约定，**硬约束**）/ `dark`（暗线，隐藏未揭示，**硬约束且不注入正文**）/ `short`（短线，近章有效，软约束，可转正/过期）/ `temp`（临时，一次性/局部，仅提示，可丢弃）。
+- **与 `SettingCard.kind` 正交（关键）**：`kind` = **内容类型**（`general`/`fate`/`character`/`settingCard`，既有四值），`tier` = **叙事层级**——**两维独立**（一张「角色」kind 卡可为 `main` 或 `temp`）；**不扩 kind 值域**（避免与既有语义冲突）。
+- **持久化（迁移 v5）**：`ALTER TABLE setting_card ADD COLUMN tier TEXT NOT NULL DEFAULT 'short' CHECK (tier IN ('main','dark','short','temp'))` + `idx_setting_card_tier` 索引。**默认 `short`（保守）**；选**列**而非 JSON，因 **tier 过滤在 SQL 层**（优于 JSON 扫描）。`update` 缺省 `tier=COALESCE(?, tier)`（**保留既有分级不重置**，防既有写路径把 `main`/`dark` 静默降级）；`create` 缺省 `'short'`（与迁移 DEFAULT 一致）。命令数**不变**（`setting_card` 五命令签名扩展 `tier?`）。
+- **与 stage-10 persona 契约衔接**：分级过滤发生在**装载侧**（`buildExplorationOptions` / `buildChapterGenerationOptions` / `useSceneContext`），`buildCharacterAgentPrompt` 的公共上下文来自上述装载结果 → **不回改 stage-10 契约**。
+- **可判定验收**：四级归档/查询/过滤单测；迁移幂等（表数 **9→10**、`_sqlx_migrations` 4→5、`PRAGMA table_info(setting_card)` 含 `tier`）。
+
+## [+] 一致性引擎（两级校验：L1 规则零幻觉 + L2 语义建议非结论） (2026-10-10)
+
+- **定位**：设定库内**一致性校验**（**设定 vs 设定**），与 stage-06 四维评审「世界观」（**正文 vs 设定**，文本质量）**职责切分**（登记同一 rubric 引用，`docs/review-rubric.md` §4.2）。
+- **两级校验分工**：
+  - **L1 规则（`runL1Rules`，纯函数、离线）**：结构化冲突——实体闭集 = **卡标题**且须**同句出现**；保守正则抽取「生死 / 时间线 / 数值」断言；**同实体、同属性、明确不同**才报；`evidence` 为卡文本**逐字句子**（**零幻觉 / 零成本**）；不确定/一致 → **不报**（宁缺毋滥压制误报）。严重度：生死 `high` / 时间线 `medium` / 数值 `low`。
+  - **L2 语义（`runL2`，经 provider，非流式收口）**：LLM 判定「新设定是否与 `main`/`dark` 矛盾」→ `{verdict, reason, evidence?}`，**恒带 `advisory: true`（建议非结论）**；JSON 非法/收口异常 → **降级 `uncertain`**（不误报、不抛穿）。
+- **冲突报告结构**：`{ aId, bId, type(life-status|timeline|numeric|semantic), evidence, severity(high|medium|low) }`；`toConflictReport` **仅**把 `contradiction` 转 `type:"semantic"` 并与 L1 合并按 `(aId,bId,type)` **去重**。
+- **持久化与处置**：冲突记录落库 `conflict_record`（迁移 v5，**跨会话留痕**）；四动作 `{change_tier, edit(跳转+verbatim 定位), false_positive(反馈闭环), ignore(留痕)}`（前两者 → `resolved`，后两者 → `ignored`）。
+- **误报率验收**：自建 **≥3 章预埋冲突标注样本集**（`experiments/samples/conflict-01..03.txt` + `ground-truth.json`）；阈值 `MISREPORT_THRESHOLD = 0.2`（**占位待拍板**）；「20 章长程」降级为后续持续收集。
+
+## [+] 暗线硬隔离设计（注入白名单恒排 dark，剧透事故硬要求） (2026-10-10)
+
+- **背景**：`dark`（暗线）为隐藏设定，**泄露 = 剧透事故**（硬要求）；`temp` 亦不注入。分级注入须保证正文生成**绝不**携带暗线。
+- **白名单（装载侧过滤）**：`INJECTABLE_TIERS = { main, short }`；`isInjectableTier`：`main`/`short` → true；`dark`/`temp` → false；**未标注（null/空，历史数据）→ true**（沿用 DB/前端默认 `short` 的既有注入行为，避免静默丢设定）；**未知值 → false（fail-closed）**。
+- **三处装载点**：`buildExplorationOptions` / `buildChapterGenerationOptions` / `useSceneContext`（均带可选 `injectSettings?: boolean`，默认 `true`；**关 = 完全不注入**，得纯净基线）。`PROMPT_BUDGET` 结构不变，超预算仍按既有裁剪序。
+- **开关语义（安全优先决策）**：注入开关定义为「**是否注入设定卡**」——开 = 注入 `{main,short}`，关 = 不注入；**生产恒排除 `dark`（硬隔离、无开关可绕过）**。否决「关=回退 v0.4 全量注入」备选（会泄露 `dark`）。
+- **迁移影响（可感知行为变更）**：v0.5 起 `dark`/`temp` 移出三处 prompt；**存量卡**默认 `tier='short'` 仍注入，用户标 `dark` 的暗线卡**不再进 prompt**。
+- **可判定验收**：注入开 → prompt **含 `main`/`short` 且不含 `dark`/`temp`**（断言）；关 → 与无卡基线**逐字段一致**。

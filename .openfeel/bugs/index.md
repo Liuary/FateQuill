@@ -4,7 +4,7 @@
 
 ## 状态统计
 
-- **open 0 ｜ fixing 0 ｜ resolved 0 ｜ closed 9**
+- **open 0 ｜ fixing 0 ｜ resolved 0 ｜ closed 10**
 
 ## 按模块
 
@@ -65,3 +65,9 @@
 - **1 个 medium Bug，已闭环**（修复 commit `311dd63`，验收人 openfeel-feel-tester）；验收结论 **DoD 11/11 通过**；门禁 `pnpm test` **99 文件 503/503**、lint/build、`cargo test` **52/52** 全绿。
 - [`dialogue.md`](dialogue.md)：**BUG-001** — 多声部生产装配未含「设定卡 + 前章末尾/当前章正文 + 用户场景指令」，场景上下文仅落地「公共对话历史」1/4：`useDialogue` 本地最小 `buildPublicContext`（op-003 占位）与 `context.buildPublicContext`（op-006 完整装配，**生产零调用**）**同名重名** → 删除本地最小实现改调共享函数（**单源**）+ 新增 `useSceneContext`（设定卡 + 前章末尾）+ 面板补场景指令输入；补「生产调用非零 + 四块入实际 options + 空输入零副作用」断言；独立回归探针（真实 `DialoguePanel` 生产路径）复验通过。
 - 验收报告：`.openfeel/tmp/stage-10-acceptance.md`
+
+### v0.5.0-stage-11（设定分级归档与一致性引擎，v0.5 收官 / 里程碑 M5）@openfeel-feel-tester
+
+- **1 个 high Bug，已闭环**（修复 commit `5e1f2a6`，验收人 openfeel-feel-tester）；验收结论 **DoD 11/11 通过**（第 1 条在 BUG-001 修复后真实 UI 路径恢复满足）；门禁 `pnpm test` **114 文件 587/587**、lint 0 error、build 退出码 0、`cargo test` **59/59** 全绿。
+- [`consistency.md`](consistency.md)：**BUG-001** — 归档面板 `ArchivePanel` **未接入任何 UI**（`consistency` tab 仅渲染 `ConsistencyPanel`），`runExtraction`/`save_extracted_settings`/`archiveStore` **生产零调用**；`SettingCardForm` **无 `tier`** → 「手动归档并分入四级」（DoD 1）应用内**完全不可达**（**与 stage-07/09/10 同类根因——「生产不可达 / 功能无入口」跨阶段第 4 次复发**）→ `WorkspaceLayout` consistency tab **双区挂载** `ArchivePanel`+`ConsistencyPanel`、`SettingCardForm`/`useSettingCards` 增 `tier` 四级下拉并贯通 create/update；补「生产挂载/落库非零 + 归档端到端 + 表单 tier」断言；独立回归探针（真实 `WorkspaceLayout` 生产渲染树）复验通过。
+- 验收报告：`.openfeel/tmp/stage-11-acceptance.md`

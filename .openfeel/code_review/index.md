@@ -1,7 +1,21 @@
 # 代码审查索引（公共域）
 
 > 存放各阶段审查关闭后的核心结论摘要。详细审查过程与逐提交点内容见私域 `.openfeel/users/{username}/code_review/REV-{stage}.md`。
-> 状态统计：**pending 5 ｜ fixing 0 ｜ resolved 22 ｜ closed 101**（pending 5 = stage-04 REV-014 + stage-05 REV-009 人工协验 BLOCKED + stage-08 REV-009 快照会话内存级 / REV-010 abort 语义·新章落卷末 + stage-10 REV-007 台词评审维度子集）
+> 状态统计：**pending 6 ｜ fixing 0 ｜ resolved 28 ｜ closed 103**（pending 6 = stage-04 REV-014 + stage-05 REV-009 人工协验 BLOCKED + stage-08 REV-009 快照会话内存级 / REV-010 abort 语义·新章落卷末 + stage-10 REV-007 台词评审维度子集 + **stage-11 REV-009 conflict_record 级联删除留痕缝隙（非阻塞）**）
+
+## v0.5.0-stage-11（设定分级归档与一致性引擎，v0.5 收官 / 里程碑 M5）
+
+- **结论**：代码审查**通过**（2026-10-10 计划 v2 复审 + 方案复审 + 代码审查），stage 已 test_passed → archiving。**修复闭环**：1 个 high Bug（consistency BUG-001）经 op-008 修复，独立回归复验通过并关闭（修复 commit `5e1f2a6`）。
+- **心得总结**：[`v0.5.0-stage-11.md`](v0.5.0-stage-11.md)
+- **审查对象**：
+  1. 阶段计划 `plan.md` v1（23 行）→ 复审 v2（06:30 通过）：REV-001~006 **resolved**（REV-001/002/003 high + REV-004/005 medium + REV-006 low 六大定稿）。
+  2. 操作方案 `ops/op-001~008.md`：REV-007（medium，IPC 计数时序错位/基数漂移复发）**closed**；REV-008（low，注入行为变更声明 + 抽取失败形态）**resolved**。
+  3. 执行产出代码审查 + BUG-001 修复（op-008）：登记 REV-009（low）**pending**（非阻塞，`conflict_record` 级联删除留痕缝隙）。
+- **closed 合计 2 条**（REV-007 + 承接收尾）；**resolved 7 条**（计划 6 + REV-008）；**pending 1**（REV-009 非阻塞登记）。
+- **关键**：**四级设定分级**（`main`/`dark`/`short`/`temp`，**与 `kind` 正交**，迁移 v5 加列 + 默认 `short`）；归档抽取（LLM + **`evidence` 原文回查防幻觉** + 名称精确去重 + 确认后**事务批落库**）；**两级一致性校验**（**L1 规则零幻觉** + **L2 语义 `advisory` 建议非结论**）+ 冲突报告 `{aId,bId,type,evidence,severity}` + `conflict_record` 落库四动作处置；**分级注入（白名单 `{main,short}`，恒排 `dark` 硬隔离）**；误报率样本集（≥3 章预埋冲突 + 占位阈值）；**6 条新 IPC 命令**（§8.1 45→51 / 全仓 47→53）。实测 `cargo test` **59/59**、Vitest **587/587**（114 文件）、lint 0 errors、build OK；DoD **11/11**、门禁 **6/6**。
+- **BUG-001（high, closed）**：**「生产不可达」跨阶段第 4 次复发**——`ArchivePanel`（含「归档本章」+ 候选 + 分级）**未接入任何 tab**（`WorkspaceLayout` consistency 分支仅渲染 `ConsistencyPanel`），`runExtraction`/`save_extracted_settings`/`archiveStore` **生产零调用**；`SettingCardForm` **无 `tier`** → DoD 1「新设定可手动归档并分入四级」**应用内完全不可达**（同 stage-07/09/10 同类根因）。修复 = `WorkspaceLayout` consistency tab **双区挂载** `ArchivePanel`+`ConsistencyPanel` + `SettingCardForm`/`useSettingCards` 增 `tier` 四级下拉并贯通 + 补「生产挂载/落库非零 + 归档端到端 + 表单 tier」断言；修复 commit `5e1f2a6`，独立回归探针（真实 `WorkspaceLayout` 生产渲染树）复验通过。
+- **遗留（非阻塞）**：REV-009（low，`conflict_record` FK `ON DELETE CASCADE` 致关联设定卡删除时处置留痕静默消失，与「跨会话留痕」承诺有缝隙，建议后续 `SET NULL`/删除前校验/文档声明三选一）；**人工协验 4 项 BLOCKED**（真实 Key 端到端 / 真机 WebView / L2 语义核验 + 误报率阈值 X 拍板 / v0.2~v0.5 遗留跟踪）。
+- **承接清理**：**stage-10 REV-007**（台词评审维度子集）→ 归属 stage-12 / 人工协验批处理（本阶段仅登记）；**stage-08 REV-009 × 迁移 v5 联动决策**：v5 **不纳入**版本池快照持久化（两域不同，保持克制），REV-009 独立跟踪。
 
 ## v0.4.0-stage-10（角色 Agent 多声部对话，v0.4 收官 / 里程碑 M4）
 

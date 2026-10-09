@@ -70,3 +70,6 @@
 | [2026-10-10-Liuary-065.md](2026-10-10-Liuary-065.md) | Liuary | v0.5.0-stage-11.op-006 执行通过 |
 | [2026-10-10-Liuary-066.md](2026-10-10-Liuary-066.md) | Liuary | v0.5.0-stage-11.op-007 执行通过 |
 | [2026-10-10-Liuary-067.md](2026-10-10-Liuary-067.md) | openfeel-feel-tester | v0.5.0-stage-11 测试验收：提交 BUG-001（consistency，high，归档面板未接入 UI，DoD 1 不满足），阶段结论不通过 |
+| [2026-10-10-Liuary-068.md](2026-10-10-Liuary-068.md) | openfeel-feel-tester | v0.5.0-stage-11 BUG-001 回归复验通过并**关闭**（consistency，high，commit 5e1f2a6）；DoD 1 恢复满足，stage-11 最终验收**通过** |
+| [2026-10-10-Liuary-069.md](2026-10-10-Liuary-069.md) | openfeel-archiver | v0.5.0-stage-11 归档完成 & v0.5 里程碑收口（知识库/模块手册/公共索引/Bug 索引/v0.5 总结） |
+| [2026-10-10-Liuary-070.md](2026-10-10-Liuary-070.md) | Liuary | 阶段 v0.5.0-stage-11 完成 |
