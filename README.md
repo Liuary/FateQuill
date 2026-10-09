@@ -7,7 +7,9 @@
 - **桌面外壳**：Tauri 2（Rust 后端 + WebView2）
 - **前端**：React 19 + Vite + TypeScript（strict）
 - **样式**：TailwindCSS v4（CSS-first）+ shadcn/ui（组件源码入库）
-- **状态管理**：Zustand（于 stage-04 接入，当前阶段未安装）
+- **编辑器**：Tiptap 3.31.4（ProseMirror）+ `@tiptap/markdown`
+- **拖拽**：`@dnd-kit`（core 6.3.1 / sortable 10.0.0 / utilities 3.2.2）
+- **状态管理**：Zustand 5.0.15
 - **测试与质量**：ESLint + Prettier + Vitest（Testing Library）+ `cargo test`
 
 ## 环境前置

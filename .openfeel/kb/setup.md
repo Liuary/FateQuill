@@ -69,3 +69,20 @@ cargo test --manifest-path src-tauri/Cargo.toml   # Rust 测试
 - **人工核验残留**：Windows `cmdkey /list` 应无 `fatequill`/`test-provider` 命中。
 - **临时库文件**：「Key 不落库」测试使用的临时 SQLite 文件须 `remove_file` 清理（temp 目录不留 `fatequill_np_*`）。
 - **凭据重置**：Windows「凭据管理器 → Windows 凭据」删除 `fatequill/*` 条目（见上方「密钥链（keyring）」节）。
+
+## [+] 编辑器依赖版本表（精确，stage-04 T1） (2026-10-09)
+
+| 包 | 精确版本 | 用途 |
+|----|----------|------|
+| `@tiptap/react` | 3.31.4 | React 绑定（peer `react ^19`） |
+| `@tiptap/core` | 3.31.4 | 核心（headless `Editor`） |
+| `@tiptap/pm` | 3.31.4 | ProseMirror 依赖 |
+| `@tiptap/starter-kit` | 3.31.4 | 基础扩展包（含 `@tiptap/extensions` 的 `undoRedo`） |
+| `@tiptap/markdown` | 3.31.4 | 官方 Markdown 解析/序列化（依赖 `marked ^17`） |
+| `zustand` | 5.0.15 | 状态管理（stage-04 接入） |
+| `@dnd-kit/core` | 6.3.1 | 拖拽排序基础 |
+| `@dnd-kit/sortable` | 10.0.0 | 列表排序 |
+| `@dnd-kit/utilities` | 3.2.2 | dnd-kit 工具 |
+
+- 安装方式：`pnpm add -E`（**禁止 `^`/`~`**，统一精确版本；可复现性由提交的 `pnpm-lock.yaml` 保证）。
+- 编辑器扩展配置见 `src/features/editor/editor-extensions.ts`（StarterKit h1–h3 + `undoRedo.newGroupDelay=5000` + Markdown）。
