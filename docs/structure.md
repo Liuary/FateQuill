@@ -40,11 +40,11 @@ plan v3 技术约束中的目录集为 `src/{app,components,features,domain,orch
   - `vite.config.ts`：`resolve.alias["@"] = fileURLToPath(new URL("./src", import.meta.url))`。
 - **禁止**使用 `path.resolve(__dirname, "./src")`：项目 `package.json` 为 `"type": "module"`，ESM 下 `__dirname` 未定义，会导致 `ReferenceError` 与 `pnpm build` 失败（统一采用 ESM 写法，REV-010）。
 
-## 4. 状态管理（`src/store/`）初始化时机与 Zustand 归属
+## 4. 状态管理（`src/store/`，Zustand）
 
-- 本阶段（v0.1.0-stage-01）**不安装 Zustand**，仅建立 `src/store/` 目录。
-- **Zustand 首个接入阶段 = stage-04**（编辑器态 `editorStore`）；**stage-05** 新增 `generationStore`。
-- stage-03 的模型配置态如需状态管理，复用 stage-04 引入的 Zustand。
+- **`editorStore`（stage-04 T2 接入）**：仅持**元状态** `currentNovelId` / `currentChapterId` / `saveStatus`（`saved`/`saving`/`dirty`/`error`）/ `lastSavedAt`；**不持有 ProseMirror 文档正文**（单一事实源在 Tiptap 实例）。
+- **stage-05** 新增 `generationStore`（订阅 `src/orchestration/stream` 的 `subscribeChunks` 输出，见 §9）。
+- **一章一实例（C-01）**：切章时 `key={chapterId}` 重挂载 Tiptap 实例（销毁旧、重建新），同一时刻实例数恒为 1。
 
 ## 5. IPC 边界
 
@@ -105,3 +105,9 @@ plan v3 技术约束中的目录集为 `src/{app,components,features,domain,orch
 - **契约**：`Chunk = { delta: string }`（op-002 定稿）；消费端**增量渲染**。
 - **不建 store**：本阶段**不创建任何 store**；`src/store/` 维持空目录（Zustand 于 stage-04 接入）。
 - **stage-05 订阅声明**：**stage-05 的 `generationStore`（`src/store/`）将订阅 `subscribeChunks` 的输出**，本工具为其**上游**；编辑器消费侧不直接驱动（C-03），由 `generationStore` 承接流式状态。
+
+## 10. 编辑器存储格式
+
+- **`content_format = 'html'`**：编辑器保存用 `editor.getHTML()` → `chapter.content`；加载用 `editor.commands.setContent(html)`。**零迁移**（复用 stage-02 schema）。
+- `word_count` 走 §7 的 `html` 分支（Rust 侧计算）。
+- 落点：`src/features/editor/`（`RichTextEditor` / `ChapterEditor` / `useChapter` / `editor-extensions`）；`editorStore` 见 §4。

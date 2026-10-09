@@ -1,1 +1,8 @@
-{}
+{
+  "loading": "Loading…",
+  "saved": "Saved",
+  "saving": "Saving…",
+  "dirty": "Unsaved",
+  "error": "Save failed",
+  "empty": "No content"
+}
