@@ -181,10 +181,14 @@ plan v3 技术约束中的目录集为 `src/{app,components,features,domain,orch
 ## 17. 多声部对话（stage-10）
 
 - **落点**：
-  - `src/features/characters/`：角色档案（复用既有 `Character` 仓储，**无新增 IPC**）。
-  - `src/features/dialogue/`：多声部对话 UI（角色选角 → 生成 → 会话内存条目 → 合并落章）。
-  - `src/orchestration/dialogue/`：对话编排契约（provider 无关；复用 `http_stream` 非流式收口）。
-  - `src/store/dialogueStore.ts`：对话条目**会话内存**（独立 `create`）。
+  - `src/features/characters/`：角色档案（`CharactersPanel.tsx` / `CharacterForm.tsx` / `useCharacters.ts`；`profile` 契约 `PROFILE_TEXT_KEYS` / `normalizeProfile` / `toProfileRecord` 单一来源在 `orchestration/dialogue/profile.ts`；**复用 `Character` 五命令，无新增 IPC**）。
+  - `src/orchestration/dialogue/`：对话编排契约（provider 无关；`types` / `profile` / `persona` / `agents` / `context` 白名单 / `assemble` / `generate`（含 `generateBatch`）/ `cost` / `concurrency` / `review-bridge`）。
+  - `src/features/dialogue/`：多声部对话 UI（选角 → 生成 → 会话内存条目 → 合并落章 → 可选评审）。
+  - `src/store/dialogueStore.ts`：对话条目**会话内存**（独立 `create`，`orderIndex` **恒连续**）。
+- **防串味**：`context.ts` 白名单装配——仅注入**本人 persona + 公共上下文 + 他人公开身份摘要**；A 的私密档案不进 B 的 prompt（5 组断言）。
+- **双路径落章**：主「新建下一章草稿」（`chapter.create`，**不改当前章**）/ 次「替换当前章」（`replaceContent`，**替换前强制入池快照**，label `dialogue-merge-safety`）；两路径均需内联二次确认。
+- **成本与并发**：`estimateDialogueCost(participantCount)` = 参与角色数 ×（输出上限 2048 + 输入估算 1024），**启动前显示**；`selectParticipants({ majorOnly })` 按 `profile.major` 过滤；`runWithConcurrency`（默认并发 3，超限排队、结果按输入序归位、单项失败不抛穿）。
+- **评审衔接（可选）**：`review-bridge.ts` 对齐 stage-06 `ReviewInput`（`content` = 去标签纯文本），经**既有管线**（`evaluateWithFallback` + 内置评估器）评审；**不新增评估器、不改 stage-06 契约**；「千人一腔」与 `humanity`「真人感」**互认**（`docs/review-rubric.md` §4.1）。
 - **i18n**：新增 `characters` / `dialogue` 命名空间。
 - **IPC**：**无 IPC 增量**——复用既有 `Character` 五命令（`list/get/create/update/delete_character`）与 `chapter` 命令；对话条目**会话内存**、合并落章走既有 `update_chapter`（见 `docs/ipc.md`）。
-- **详文**：模块手册 `features/characters.md` / `features/dialogue.md`（随对应模块建立于 **op-008** 收尾）。
+- **详文**：模块手册 `manual/features/characters.md` / `manual/features/dialogue.md`（建立并收尾于 **op-008**）。

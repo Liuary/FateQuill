@@ -7,16 +7,24 @@
  * 对话历史**会话内存**（不落库）；合并落章见后续 op（T3）。
  */
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Editor } from "@tiptap/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { Character } from "@/domain/models/character";
 import { normalizeProfile } from "@/orchestration/dialogue/profile";
+import {
+  DIALOGUE_REVIEW_DIMENSIONS,
+  toDialogueReviewInput,
+} from "@/orchestration/dialogue/review-bridge";
 import type { DialogueProfile } from "@/orchestration/dialogue/types";
+import type { ReviewInput } from "@/orchestration/review/types";
+import { createEvaluatorRegistry, evaluateWithFallback } from "@/orchestration/review/evaluator";
+import { registerBuiltinEvaluators } from "@/orchestration/review/register";
 import { repositories } from "@/ipc/repositories";
 import { ConfirmInline } from "@/features/exploration/ConfirmInline";
+import { resolveProviderForConfig } from "@/features/generation/resolve-provider";
 import { useGenerationAvailability } from "@/features/generation/useGenerationAvailability";
 import { useDialogueStore } from "@/store/dialogueStore";
 import { CharacterLineComposer } from "./CharacterLineComposer";
@@ -41,6 +49,7 @@ async function loadCharacters(novelId: number): Promise<Character[]> {
 /** 多声部对话面板 */
 export function DialoguePanel({ novelId, chapterId = null, editor = null }: DialoguePanelProps) {
   const { t } = useTranslation("dialogue");
+  const { t: tReview } = useTranslation("review");
   const { state, config } = useGenerationAvailability();
   const running = useDialogueStore((s) => s.running);
   const entryCount = useDialogueStore((s) => s.entries.length);
@@ -48,6 +57,8 @@ export function DialoguePanel({ novelId, chapterId = null, editor = null }: Dial
   const [merging, setMerging] = useState(false); // 次路径二次确认门
   const [merged, setMerged] = useState(false);
   const [majorOnly, setMajorOnly] = useState(false); // 「仅主要角色」过滤
+  const [reviewing, setReviewing] = useState(false);
+  const [reviewSummary, setReviewSummary] = useState<string | null>(null);
   const {
     generateNarration,
     generateCharacterLine,
@@ -82,6 +93,48 @@ export function DialoguePanel({ novelId, chapterId = null, editor = null }: Dial
       alive = false;
     };
   }, [novelId]);
+
+  /**
+   * 评审台词（**可选**）：复用 stage-06 管线（`evaluateWithFallback` + 内置评估器），
+   * 四维各评一次；**不新增评估器**、不改 stage-06 契约。
+   */
+  const reviewDialogue = useCallback(async () => {
+    if (!config) {
+      return;
+    }
+    const entries = useDialogueStore.getState().entries;
+    if (entries.length === 0) {
+      return;
+    }
+    setReviewing(true);
+    setReviewSummary(null);
+    try {
+      const provider = resolveProviderForConfig(config);
+      const registry = registerBuiltinEvaluators(createEvaluatorRegistry(), provider);
+      const context: ReviewInput["context"] = {};
+      if (novelId != null) {
+        context.novelId = novelId;
+      }
+      if (chapterId != null) {
+        context.chapterId = chapterId;
+      }
+      const parts: string[] = [];
+      for (const dimension of DIALOGUE_REVIEW_DIMENSIONS) {
+        const input = toDialogueReviewInput({
+          entries,
+          dimension,
+          model: config.modelName,
+          context,
+        });
+        const result = await evaluateWithFallback(registry.resolve(dimension), input);
+        const label = tReview(`dim${dimension.charAt(0).toUpperCase()}${dimension.slice(1)}`);
+        parts.push(`${label} ${result.score}`);
+      }
+      setReviewSummary(parts.join(" ｜ "));
+    } finally {
+      setReviewing(false);
+    }
+  }, [config, novelId, chapterId, tReview]);
 
   return (
     <div data-testid="dialogue-panel" className="flex flex-col gap-3 p-3 text-sm">
@@ -174,6 +227,25 @@ export function DialoguePanel({ novelId, chapterId = null, editor = null }: Dial
       <section className="flex flex-col gap-1">
         <h3 className="text-xs opacity-70">{t("history")}</h3>
         <DialogueEntryList />
+      </section>
+
+      {/* 台词评审（**可选**）：复用 stage-06 四维管线；不改 stage-06 契约 */}
+      <section data-testid="dialogue-review" className="flex flex-col gap-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            disabled={reviewing || running || entryCount === 0 || config == null}
+            onClick={() => void reviewDialogue()}
+          >
+            {t("review.run")}
+          </Button>
+          <span className="text-xs opacity-70">{t("review.optional")}</span>
+        </div>
+        {reviewSummary && (
+          <p data-testid="dialogue-review-summary" className="text-xs">
+            {t("review.summary")}: {reviewSummary}
+          </p>
+        )}
       </section>
 
       <section data-testid="merge-section" className="flex flex-col gap-2">

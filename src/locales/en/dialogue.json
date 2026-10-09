@@ -23,6 +23,11 @@
   "concurrency": "Concurrency cap",
   "batchLines": "Generate all lines",
   "queued": "Concurrency limited — remaining tasks are queued",
+  "review": {
+    "optional": "(optional, reuses the existing four-dimension review)",
+    "run": "Review dialogue",
+    "summary": "Dialogue review"
+  },
   "mergeNextChapter": "Merge as next chapter draft",
   "mergeReplace": "Replace current chapter (danger)",
   "mergeConfirm": "This overwrites the current chapter text (a snapshot is saved first; one Ctrl+Z also restores). Confirm?",

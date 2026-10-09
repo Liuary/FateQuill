@@ -23,6 +23,11 @@
   "concurrency": "并发上限",
   "batchLines": "批量生成台词",
   "queued": "并发受限，超出部分排队中",
+  "review": {
+    "optional": "（可选，复用既有四维评审）",
+    "run": "评审台词",
+    "summary": "台词评审"
+  },
   "mergeNextChapter": "合并为下一章草稿",
   "mergeReplace": "替换当前章（危险）",
   "mergeConfirm": "将覆盖当前章正文（替换前正文已自动入池快照，可恢复；一次 Ctrl+Z 亦可撤销）。确认替换？",
