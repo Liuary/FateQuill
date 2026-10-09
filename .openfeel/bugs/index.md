@@ -4,7 +4,7 @@
 
 ## 状态统计
 
-- **open 0 ｜ fixing 0 ｜ resolved 0 ｜ closed 3**
+- **open 0 ｜ fixing 0 ｜ resolved 0 ｜ closed 5**
 
 ## 按模块
 
@@ -28,3 +28,10 @@
   验收结论 DoD 9/11 通过（另 2 条为真实 WebView 人工协验待办）；门禁 `pnpm test` 110/110、lint/build、`cargo test` 41/41 全绿。
 - [`editor.md`](editor.md)：**BUG-001** — 切章前未 flush，防抖窗口内切章导致前一章编辑永久丢失 → 修复为 `requestSelectChapter` 守卫（先 `await flush` 成功才切）+ 章号守卫 + 集成用例。
 - 验收报告：`.openfeel/tmp/stage-04-acceptance.md`
+
+### v0.1.0-stage-05（单 Agent 章节生成 + 设定卡）@openfeel-feel-tester
+
+- **2 个 low Bug，均已闭环**（修复 commit `e3a9e5a`，验收人 openfeel-feel-tester）；验收结论 **DoD 9/11 自动通过 + 2 项人工协验待办**；门禁 `pnpm test` 35 文件 133/133、lint/build、`cargo test` 42/42 全绿。
+- [`generation.md`](generation.md)：**BUG-001** — `v0.1-e2e.test.tsx` 未含 C-03 Profiler 断言，与 op-006 声明不一致 → `vi.mock("@tiptap/react")` 将真实 `EditorContent` 包进 `<Profiler>` + 非空洞性守卫（集成路径 C-03 成立）。
+- [`build.md`](build.md)：**BUG-001** — chunk 体积登记值（311KB / gzip 97KB）与实际（~850KB / gzip ~268KB）严重不符 → 活文档更正为实测值（历史评审留痕不改）。
+- 验收报告：`.openfeel/tmp/stage-05-acceptance.md`

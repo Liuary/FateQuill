@@ -92,15 +92,37 @@
 - **处理**：改监听 `editor.view.dom` 的 `compositionstart`/`compositionend`（见 `kb/patterns.md`），并在卸载时移除监听。
 - **排查信号**：IME 组合期间插入未排队 / `editor.on("composition*")` 监听器不触发 → 检查是否误用 `editor.on`。
 
-## [+] 切章 × 防抖丢数据坑（BUG-001 根因）(2026-10-10)
+## [+] 切章 × 防抖丢数据坑（BUG-001 根因） (2026-10-10)
 
 - **现象**：编辑第 1 章后在 **800ms 防抖窗口内**切第 2 章，第 1 章的编辑**永久丢失**（实测 `update_chapter` 仅写第 2 章、零写第 1 章）。
 - **根因**：切章未先 flush；`RichTextEditor`（`key=chapterId`）卸载、Tiptap 实例销毁，残留防抖计时器回调旧闭包 `editor.getHTML()` 失败 → 置脏重试经 `enqueueRef` 误写**当前活动章**。
 - **修复**：`requestSelectChapter` 守卫（先 `await flush` 成功才切）+ `useAutoSave` 的 `chapterIdRef` 章号守卫 + 集成测试「编辑→<800ms 切章→切回内容完整」。
 - **通用教训**：跨实例切换（销毁/重建）前必须**同步 flush 并 await**；异步防抖回调须带**目标标识（章号）守卫**，避免切换后误写活动对象。
 
-## [+] 生产构建 chunk 体积警告（Tiptap/ProseMirror 入口 850KB / gzip 268KB）(2026-10-10, REV-015)
+## [+] 生产构建 chunk 体积警告（Tiptap/ProseMirror 入口 850KB / gzip 268KB，REV-015） (2026-10-10)
 
 - **现象**：`pnpm build` 报 Vite 警告「chunk > 500KB」（入口 chunk **850KB / gzip 268KB**，2026-10-10 实测 `dist/assets/index-*.js` 850.15 kB │ gzip 267.65 kB；stage-04 支点 ~836KB），为 Tiptap/ProseMirror 核心体积固有。
 - **处理**：**v0.1 接受现状**（核心依赖懒加载收益有限）；**v0.2 评估**（`manualChunks` 分包 editor/orchestration，或 StarterKit → 精选扩展裁剪）。
 - **判定**：非错误、不影响功能；**不单独立任务**，记为已知项一行备查。
+
+## [+] 流式插入与撤销交互：aborted 分支未收敛致状态残留 (2026-10-10)
+
+- **现象**：用户点击「停止」后 `generationStore.status` 残留 `'streaming'`、`requestId` 非空（「半态」），面板状态显示错误。
+- **根因**：`start()` 循环退出后仅 `if (!abort.signal.aborted) g.finish();`——**aborted 分支无收敛动作**；`stop()` 若只 `abort()` 而不复位，状态无法收敛。
+- **处理**：`stop()` 仅触发 `abort`，收敛由 `start` 收口——循环后 `if (abort.signal.aborted) g.reset(); else g.finish();`；`catch` 走 `fail(IpcError)`；`finally` `dispose()` + `abortRef.current=null`（无悬挂）。断言 `abortRef.current === null`（测试可注入句柄）。
+- **撤销交互**：一次 `Ctrl+Z` 撤销整段生成**依赖 stage-04 `newGroupDelay=5000` 的分组合并**，本阶段不重复实现（详见 `kb/patterns.md`「Tiptap 撤销分组合并」）。
+- **通用**：中止类操作须显式复位「进行中」状态，勿依赖后续步骤补救（会残留已知中间态）。
+
+## [+] Token 超限防护：上下文预算裁剪 (2026-10-10)
+
+- **风险**：单 Agent 生成把系统提示 + 设定卡 + 前章正文 + 用户指令直接拼入 `messages`，长文/多设定卡时可能超出模型上下文窗口，导致请求失败或截断。
+- **处理**：装配器按定稿预算裁剪（系统≤1k + 设定卡≤2k + 前章末尾≤2k + 用户指令不裁；总≤8k），超限按「设定卡→前文」顺序削减；前文取**末尾 M 字**（v0.1 无摘要能力）。
+- **注意**：单位取字符数（`String.length`）；`chapter.content` 为 HTML，须先 `stripHtml` 再截取（否则截断标签）。裁剪单测覆盖各源/合计超限。
+- **口径**：`word_count` 为近似值，**不得**用作精确 token 估算（见 `kb/patterns.md`「word_count 近似值约定」）。
+
+## [+] 真实 WebView 性能测量待办（人工协验，非缺陷） (2026-10-10)
+
+- **现象**：自动化测试（jsdom）**无法**测量编辑器真实延迟与内存——jsdom 无布局引擎，P95 / 堆增幅口径失真。
+- **待办**：`corepack pnpm tauri dev` → 窗口内 BenchPanel（仅 DEV）→「运行延迟基准（200 次插入）」读 **P95**（目标 <16ms）→ 切 20 章后「统计 .ProseMirror 实例数」（应 =1）→「记录堆增幅」（<20%）→ 回填 `src/features/editor/perf/README.md` 实测表。
+- **状态**：v0.1 收口仍为**人工协验待办**（stage-05 REV-009 / stage-04 REV-014 合流）；自动化部分（seed/p95 逻辑/边界）已单测覆盖。
+- **判定**：非缺陷、不阻断功能；完成实测并复核后相关 REV 方可 closed。

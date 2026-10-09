@@ -97,7 +97,7 @@ resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } }
 - `chapterIdRef` 章号守卫：防抖/重试回调执行前校验 `chapterIdRef.current === capturedChapterId`，不等则**跳过** → 杜绝旧实例闭包误写当前活动章（BUG-001 附带缺陷修复）。
 - 消费侧（切章守卫）据返回值决定是否阻断切换。
 
-## [+] Tiptap 撤销分组合并（`undoRedo.newGroupDelay`）(2026-10-10)
+## [+] Tiptap 撤销分组合并（`undoRedo.newGroupDelay`） (2026-10-10)
 
 - **需求**：一次 `Ctrl+Z` 撤销整段 AI 生成（而非散成数百条历史）。
 - **方案**：流式插入**保持默认入历史**，`StarterKit.configure({ undoRedo: { newGroupDelay: 5000 } })` 把 5s 时间窗内相邻事务**自动合并为单条历史**；用户手动编辑（超窗/光标移动）自然断组。
@@ -110,14 +110,42 @@ resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } }
 - 组合期间 Chunk 入队，`compositionend` 后 flush；组件卸载/实例销毁时 `removeEventListener`（`dispose()`）。
 - 测试用 `editor.view.dom.dispatchEvent(new CompositionEvent("compositionstart"/"compositionend"))` 模拟。
 
-## [+] 自动保存串行链 `chainRef`（防慢写覆盖新写）(2026-10-10)
+## [+] 自动保存串行链 `chainRef`（防慢写覆盖新写） (2026-10-10)
 
 - 自动保存：**防抖 800ms** + **flush 三时机**（切章前 await / 窗口关闭前 / 失焦可选）+ 失败 **5s 线性退避**重试（上限 5）。
 - **串行化**：所有保存串到同一条 promise 链尾（`chainRef`），执行时**重新取 `editor.getHTML()`**（最新优先） → 消除「慢写旧内容覆盖新写」（并发无互斥的静默丢失）。
 - **清脏标时机**：须在 `await` **之前**清（保存期间的新编辑重新置脏 → 触发后续保存）；失败保留脏态。
 
-## [+] rg 验证口径须区分「逻辑」与「数据夹具」(2026-10-10)
+## [+] rg 验证口径须区分「逻辑」与「数据夹具」 (2026-10-10)
 
 - **教训来源**：REV-013——stage-04 op-006 的验证标准 `rg -n -e "word_count" -e "wordCount" src/features/editor`（期望无输出）会命中**测试夹具的合法实体字段** `Chapter.wordCount`，全目录匹配产生**假阴性**（"按字面判定即失败"）。
 - **约定**：验证前端「某字段**不被计算/引用**」时，把 rg 目标**限定到具体逻辑文件**（如 `src/features/editor/useAutoSave.ts`），**不要**全目录匹配——实体模型 / DTO / 测试夹具会含合法同名字段。
 - **通用**：`rg` 断言须明确「匹配的是**行为**还是**数据形状**」；数据夹具字段与目标逻辑无关时应在验证口径中显式豁免并登记。
+
+## [+] 上下文装配预算与裁剪序 (2026-10-10)
+
+- **装配产物 = `ChatOptions`（`model`/`messages`/`temperature`）**，**provider 无关**（provider 差异由 stage-03 适配器吸收，装配器不感知 provider 语义）。
+- **预算（默认值，可配置；单位 = 字符数 `String.length`，对应「字/非空白字符近似」）**：系统提示 ≤ **1000** + 设定卡 ≤ **2000** + 前章末尾 ≤ **2000** + 用户指令（本章要求，**优先保留**）；**总预算 ≤ 8000**。
+- **裁剪序**：超限按「**设定卡 → 前文**」顺序裁剪（可分别清空）；**系统提示与用户指令不裁**。
+- **前情策略（v0.1 无摘要能力）**：取**前章（`order_index` 紧邻上一章）末尾 M 字**；因 `chapter.content` 以 HTML 存储，**先 `stripHtml` 去标签再按纯文本口径截取**（避免截断标签）。
+- **落点**：模板 `src/orchestration/prompts/chapter-generation.ts`（纯 TS，可单测）；数据装配 `src/features/generation/build-chapter-options.ts`（仓储 → `ChapterPromptInput` → `ChatOptions`）。裁剪单测覆盖各源超限与合计超限。
+
+## [+] 提示模板版本化 (2026-10-10)
+
+- **落点**：`src/orchestration/prompts/chapter-generation.ts`，导出模板函数 `buildChapterPrompt(...)` + **版本常量 `CHAPTER_GENERATION_PROMPT_VERSION`**（v0.1 为 `"1.0.0"`）+ 默认系统提示常量 `DEFAULT_CHAPTER_AGENT_SYSTEM_PROMPT` + 预算常量 `PROMPT_BUDGET`。
+- **目的**：为 stage-07 skill 库预留**注入锚点**；**不得**在装配器内硬编码 skill 逻辑。模板函数为纯 TS、可单测。
+- **约定**：模板/预算/默认提示的调整须同步递增版本常量（变更可追溯）；`src/orchestration/prompts/index.ts` 统一导出。
+
+## [+] 生成状态机收敛（停止/失败 → idle） (2026-10-10)
+
+- **不变量**：退出 `start` 时 `abortRef.current === null` 且 `generationStore.status !== 'streaming'`、`requestId === null`。
+- **收敛路径**：循环内每步检查 `abort.signal.aborted → break`；循环退出后 `controller.flushPending()`（应用队列残留 = 草稿保留），`aborted ? reset() : finish()`；`catch` 中 `flushPending()` + `fail(parseIpcError(e))`；`finally` 中 `controller.dispose()` + `abortRef.current = null`（无悬挂 abort）。
+- **状态语义**：`status` 收敛态统一 `idle`（`error` 用于展示，不残留 `streaming`/`requestId`）；「半态」定义 = 残留 `streaming` 状态 / 悬挂 abort 句柄 / 非空 `requestId`，**复位断言入测试**（停止、失败、半态三种用例）。
+- **草稿保留**：停止/失败时已插入内容不丢（用户可 `Ctrl+Z` 或手动删除）；UI 经 i18n `stoppedHint` 明示「生成已停止，可 Ctrl+Z 撤销」。
+
+## [+] Profiler C-03 断言写法（流式期间编辑器零重渲染） (2026-10-10)
+
+- **目标**：断言生成/流式直插期间**编辑器组件 React 渲染计数增量 = 0**（C-03）；jsdom 可测——ProseMirror/Tiptap 直改 DOM，不经 React 受控更新。
+- **写法**：以 React `Profiler` 的 `onRender` 包裹 `EditorContent` 子树（测试经 `vi.mock("@tiptap/react")` 把真实 `EditorContent` 包进 `<Profiler>`，**仅测试接缝、不改源码**）；记录「点击开始生成 → 生成完成」区间的 render 增量并断言 **= 0**。
+- **非空洞性守卫（关键）**：断言前先 `expect(rendersBefore).toBeGreaterThan(0)`（确认 Profiler 已生效、含挂载渲染被捕获）——否则「0 增量」可能是插桩未生效的假绿。可用独立探针（临时用例：触发父组件重渲染 → 计数递增）验证插桩能捕获真实重渲染。
+- **配套**：`editorStore` 快照（除 `saveStatus/lastSavedAt` 自动保存域外）不变；代理指标 `dispatch` 次数 ≤ chunk 数 / 2 且无 `setContent` 全量重设。

@@ -108,9 +108,25 @@
 - `ChapterEditor` 增守卫：`chapterId != null && chapter?.id !== chapterId` 时渲染占位，确保编辑器**仅在「已加载章节与当前 id 匹配」时挂载**（防切章窗口内以旧章内容初始化，潜在串档）。
 - 验证：连续切 20 章后 `.ProseMirror` 计数 === 1；HTML 往返语义等价（`setContent`/`getHTML`）。
 
-## [+] T8 AI 增量插入接口契约 EditorController（供 stage-05）(2026-10-10)
+## [+] T8 AI 增量插入接口契约 EditorController（供 stage-05） (2026-10-10)
 
 - 编辑器对外**最小命令面**：`appendChunk(text: string, options?: { addToHistory?: boolean; follow?: boolean }): void` / `flushPending(): void` / `dispose(): void`。
 - **消费方**：stage-05 `generationStore` 订阅 stage-03 `subscribeChunks` → 取 `Chunk.delta` → `appendChunk`；**stage-05 不直接操作编辑器内部**（不越界，C-09）。
 - **撤销**：流式插入**恒入历史**，由 `undoRedo.newGroupDelay=5000` 合并为单条 → 一次 `Ctrl+Z` 撤销整段生成（详见 `kb/patterns.md`）。**IME**：`composition` 期间入队、`compositionend` 后 flush。`dispose()` 移除 DOM 监听。
 - `appendChunk` 按节流批次应用（默认 50ms）；`options.follow` 控制滚动到文末；`options.addToHistory` 为**预留**字段（当前实现恒入历史）。
+
+## [+] 生成内容落地模式 A 流式直插（ADR-002） (2026-10-10)
+
+- **落点**：`src/features/generation/`（`useGeneration.ts` 编排）+ `src/orchestration/prompts/chapter-generation.ts`（模板）+ `src/features/editor/EditorController.ts`（插入面）。
+- **生成链路（定稿）**：`generationStore` 订阅 stage-03 `subscribeChunks`（节流 ≥50ms）→ 取 `Chunk.delta` → stage-04 `EditorController.appendChunk`（恒入历史）。**「生成面板」仅承载状态**（进度/停止/重试/错误），**不设内容预览面板**；正文事实源始终在 Tiptap 实例。
+- **决策依据（ADR-002，accepted，见 `dev/decisions.md`）**：与 M1「AI 生成一章并流式插入」字面一致；兑现 stage-04 T8 的撤销合并/IME 排队/节流机制（否则投资空转，违反 C-08）；创作体验连续（边生成边读边改）。备选模式 B（先预览再一次性插入）被否决。
+- **后果**：生成期间编辑器零 React 重渲染（ProseMirror 直改 DOM，不经 React 受控更新）；停止/失败时已插入内容按「草稿」语义保留，一次 `Ctrl+Z` 撤销整段。
+- **边界**：本阶段仅接线，**不修改** stage-04 `EditorController`/`useChunkInjection` 内部（C-09）；装配产物 provider 无关，provider 差异由 stage-03 适配器吸收。
+
+## [+] generationStore 元状态边界与双 store 隔离 (2026-10-10)
+
+- **落点**：`src/store/generationStore.ts`（独立 Zustand `create()`，与 `editorStore` 并列）。
+- **元状态清单（不持正文）**：`status: 'idle'|'streaming'|'done'|'error'|'aborted'`、`chapterId: number|null`、`requestId: string|null`、`progress: { chars: number }`、`error: IpcError|null`；**无 `content`/`html`/`delta`**（与 `editorStore` 同一「单一事实源」原则，正文事实源在 Tiptap 实例）。
+- **隔离机制**：与 `editorStore` **各自独立 `create()`、不互相 `setState`**；跨域通信仅经 `EditorController` 命令面（插入）与自动保存域（`editorStore.saveStatus`）。
+- **收敛语义**：`status` 枚举保留 `'error'|'aborted'` 供前向兼容，但 **v0.1 收敛态统一为 `'idle'`**——停止 → `reset()`（`status=idle`、`requestId=null`、草稿保留）；失败 → `fail(IpcError)`（`status=idle`、`requestId=null`、`error` 展示）。「半态」= 残留 `streaming`/悬挂 `requestId`，**状态机复位断言入测试**。
+- **requestId 澄清**：`generationStore.requestId` 为**生成会话关联 id**（`crypto.randomUUID()`，供 UI/日志关联）；底层断流经适配器 `AbortSignal` → stage-03 `abort_stream`（前端不持有底层 requestId）。

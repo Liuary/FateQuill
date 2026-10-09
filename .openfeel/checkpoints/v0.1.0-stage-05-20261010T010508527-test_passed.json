@@ -2,8 +2,8 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-09T17:08:51.413Z",
-    "revision": 185
+    "updated": "2026-10-09T16:58:35.214Z",
+    "revision": 181
   },
   "pipeline": {
     "phase": "active",
@@ -637,8 +637,8 @@
     },
     "v0.1.0-stage-05": {
       "name": "v0.1.0-stage-05",
-      "phase": "done",
-      "status": "done",
+      "phase": "test_passed",
+      "status": "review_passed",
       "deps": [
         "v0.1.0-stage-03",
         "v0.1.0-stage-04"
@@ -749,8 +749,8 @@
       },
       "stats": {
         "start_time": "2026-10-09T16:18:31.100Z",
-        "end_time": "2026-10-09T17:08:51.392Z",
-        "duration_ms": 3020292
+        "end_time": "",
+        "duration_ms": 0
       }
     },
     "v0.2.0-stage-06": {
@@ -2582,48 +2582,6 @@
         "stageName": "v0.1.0-stage-05",
         "from": "review_passed",
         "to": "test_pending"
-      }
-    },
-    {
-      "time": "2026-10-09T17:05:08.543Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.1.0-stage-05",
-        "from": "test_pending",
-        "to": "test_passed"
-      }
-    },
-    {
-      "time": "2026-10-09T17:05:08.875Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.1.0-stage-05",
-        "from": "test_passed",
-        "to": "archiving"
-      }
-    },
-    {
-      "time": "2026-10-09T17:07:31.283Z",
-      "agent": "openfeel-archiver",
-      "action": "archive_stage",
-      "detail": {
-        "stageName": "v0.1.0-stage-05",
-        "opsCount": 6,
-        "reviewsCount": 0,
-        "knowledgeCount": 0,
-        "archivePath": "C:\\Users\\Liuary\\Dev\\Mine\\AI\\Novel\\NovelCreate\\.openfeel\\log\\archive-v0.1.0-stage-05.md"
-      }
-    },
-    {
-      "time": "2026-10-09T17:08:51.392Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.1.0-stage-05",
-        "from": "archiving",
-        "to": "done"
       }
     }
   ]

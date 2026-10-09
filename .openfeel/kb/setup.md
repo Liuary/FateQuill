@@ -87,9 +87,16 @@ cargo test --manifest-path src-tauri/Cargo.toml   # Rust 测试
 - 安装方式：`pnpm add -E`（**禁止 `^`/`~`**，统一精确版本；可复现性由提交的 `pnpm-lock.yaml` 保证）。
 - 编辑器扩展配置见 `src/features/editor/editor-extensions.ts`（StarterKit h1–h3 + `undoRedo.newGroupDelay=5000` + Markdown）。
 
-## [+] 长文性能基准 BenchPanel 用法（人工协验）(2026-10-10)
+## [+] 长文性能基准 BenchPanel 用法（人工协验） (2026-10-10)
 
 - **落点**：`src/features/editor/perf/` —— `seed.ts`（生成 5000 字 HTML 载荷）、`editor-bench.ts`（`dispatch→DOM` 耗时采样 + `p95`）、`BenchPanel.tsx`（**仅 DEV**，`import.meta.env.DEV` 守卫，`App.tsx` 挂载）、`README.md`（操作手册 + 实测记录表）。
 - **用法**：`pnpm tauri dev` → 打开 BenchPanel → 执行 → 读 **P95**（目标 < 16ms）/ 连续切 20 章后 `.ProseMirror` 实例数（须 =1）/ `performance.memory.usedJSHeapSize` 堆增幅（< 20%），回填 `README.md` 实测记录表。
 - **口径**：**真实 WebView**（jsdom 无布局，**不可用于延迟测量**）；IME `composition` 期间延迟单独统计/排除；BenchPanel 自身含一个 `.ProseMirror`，实例计数须**排除面板子树**。
 - **自动化部分**（seed/p95 逻辑/边界测试）可在 jsdom 单测；延迟与内存实测为**人工协验项**。
+
+## [+] 真机冒烟检查单用法（v0.1 收口） (2026-10-10)
+
+- **落点**：`docs/smoke-check-v0.1.md`——表格化检查单（列：步骤 / 预期 / 实际 / 结果），承载 M1 全流程的**真机（Tauri 窗口）人工协验**；自动化部分对应对应 `pnpm test`（Vitest mock 全链路）+ `cargo test`（数据层往返）。
+- **用法**：`corepack pnpm tauri dev` → 按 M1~M10 逐项操作并填写「实际 / 结果」两列（含「关窗重开 → 内容 / 设定卡仍在」重启不丢项，以及无 Key 引导、停止/失败草稿保留等）。
+- **口径**：v0.1 **不引入 tauri-driver**（成本/收益低，留 v0.2+ 评估）；「重启不丢」由检查单一条手测承载；延迟/内存口径见 `src/features/editor/perf/README.md`（真实 WebView 基准）。
+- **结果汇总**：通过项 __/10 + 环境（OS/WebView2/日期/操作者）；未通过项须记录现象。

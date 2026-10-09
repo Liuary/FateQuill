@@ -1,7 +1,7 @@
 # 代码审查索引（公共域）
 
 > 存放各阶段审查关闭后的核心结论摘要。详细审查过程与逐提交点内容见私域 `.openfeel/users/{username}/code_review/REV-{stage}.md`。
-> 状态统计：**pending 3 ｜ fixing 0 ｜ resolved 0 ｜ closed 59**
+> 状态统计：**pending 2 ｜ fixing 0 ｜ resolved 0 ｜ closed 69**
 
 ## v0.1.0-stage-01（工程脚手架与工程化基础设施）
 
@@ -54,10 +54,23 @@
 - **closed 合计 12 条**：计划 8 + 方案 4。
 - **关键**：编辑器域 `src/features/editor/` + `src/store/editorStore.ts`；一章一实例（C-01）、`content_format='html'` 零迁移、T8 增量插入接口（撤销 newGroupDelay 合并 + IME DOM 监听）、自动保存（防抖 800ms + flush 三时机 + `chainRef` 串行链）、应用外壳/选书；Vitest 29 文件 110/110、cargo 41/41；DoD 9/11（2 项真实 WebView 性能人工协验）。
 - **BUG-001（high, closed）**：切章未 flush 致防抖窗口内前一章编辑永久丢失 → `requestSelectChapter` 守卫（先 await flush 后切）+ 章号守卫 + 集成用例；修复 commit `6d7d180`。
-- **pending 3 条（非阻塞）**：
-  - REV-013（low）op-006 验证口径 `rg word_count|wordCount` 过宽且偏差未登记
-  - REV-014（low）perf 人工协验（真实 WebView P95/堆增幅）待回填
-  - REV-015（low）build chunk 体积警告（Tiptap/ProseMirror 311KB）
+- **遗留 3 条（stage-05 处置，非阻塞）**：
+  - REV-013（low）op-006 验证口径 `rg word_count|wordCount` 过宽且偏差未登记 → **已由 stage-05 op-001 清理 closed**
+  - REV-014（low）perf 人工协验（真实 WebView P95/堆增幅）待回填 → **并入 stage-05 收口，现由 stage-05 REV-009 承载（pending）**
+  - REV-015（low）build chunk 体积警告（Tiptap/ProseMirror 311KB）→ **已由 stage-05 op-001 清理 closed**
+
+## v0.1.0-stage-05（单 Agent 章节生成 + 设定卡，v0.1 闭环终点）
+
+- **结论**：代码审查**通过**（2026-10-10 00:40），stage 已 test_passed → archiving。**修复闭环**：2 个 low Bug（generation BUG-001、build BUG-001）经修复后测试官独立复验通过并关闭（修复 commit `e3a9e5a`）。
+- **心得总结**：[`v0.1.0-stage-05.md`](v0.1.0-stage-05.md)
+- **审查对象**：
+  1. 阶段计划 `plan.md`（v2，含 REV-001~007 修订，落实 ADR-002 模式 A）：REV-001~007 **closed**（7 条）。
+  2. 操作方案 `ops/op-001~006.md`（op-003 合并 T2+T3）：REV-008 **closed**（1 条）。
+  3. 执行产出代码审查（00:40）：REV-009 **pending**（low，人工协验待办，非阻塞）。
+- **closed 合计 8 条**：计划 7 + 方案 1。
+- **关键**：**模式 A 流式直插**（ADR-002：`subscribeChunks` → 节流 → `EditorController.appendChunk`）；生成面板仅状态（无预览）；`generationStore` 五元状态不持正文、双 store 独立；C-03 Profiler 断言（jsdom，render=0）；上下文装配预算与裁剪序 + 模板版本化；第三栏「生成/设定卡」tab + Key 引导；停止/失败收敛 `idle` + 草稿保留 + 一次 `Ctrl+Z` 撤销整段。实测：`cargo test` **42/42**、Vitest **35 文件 133/133**、无 ai 包、零新增依赖。DoD 11 条：**9 条自动化满足**，2 项（REV-014 perf 实测、冒烟「实际/结果」列）为人工协验待办。
+- **REV-009（low, pending）**：人工协验待办——perf 实测（REV-014）与真机冒烟「实际/结果」列未填写；M1 收口前须闭合（feel-tester 或用户执行）。**非阻塞**。
+- **合并裁决**：op-003 合并 T2（入口/面板/store）+ T3（流式直插接线）——C-03/Profiler 验收依赖真实插入路径，拆分会产生不可编译中间态（审查官裁决**可接受**，提交双标 T2,T3）。
 
 ## 其他阶段
 
