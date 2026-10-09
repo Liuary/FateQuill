@@ -13,7 +13,7 @@
   - [`model-config.md`](core/model-config.md)：模型配置持久化（迁移 v2）、OS 密钥链（keyring）封装、设置页 UI（stage-03 建立）
 
 - **orchestration/** — AI 编排引擎（stage-03 建立）
-  - [`engine.md`](orchestration/engine.md)：可插拔 Provider/Agent/Pipeline 注册表、自研 SSE 协议适配器、Rust 侧流式中继与消费工具；**审查评估（`review/`：Evaluator 契约/四维评估器/rubric/合规规则/rewrite/loop）**（stage-06 补）；**研究域（`research/`：采样/交叉判断契约与算法，provider 无关）**（stage-07 补）
+  - [`engine.md`](orchestration/engine.md)：可插拔 Provider/Agent/Pipeline 注册表、自研 SSE 协议适配器、Rust 侧流式中继与消费工具；**审查评估（`review/`：Evaluator 契约/四维评估器/rubric/合规规则/rewrite/loop）**；**多温度推演（`exploration/`：温度 clamp/走向卡/并行编排/收敛）**（stage-06/08 补）；**研究域（`research/`：采样/交叉判断契约与算法，provider 无关）**（stage-07 补）
 
 - **features/** — 用户功能模块（stage-04 建立）
   - [`editor.md`](features/editor.md)：章节编辑器（Tiptap 一章一实例、HTML 存储）、卷章大纲树与 dnd-kit 排序、自动保存、AI 增量插入接口（stage-04 建立）
@@ -21,6 +21,7 @@
   - [`setting-cards.md`](features/setting-cards.md)：设定卡 CRUD 面板（stage-05 建立）
   - [`review.md`](features/review.md)：审查流水线 —— 四维评估器 / 加权择优 / 重写回路 / 审查面板 / 审查记录持久化（迁移 v3 + IPC）（stage-06 建立）
   - [`research.md`](features/research.md)：研究工作台 —— 多模型采样 / 交叉判断 / 用户标注 / 素材库（迁移 v4 + 导出）/ 规避 skill 库 / 闭环回注与度量实验（stage-07 建立）
+  - [`exploration.md`](features/exploration.md)：多温度并行推演 —— 契约与温度 clamp / 走向卡 / 分支对比视图 / 克制收敛 / 采纳丢弃安全网 / 并发与成本（stage-08 建立）
 
 ## 维护约定
 

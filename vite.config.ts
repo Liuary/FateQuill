@@ -14,6 +14,26 @@ export default defineConfig(() => {
       },
     },
 
+    // 生产构建分包（stage-08 T6 / REV-015 评估）：editor（Tiptap/ProseMirror）/ orchestration / research
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: (id: string) => {
+            if (id.includes("node_modules/@tiptap") || id.includes("node_modules/prosemirror")) {
+              return "editor";
+            }
+            if (id.includes("src/orchestration")) {
+              return "orchestration";
+            }
+            if (id.includes("src/features/research")) {
+              return "research";
+            }
+            return undefined;
+          },
+        },
+      },
+    },
+
     // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
     //
     // 1. prevent Vite from obscuring rust errors

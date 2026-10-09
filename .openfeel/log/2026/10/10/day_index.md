@@ -39,3 +39,4 @@
 | [2026-10-10-Liuary-034.md](2026-10-10-Liuary-034.md) | Liuary | v0.3.0-stage-08.op-002 执行通过 |
 | [2026-10-10-Liuary-035.md](2026-10-10-Liuary-035.md) | Liuary | v0.3.0-stage-08.op-003 执行通过 |
 | [2026-10-10-Liuary-036.md](2026-10-10-Liuary-036.md) | Liuary | v0.3.0-stage-08.op-004 执行通过 |
+| [2026-10-10-Liuary-037.md](2026-10-10-Liuary-037.md) | Liuary | v0.3.0-stage-08.op-005 执行通过 |
