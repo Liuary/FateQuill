@@ -1,14 +1,14 @@
 # IPC 通道约定（FateQuill / 命笔）
 
 > 本文档描述前端（React）与 Rust 后端（`src-tauri/`）之间的 IPC 通道约定。
-> 归属阶段：v0.1.0-stage-01（T5）。**本阶段仅落地「命令通道」**；事件流通道预留至 stage-03。
+> 命令通道于 v0.1.0-stage-01（T5）落地；事件流通道于 v0.1.0-stage-03（T2）落地。
 
 ## 1. 通道类型总览
 
-| 通道类型                     | 机制                                     | 状态                                |
-| ---------------------------- | ---------------------------------------- | ----------------------------------- |
-| 命令通道（command / invoke） | 前端 `invoke` → Rust `#[tauri::command]` | **本阶段实现**                      |
-| 事件流通道（event / stream） | Rust `emit` / `Channel` → 前端监听       | **延后至 stage-03**（SSE 流式中继） |
+| 通道类型                     | 机制                                     | 状态                                         |
+| ---------------------------- | ---------------------------------------- | -------------------------------------------- |
+| 命令通道（command / invoke） | 前端 `invoke` → Rust `#[tauri::command]` | **本阶段实现**                               |
+| 事件流通道（event / stream） | Rust `emit` / `Channel` → 前端监听       | **stage-03 已实现**（`Channel` + requestId） |
 
 ## 2. 命令通道注册约定
 
@@ -35,10 +35,15 @@
 - 前端**只经 IPC**（`src/ipc/*`）调用后端，不直接发起外部网络请求、不直连数据库或读取密钥。
 - 该边界与 `docs/structure.md` §5 一致。
 
-## 6. 事件流通道延后声明
+## 6. 事件流通道约定（stage-03 落地）
 
-- **SSE 流式中继**（Rust `emit` / `Channel` 向前的增量推送）**归属 stage-03**。
-- 本阶段**不实现**事件流/流式逻辑；前端生成/编辑器状态隔离归属 **stage-05**。
+- **命令**：`http_stream(request_id, url, headers, body, auth, on_event)` —— Rust 侧 provider 无关的 SSE 透明中继，经 Tauri `Channel<StreamEvent>` 流式回传；`abort_stream(request_id)` 断流取消（`AbortHandle`，drop future → 连接关闭）。
+- **`StreamEvent` 三态**：`Chunk { data }`（完整 SSE 事件块，按空行边界切分，兼容 `\n\n` / `\r\n\r\n`）/ `Done` / `Error { code, message, statusCode? }`。
+- **超时**：connect 10s / read 60s → `TIMEOUT`；v0.1 **不自动重试**。
+- **https-only**：`url` 仅允许 `https://`（`ensure_https`，REV-009①）。
+- **授权头（REV-009②）**：授权类头（`authorization`/`x-api-key`/`proxy-authorization`/`api-key`）由 Rust 侧从密钥链读取并**合并/覆盖**，前端传入的同名头**一律丢弃**；非 Key 头（Content-Type/Accept 等）允许前端传入。**Key 仅在 Rust 内存，永不下发前端**。
+- **错误脱敏**：中继错误 payload 仅 `{code,message,statusCode?}`，**不含 URL/headers/body/Key**。
+- **前端口径**：`src/ipc/stream.ts` 的 `httpStream()` 封装（`requestId` 可选、内部缺省 `crypto.randomUUID()`，REV-011）。
 
 ## 7. 示例：`ping` 完整链路
 
@@ -109,15 +114,16 @@
 
 Rust 侧错误序列化为 `{ code, message, detail? }`；前端 `src/ipc/errors.ts` 归一化为 `IpcError`。
 
-| 错误码             | 触发场景                                   |
-| ------------------ | ------------------------------------------ |
-| `NOT_FOUND`        | get/update/delete 影响行数为 0             |
-| `VALIDATION`       | 标题为空、`content_format` / `status` 非法 |
-| `UNIQUE_VIOLATION` | 唯一约束冲突（SQLite 2067 / 1555）         |
-| `FK_VIOLATION`     | 外键无效（SQLite 787）                     |
-| `MIGRATION_FAILED` | 迁移失败（预留）                           |
-| `DB_LOCKED`        | 数据库锁定（SQLite 5 / 6）                 |
-| `INTERNAL`         | 其他内部错误（含连接池未就绪）             |
+| 错误码             | 触发场景                                        |
+| ------------------ | ----------------------------------------------- |
+| `NOT_FOUND`        | get/update/delete 影响行数为 0                  |
+| `VALIDATION`       | 标题为空、`content_format` / `status` 非法      |
+| `UNIQUE_VIOLATION` | 唯一约束冲突（SQLite 2067 / 1555）              |
+| `FK_VIOLATION`     | 外键无效（SQLite 787）                          |
+| `MIGRATION_FAILED` | 迁移失败（预留）                                |
+| `DB_LOCKED`        | 数据库锁定（SQLite 5 / 6）                      |
+| `TIMEOUT`          | SSE 中继连接/读取超时（connect 10s / read 60s） |
+| `INTERNAL`         | 其他内部错误（含连接池未就绪）                  |
 
 ### 8.3 前端调用客户端
 

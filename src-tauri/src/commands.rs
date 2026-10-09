@@ -1,6 +1,9 @@
-use tauri::AppHandle;
+use tauri::ipc::Channel;
+use tauri::{AppHandle, State};
+use crate::auth::AuthSpec;
 use crate::db;
 use crate::error::{codes, IpcError};
+use crate::stream::{self, SharedStreamRegistry, StreamEvent};
 
 /// 取插件连接池（未就绪 → INTERNAL）
 async fn pool(app: &AppHandle) -> Result<sqlx::SqlitePool, IpcError> {
@@ -158,4 +161,50 @@ pub async fn reorder_chapters(app: AppHandle, volume_id: i64, ordered_ids: Vec<i
 #[tauri::command]
 pub async fn move_chapter(app: AppHandle, chapter_id: i64, to_volume_id: i64, to_index: i64) -> Result<(), IpcError> {
     db::ordering::move_chapter(&pool(&app).await?, chapter_id, to_volume_id, to_index).await
+}
+
+// ---------- SSE relay (T2) ----------
+#[tauri::command]
+pub async fn http_stream(
+    registry: State<'_, SharedStreamRegistry>,
+    request_id: String,
+    url: String,
+    headers: Vec<(String, String)>,
+    body: String,
+    auth: Option<AuthSpec>,
+    on_event: Channel<StreamEvent>,
+) -> Result<(), IpcError> {
+    stream::ensure_https(&url)?; // REV-009①
+    // auth 存在时先读密钥链（Key 仅存在于 Rust 内存，不返回前端）
+    let composed = match &auth {
+        Some(a) => {
+            let key = crate::keyring_store::get(&a.key_ref_provider, &a.key_ref_label)?;
+            crate::auth::compose_headers(headers, Some((a.clone(), key)))?
+        }
+        None => crate::auth::compose_headers(headers, None)?,
+    };
+    let client = stream::client();
+    let reg = registry.inner().clone();
+    let rid = request_id.clone();
+    let reg_task = reg.clone();
+    let handle = tokio::spawn(async move {
+        stream::relay(&client, &url, composed, body, on_event).await;
+        reg_task.handles.lock().await.remove(&rid);
+    });
+    reg.handles.lock().await.insert(request_id, handle.abort_handle());
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn abort_stream(registry: State<'_, SharedStreamRegistry>, request_id: String) -> Result<bool, IpcError> {
+    Ok(registry
+        .handles
+        .lock()
+        .await
+        .remove(&request_id)
+        .map(|h| {
+            h.abort();
+            true
+        })
+        .unwrap_or(false))
 }

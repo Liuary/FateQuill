@@ -11,6 +11,8 @@ pub mod codes {
     pub const MIGRATION_FAILED: &str = "MIGRATION_FAILED";
     pub const DB_LOCKED: &str = "DB_LOCKED";
     pub const INTERNAL: &str = "INTERNAL";
+    // 连接/读取超时（SSE 中继）
+    pub const TIMEOUT: &str = "TIMEOUT";
 }
 
 /// 跨 IPC 边界的错误结构（序列化为 {code,message,detail?}）

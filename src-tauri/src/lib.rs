@@ -1,7 +1,11 @@
 mod db;
 mod error;
 mod commands;
+mod stream;
+mod keyring_store;
+mod auth;
 
+use std::sync::Arc;
 use tauri_plugin_sql::Builder as SqlBuilder;
 
 // 命令通道示例：前端 invoke("ping") 返回 "pong"
@@ -27,7 +31,9 @@ pub fn run() {
             commands::list_setting_cards, commands::get_setting_card, commands::create_setting_card, commands::update_setting_card, commands::delete_setting_card,
             commands::list_characters, commands::get_character, commands::create_character, commands::update_character, commands::delete_character,
             commands::reorder_volumes, commands::reorder_chapters, commands::move_chapter,
+            commands::http_stream, commands::abort_stream,
         ])
+        .manage(Arc::new(stream::StreamRegistry::default()))
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

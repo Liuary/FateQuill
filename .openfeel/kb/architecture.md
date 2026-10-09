@@ -61,3 +61,13 @@
 - **错误码表**（7 个）：`NOT_FOUND` / `VALIDATION` / `UNIQUE_VIOLATION` / `FK_VIOLATION` / `MIGRATION_FAILED` / `DB_LOCKED` / `INTERNAL`。Rust `impl From<sqlx::Error> for IpcError` 按 SQLite 原生错误码映射：`2067`/`1555` → `UNIQUE_VIOLATION`、`787` → `FK_VIOLATION`、`5`/`6` → `DB_LOCKED`，其余 → `INTERNAL`。
 - **前端归一化**：`src/ipc/errors.ts` 将任意 reject 归一化为 `IpcError`（`code`/`detail`），`src/ipc/client.ts` 的 `invokeCommand` 统一 `try/catch → parseIpcError`；消费方按 `IpcError.code` 分支。
 - **统一事务入口**：`src-tauri/src/db/mod.rs` 的 `db::begin(pool) -> Result<Transaction<'_, Sqlite>, IpcError>` 作为所有多步写入（移动/删除后重排等）的唯一入口；出错经 `?` 提前返回（`Transaction` drop 即回滚），仅成功时 `commit()`。
+
+## [+] AI 数据面：Rust 侧 provider 无关 SSE 中继 + 前端自研适配器 (2026-10-09, ADR-001)
+
+- **不引入 Vercel AI SDK**（`ai` 包）：`orchestration` 任何文件不得 `import "ai"`（DoD 1）。
+- **数据面在 Rust 侧**：命令 `http_stream(request_id, url, headers, body, auth, on_event: Channel<StreamEvent>)` 做 provider 无关的 SSE 透明中继；`abort_stream(request_id)` 经 `AbortHandle` 断流取消。`StreamEvent` = `Chunk{data}` / `Done` / `Error{code,message,statusCode?}`。
+- **授权头不入前端（REV-009）**：授权类头（`authorization`/`x-api-key`/`proxy-authorization`/`api-key`）由 Rust 从 OS 密钥链（`keyring`，service=`fatequill`）读取并合并/覆盖；前端传入的同名头一律丢弃。Key 仅在 Rust 内存，永不下发前端。
+- **https-only**：`ensure_https` 仅允许 `https://`。
+- **超时/脱敏**：connect 10s / read 60s → `TIMEOUT`，无自动重试；错误 payload 仅 `{code,message,statusCode?}`，不含 URL/headers/body/Key。
+- **事件切分（REV-012）**：按空行边界切分，跨块 `\r` 状态机归一化，兼容 `\n\n` / `\r\n\r\n` / `\r\r`，并冲刷无空行终止的末块。
+- **扩展点（REV-007②）**：新增 Provider = 新建适配器文件 + 在 `src/orchestration/providers/register.ts` 注册一行；`orchestration` 核心文件零改动。前端经 `src/ipc/stream.ts` 的 `httpStream()`（`requestId` 可选）消费。
