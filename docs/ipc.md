@@ -86,9 +86,9 @@
 
 ## 8. 数据访问命令与错误结构
 
-### 8.1 数据访问命令清单（38 个）
+### 8.1 数据访问命令清单（41 个）
 
-> 另见 §6 流式通道命令（`http_stream` / `abort_stream`）——故全仓实际注册命令共 40 条。
+> 另见 §6 流式通道命令（`http_stream` / `abort_stream`）——故全仓实际注册命令共 43 条。
 
 5 实体 × [list / get / create / update / delete]，命令名 snake_case：
 
@@ -135,6 +135,23 @@
 | ReviewRecord | `save_review_record`  | `{ chapterId, round, dimension, score, reasons: string[] }` | 保存一条审查记录（每维一行；`reasons` → `reasons_json`） |
 | ReviewRecord | `list_review_records` | `{ chapterId }`                                             | 按章查询审查历史（时间倒序）                             |
 
+素材命令（material，共 3 个；stage-07 T4）：
+
+| 类别     | 命令              | 参数（前端 camelCase）                                                                  | 语义                                                                                 |
+| -------- | ----------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Material | `save_material`   | `{ sourceType, sourceModel, excerpt, positionJson, reason, label, chapterId, status? }` | 保存素材（入库即 `confirmed`；`candidate` 为**预留**枚举，REV-013）                  |
+| Material | `list_materials`  | `{ status?, sourceType?, query? }`                                                      | 列出/检索素材（`excerpt`/`label`/`reason` LIKE；时间倒序）                           |
+| Material | `delete_material` | `{ id }`                                                                                | 删除素材；**被 skill_entry 引用则拒绝**（`FK_VIOLATION` + detail 引用列表，REV-012） |
+
+#### 素材与存储语义（stage-07 T4）
+
+- 表 `material(id, source_type, source_model, excerpt, position_json, reason, label, chapter_id, status, created_at)`：
+  - `source_type ∈ { multi_model_creation, multi_model_cross, user_manual }`（三采集通道）；`status ∈ { candidate, confirmed }`（`candidate` 预留）；
+  - **`excerpt` 为引文唯一权威**（REV-016①）；`position_json` **仅存上下文** `{contextBefore?, contextAfter?}`（不单列上下文字段，避免冗余）；
+  - `chapter_id` 外键 `ON DELETE SET NULL`（删章后素材保留、定位置空）。
+- **隐私**：素材**默认仅本地**（无匿名聚合上传）；导出（JSON/CSV）在前端本地生成并下载。
+- **删除防护（REV-012）**：任一 `skill_entry.source_material_ids_json` 含该素材 id 时**拒绝删除**，错误 `detail` 携带引用它的 skill 列表（`[{id,title}]`）。
+
 #### review_record 关联语义（stage-06 T6）
 
 - 表 `review_record(id, chapter_id, round, dimension, score, reasons_json, created_at)`：**每维一行**；`chapter_id` 外键 `ON DELETE CASCADE`（删章级联清理）。
@@ -147,7 +164,7 @@
 - `model_config(provider, label)` ↔ keyring 条目：`service = fatequill`、`account = {provider}/{label}`（即 `fatequill/{provider}/{label}`）。
 - 经 `keyring_set` / `keyring_delete` / `keyring_exists` 三命令管理（**无 `keyring_get`**）：**Key 不入库**（`model_config` 表不含 key 列，C-05）、**不下发前端**；仅 Rust 中继（`http_stream`）在注入授权头时内部读取。
 
-> 后续 op 新增命令须同步本清单（stage-03 已完成 `http_stream` / `abort_stream`（§6）与模型配置/密钥命令；stage-06 T6 追加审查记录命令）。
+> 后续 op 新增命令须同步本清单（stage-03 已完成 `http_stream` / `abort_stream`（§6）与模型配置/密钥命令；stage-06 T6 追加审查记录命令；stage-07 T4 追加素材命令）。
 
 ### 8.2 错误结构与错误码表
 

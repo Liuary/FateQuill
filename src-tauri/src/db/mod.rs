@@ -8,6 +8,7 @@ pub mod word_count;
 pub mod ordering;
 pub mod model_config;
 pub mod review;
+pub mod material;
 #[cfg(test)]
 pub mod seed;
 #[cfg(test)]

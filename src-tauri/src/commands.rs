@@ -286,3 +286,56 @@ pub async fn list_review_records(
 ) -> Result<Vec<db::review::ReviewRecordRow>, IpcError> {
     db::review::list_by_chapter(&pool(&app).await?, chapter_id).await
 }
+
+// ---------- Material (T4) ----------
+/// 保存素材（入库即 `confirmed`：待确认队列为会话内存，REV-013；`candidate` 预留）
+#[tauri::command]
+#[allow(clippy::too_many_arguments)]
+pub async fn save_material(
+    app: AppHandle,
+    source_type: String,
+    source_model: String,
+    excerpt: String,
+    position_json: String,
+    reason: String,
+    label: String,
+    chapter_id: Option<i64>,
+    status: Option<String>,
+) -> Result<db::material::MaterialRow, IpcError> {
+    let status = status.unwrap_or_else(|| "confirmed".to_string());
+    db::material::insert(
+        &pool(&app).await?,
+        &source_type,
+        &source_model,
+        &excerpt,
+        &position_json,
+        &reason,
+        &label,
+        chapter_id,
+        &status,
+    )
+    .await
+}
+
+/// 列出/检索素材（status / source_type 过滤 + query 模糊检索；时间倒序）
+#[tauri::command]
+pub async fn list_materials(
+    app: AppHandle,
+    status: Option<String>,
+    source_type: Option<String>,
+    query: Option<String>,
+) -> Result<Vec<db::material::MaterialRow>, IpcError> {
+    db::material::list(
+        &pool(&app).await?,
+        status.as_deref(),
+        source_type.as_deref(),
+        query.as_deref(),
+    )
+    .await
+}
+
+/// 删除素材；**被 skill 引用则拒绝**（REV-012；detail 携带引用列表）
+#[tauri::command]
+pub async fn delete_material(app: AppHandle, id: i64) -> Result<(), IpcError> {
+    db::material::delete(&pool(&app).await?, id).await
+}

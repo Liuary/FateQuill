@@ -5,6 +5,7 @@ import { createSettingCardRepository } from "./setting-card-repository";
 import { createCharacterRepository } from "./character-repository";
 import { createModelConfigRepository } from "./model-config-repository";
 import { createReviewRecordRepository } from "./review-record-repository";
+import { createMaterialRepository } from "./material-repository";
 
 export { createNovelRepository } from "./novel-repository";
 export { createVolumeRepository } from "./volume-repository";
@@ -13,6 +14,7 @@ export { createSettingCardRepository } from "./setting-card-repository";
 export { createCharacterRepository } from "./character-repository";
 export { createModelConfigRepository } from "./model-config-repository";
 export { createReviewRecordRepository } from "./review-record-repository";
+export { createMaterialRepository } from "./material-repository";
 
 /** 各实体仓储实例的组合导出 */
 export const repositories = {
@@ -23,4 +25,5 @@ export const repositories = {
   character: createCharacterRepository(),
   modelConfig: createModelConfigRepository(),
   reviewRecord: createReviewRecordRepository(),
+  material: createMaterialRepository(),
 };
