@@ -11,7 +11,9 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Editor } from "@tiptap/react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import type { Character } from "@/domain/models/character";
+import { normalizeProfile } from "@/orchestration/dialogue/profile";
 import type { DialogueProfile } from "@/orchestration/dialogue/types";
 import { repositories } from "@/ipc/repositories";
 import { ConfirmInline } from "@/features/exploration/ConfirmInline";
@@ -21,6 +23,7 @@ import { CharacterLineComposer } from "./CharacterLineComposer";
 import { DialogueEntryList } from "./DialogueEntryList";
 import { NarrationComposer } from "./NarrationComposer";
 import { useDialogue } from "./useDialogue";
+import { useDialogueCost } from "./useDialogueCost";
 import { useMergeDialogue } from "./useMergeDialogue";
 
 export interface DialoguePanelProps {
@@ -44,7 +47,17 @@ export function DialoguePanel({ novelId, chapterId = null, editor = null }: Dial
   const [characters, setCharacters] = useState<Character[]>([]);
   const [merging, setMerging] = useState(false); // 次路径二次确认门
   const [merged, setMerged] = useState(false);
-  const { generateNarration, generateCharacterLine, stop, error } = useDialogue({ config });
+  const [majorOnly, setMajorOnly] = useState(false); // 「仅主要角色」过滤
+  const {
+    generateNarration,
+    generateCharacterLine,
+    generateBatchLines,
+    stop,
+    error,
+    concurrency,
+    setConcurrency,
+  } = useDialogue({ config });
+  const { participants, estimate } = useDialogueCost(characters, { majorOnly });
   const { mergeAsNextChapter, replaceCurrentChapter, error: mergeError } = useMergeDialogue(editor);
 
   useEffect(() => {
@@ -79,6 +92,56 @@ export function DialoguePanel({ novelId, chapterId = null, editor = null }: Dial
       )}
 
       <NarrationComposer running={running} onGenerate={() => void generateNarration()} />
+
+      {/* 成本与并发（**启动前显示**；口径注明） */}
+      <section data-testid="dialogue-config" className="flex flex-col gap-1 text-xs">
+        <label className="flex items-center gap-1">
+          <input
+            type="checkbox"
+            data-testid="major-only"
+            checked={majorOnly}
+            onChange={(event) => setMajorOnly(event.target.checked)}
+          />
+          {t("majorOnly")}
+        </label>
+        <label className="flex items-center gap-1">
+          {t("concurrency")}
+          <Input
+            type="number"
+            min={1}
+            max={10}
+            className="w-16"
+            value={concurrency}
+            onChange={(event) => {
+              const value = Number(event.target.value);
+              if (Number.isFinite(value) && value >= 1) {
+                setConcurrency(Math.trunc(value));
+              }
+            }}
+          />
+        </label>
+        <span data-testid="dialogue-cost" className="opacity-70">
+          {t("cost")}: {estimate.tokens} tokens（{estimate.note}）
+        </span>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            disabled={running || participants.length === 0}
+            onClick={() =>
+              void generateBatchLines(
+                participants.map((character) => ({
+                  id: character.id,
+                  name: character.name,
+                  profile: normalizeProfile(character.profile as DialogueProfile),
+                })),
+              )
+            }
+          >
+            {t("batchLines")}
+          </Button>
+          {running && <span className="opacity-70">{t("queued")}</span>}
+        </div>
+      </section>
       <CharacterLineComposer
         characters={characters}
         running={running}

@@ -6,6 +6,7 @@
  */
 
 import type { ChatOptions, Chunk, ModelRef } from "@/orchestration/types";
+import { DEFAULT_DIALOGUE_CONCURRENCY, runWithConcurrency } from "./concurrency";
 import { buildCharacterAgentInput, type OtherCharacter } from "./context";
 import { buildNarratorAgentPrompt } from "./persona";
 import type { DialogueProfile } from "./types";
@@ -84,4 +85,60 @@ export function toNarratorOptions(input: {
       { role: "user", content: prompt.user },
     ],
   };
+}
+
+/** 批量生成的单项结果（**按输入序归位**） */
+export interface BatchLineResult {
+  participant: { id?: number; name: string };
+  ok: boolean;
+  text?: string;
+  error?: string;
+}
+
+/**
+ * 批量生成多角色台词：经 `runWithConcurrency`（**并发上限 + 超限排队**）；
+ * 每项**仅经白名单装配**（本人 persona + 公共上下文 + 他人**公开身份摘要**）；单项失败不抛穿。
+ */
+export async function generateBatch(input: {
+  /** 参与角色（调用方已按 `major` 过滤） */
+  participants: { id?: number; name: string; profile: DialogueProfile }[];
+  /** 公共上下文（同场景共享） */
+  publicContext: string;
+  modelRef: ModelRef;
+  streamFor: (options: ChatOptions) => AsyncIterable<Chunk>;
+  /** 并发上限（默认 3） */
+  limit?: number;
+  signal?: AbortSignal;
+}): Promise<BatchLineResult[]> {
+  const outcomes = await runWithConcurrency(
+    input.participants,
+    input.limit ?? DEFAULT_DIALOGUE_CONCURRENCY,
+    async (participant, index) => {
+      const others: OtherCharacter[] = input.participants
+        .filter((_, otherIndex) => otherIndex !== index)
+        .map((other) => ({ id: other.id, name: other.name, profile: other.profile }));
+      const options = toCharacterOptions({
+        profile: participant.profile,
+        publicContext: input.publicContext,
+        modelRef: input.modelRef,
+        others,
+      });
+      const result = await generateLine({
+        options,
+        streamFor: input.streamFor,
+        signal: input.signal,
+      });
+      if (!result.ok || !result.text) {
+        throw new Error(result.error ?? "generate-failed");
+      }
+      return result.text;
+    },
+  );
+
+  return outcomes.map((outcome) => ({
+    participant: { id: outcome.item.id, name: outcome.item.name },
+    ok: outcome.ok,
+    text: outcome.value,
+    error: outcome.error,
+  }));
 }

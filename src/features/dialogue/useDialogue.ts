@@ -10,10 +10,12 @@ import { useCallback, useRef, useState } from "react";
 import type { ModelConfig } from "@/domain/models/model-config";
 import type { ModelRef } from "@/orchestration/types";
 import {
+  generateBatch,
   generateLine,
   toCharacterOptions,
   toNarratorOptions,
 } from "@/orchestration/dialogue/generate";
+import { DEFAULT_DIALOGUE_CONCURRENCY } from "@/orchestration/dialogue/concurrency";
 import type { DialogueProfile } from "@/orchestration/dialogue/types";
 import { resolveProviderForConfig } from "@/features/generation/resolve-provider";
 import { useDialogueStore } from "@/store/dialogueStore";
@@ -29,6 +31,8 @@ export interface DialogueSpeaker {
 export function useDialogue(opts: { config: ModelConfig | null }) {
   const abortRef = useRef<AbortController | null>(null);
   const [error, setError] = useState<string | null>(null);
+  /** 批量生成并发上限（默认 3；超限排队） */
+  const [concurrency, setConcurrency] = useState<number>(DEFAULT_DIALOGUE_CONCURRENCY);
 
   /**
    * 最小公共上下文接线（同装配链）：既有条目按顺序拼接；
@@ -115,5 +119,63 @@ export function useDialogue(opts: { config: ModelConfig | null }) {
     abortRef.current?.abort();
   }, []);
 
-  return { generateNarration, generateCharacterLine, stop, error };
+  /**
+   * 批量生成多角色台词：经 `runWithConcurrency`（**并发上限 + 超限排队**）；
+   * 结果按输入序追加条目（单项失败跳过、不抛穿）；返回成功条数。
+   */
+  const generateBatchLines = useCallback(
+    async (participants: DialogueSpeaker[]): Promise<number> => {
+      const config = opts.config;
+      if (!config || participants.length === 0) {
+        return 0;
+      }
+      const controller = new AbortController();
+      abortRef.current = controller;
+      useDialogueStore.getState().setRunning(true);
+      setError(null);
+      try {
+        const modelRef: ModelRef = { providerId: config.provider, model: config.modelName };
+        const provider = resolveProviderForConfig(config);
+        const results = await generateBatch({
+          participants,
+          publicContext: buildPublicContext(),
+          modelRef,
+          streamFor: (chatOptions) =>
+            provider.stream({ ...chatOptions, signal: controller.signal }),
+          limit: concurrency,
+          signal: controller.signal,
+        });
+        let added = 0;
+        for (const result of results) {
+          if (result.ok && result.text) {
+            useDialogueStore.getState().addEntry({
+              kind: "dialogue",
+              speakerId: result.participant.id,
+              speakerName: result.participant.name,
+              content: result.text,
+            });
+            added += 1;
+          }
+        }
+        if (added === 0) {
+          setError("generate-failed");
+        }
+        return added;
+      } finally {
+        abortRef.current = null;
+        useDialogueStore.getState().setRunning(false);
+      }
+    },
+    [opts.config, buildPublicContext, concurrency],
+  );
+
+  return {
+    generateNarration,
+    generateCharacterLine,
+    generateBatchLines,
+    stop,
+    error,
+    concurrency,
+    setConcurrency,
+  };
 }
