@@ -9,19 +9,25 @@
 
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import type { Editor } from "@tiptap/react";
 import { Button } from "@/components/ui/button";
 import type { Character } from "@/domain/models/character";
 import type { DialogueProfile } from "@/orchestration/dialogue/types";
 import { repositories } from "@/ipc/repositories";
+import { ConfirmInline } from "@/features/exploration/ConfirmInline";
 import { useGenerationAvailability } from "@/features/generation/useGenerationAvailability";
 import { useDialogueStore } from "@/store/dialogueStore";
 import { CharacterLineComposer } from "./CharacterLineComposer";
 import { DialogueEntryList } from "./DialogueEntryList";
 import { NarrationComposer } from "./NarrationComposer";
 import { useDialogue } from "./useDialogue";
+import { useMergeDialogue } from "./useMergeDialogue";
 
 export interface DialoguePanelProps {
   novelId: number | null;
+  chapterId?: number | null;
+  /** 次路径「替换当前章」需要（单条撤销） */
+  editor?: Editor | null;
 }
 
 /** 角色档案（加载既有角色，persona 取自 `profile` JSON） */
@@ -30,12 +36,16 @@ async function loadCharacters(novelId: number): Promise<Character[]> {
 }
 
 /** 多声部对话面板 */
-export function DialoguePanel({ novelId }: DialoguePanelProps) {
+export function DialoguePanel({ novelId, chapterId = null, editor = null }: DialoguePanelProps) {
   const { t } = useTranslation("dialogue");
   const { state, config } = useGenerationAvailability();
   const running = useDialogueStore((s) => s.running);
+  const entryCount = useDialogueStore((s) => s.entries.length);
   const [characters, setCharacters] = useState<Character[]>([]);
+  const [merging, setMerging] = useState(false); // 次路径二次确认门
+  const [merged, setMerged] = useState(false);
   const { generateNarration, generateCharacterLine, stop, error } = useDialogue({ config });
+  const { mergeAsNextChapter, replaceCurrentChapter, error: mergeError } = useMergeDialogue(editor);
 
   useEffect(() => {
     let alive = true;
@@ -91,6 +101,45 @@ export function DialoguePanel({ novelId }: DialoguePanelProps) {
       <section className="flex flex-col gap-1">
         <h3 className="text-xs opacity-70">{t("history")}</h3>
         <DialogueEntryList />
+      </section>
+
+      <section data-testid="merge-section" className="flex flex-col gap-2">
+        <h3 className="text-xs opacity-70">{t("merge")}</h3>
+        <div className="flex flex-wrap gap-2">
+          {/* 主路径：新建下一章草稿（不改当前章） */}
+          <Button
+            variant="outline"
+            disabled={entryCount === 0 || chapterId == null}
+            onClick={() => {
+              if (chapterId == null) return;
+              void mergeAsNextChapter(chapterId).then((ok) => setMerged(ok));
+            }}
+          >
+            {t("mergeNextChapter")}
+          </Button>
+          {/* 次路径：替换当前章（危险；二次确认 + 强制快照） */}
+          <Button
+            variant="outline"
+            disabled={entryCount === 0 || chapterId == null || editor == null}
+            onClick={() => setMerging(true)}
+          >
+            {t("mergeReplace")}
+          </Button>
+        </div>
+
+        {merging && (
+          <ConfirmInline
+            prompt={t("mergeConfirm")}
+            onConfirm={() => {
+              setMerging(false);
+              setMerged(replaceCurrentChapter(chapterId, editor?.getHTML() ?? ""));
+            }}
+            onCancel={() => setMerging(false)}
+          />
+        )}
+
+        {merged && <p className="text-xs opacity-70">{t("mergeDone")}</p>}
+        {mergeError && <p className="text-destructive text-xs">{t("mergeFailed")}</p>}
       </section>
     </div>
   );

@@ -17,6 +17,15 @@
   "empty": "暂无条目",
   "unknownSpeaker": "未知角色",
   "history": "公共历史",
+  "merge": "合并落章",
+  "mergeNextChapter": "合并为下一章草稿",
+  "mergeReplace": "替换当前章（危险）",
+  "mergeConfirm": "将覆盖当前章正文（替换前正文已自动入池快照，可恢复；一次 Ctrl+Z 亦可撤销）。确认替换？",
+  "mergeDone": "已合并落章",
+  "mergeFailed": "合并失败，请重试",
+  "nextChapterTitle": "多声部对话草稿",
+  "confirm": "确认",
+  "cancel": "取消",
   "guideSettings": "请先在「设置」配置模型并写入 API Key",
   "generateFailed": "生成失败，请重试"
 }

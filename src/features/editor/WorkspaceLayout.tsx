@@ -127,7 +127,7 @@ export function WorkspaceLayout({ onEditorReady }: WorkspaceLayoutProps = {}) {
         ) : tab === "exploration" ? (
           <ExplorationPanel novelId={currentNovelId} chapterId={currentChapterId} editor={editor} />
         ) : (
-          <DialoguePanel novelId={currentNovelId} />
+          <DialoguePanel novelId={currentNovelId} chapterId={currentChapterId} editor={editor} />
         )}
       </aside>
     </div>

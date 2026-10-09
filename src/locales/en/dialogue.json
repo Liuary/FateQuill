@@ -17,6 +17,15 @@
   "empty": "No entries yet",
   "unknownSpeaker": "Unknown speaker",
   "history": "Shared history",
+  "merge": "Merge to chapter",
+  "mergeNextChapter": "Merge as next chapter draft",
+  "mergeReplace": "Replace current chapter (danger)",
+  "mergeConfirm": "This overwrites the current chapter text (a snapshot is saved first; one Ctrl+Z also restores). Confirm?",
+  "mergeDone": "Merged to chapter",
+  "mergeFailed": "Merge failed, please retry",
+  "nextChapterTitle": "Multi-voice dialogue draft",
+  "confirm": "Confirm",
+  "cancel": "Cancel",
   "guideSettings": "Configure a model and store an API key in Settings first",
   "generateFailed": "Generation failed, please retry"
 }
