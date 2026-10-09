@@ -222,3 +222,5 @@ try {
 > **生成流程（stage-05）**：复用现有 IPC——SSE 中继 `http_stream`/`abort_stream`（§6）与仓储命令（§8）；**本阶段不新增 IPC 命令**。
 
 > **推演（stage-08 T1）**：多温度并行推演复用 `http_stream`（§6，非流式收口）+ 既有仓储命令；**无新命令**（前端命令面无新增，仅前端并行编排）。
+
+> **易经卦象（stage-09）**：卦象系统为**前端静态数据 + 纯函数**（`src/data/iching/` + `src/orchestration/iching/`）；**无新增 Rust 命令**——起卦/解卦/引导卡/宿命卡均在前端完成，宿命卡经**既有** `create_setting_card` 落库（`kind="fate"`），可选开关存 `localStorage`。

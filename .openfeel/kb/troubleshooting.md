@@ -196,3 +196,22 @@
 - **防范执行（本阶段落地）**：① 推演 UI 挂工作区**第三栏「推演」tab**（`WorkspaceLayout` 生产挂载 `<ExplorationPanel>`，`tab === "exploration"`）；② 采纳能力经 `BranchCompare → useAdoptBranch` 生产接线（`adoptAsNextChapter`/`replaceCurrentChapter`/`discard`）；③ 收口以**生产调用非零 rg 断言**核验（`rg -n -e "ExplorationPanel" -e "useAdoptBranch" src --glob "!*.test.*"` 命中生产组件/宿主）。
 - **关键认知复述**：**测试通过 ≠ 功能可用**；「契约先行、UI 后接」的交付，收口**必须**做端到端可达性核验（生产调用非零 + 真实链路测试）。评审/验收对「纯函数型交付」须追问「**谁调用它**」。
 - **观察项（非缺陷，产品取舍）**：`build-exploration-options` 取「前章（`idx-1`）末尾」为前文（与 stage-05 `build-chapter-options` 完全一致，符合 op-001 定稿），但推演场景用户通常停留**当前章**，其本章正文未进入上下文——是否改「当前章末尾」属产品取舍，建议后续与用户确认（**当前实现忠实于方案，非执行偏差**）。
+
+## [+] stage-08 REV-009：采纳次路径快照为「会话内存级」（原正文丢失窗口）(2026-10-10, stage-09 T6)
+
+- **现象**：`useAdoptBranch.replaceCurrentChapter`（次路径「替换当前章」）在替换前把**原正文**入 `reviewStore.versions`（会话内存），**未持久化**——若应用崩溃/强杀，该快照随会话丢失（原正文仍在 DB，故**不是 DB 级丢失**，但会话内回滚窗口消失）。
+- **持久化路线登记（stage-09 不实现）**：后续版本将 `reviewStore.versions` 快照**持久化**（**迁移 v5** 新增 `adoption_snapshot` 表，或落地为**本地文件**），使「替换前快照」跨会话可恢复。
+- **现网缓解**：主路径「新建下一章草稿」**不改当前章**（无此窗口）；次路径另有**单条 `Ctrl+Z` 撤销**与**确认对话框**双保险。
+- **判定**：非缺陷（会话级约束已声明）；登记为**已知限制**，随持久化落地关闭。
+
+## [+] stage-08 REV-010：`abort` 分支 `error="aborted"` 未特判 / 主路径新章固定追加卷末 (2026-10-10, stage-09 T6)
+
+- **现象 ①**：`runExploration` 在 `signal.aborted` 时把在跑分支置 `status="error"`、`error="aborted"`——UI **未特判**「用户主动停止」与「真实失败」（均显示失败样式）。
+- **现象 ②**：采纳主路径创建的「下一章草稿」**固定追加当前卷末**，不支持指定卷/位置。
+- **归属**：**stage-10 或人工协验批处理**（两者均属 UX 细化，非阻塞）。
+- **判定**：非缺陷；登记为**已知项**，不单独立任务。
+
+## [+] v0.2 人工协验 4 项：BLOCKED 保持跟踪 (2026-10-10, stage-09 T6)
+
+- **范围**：真实 Key E2E / 真机 WebView 冒烟（v0.1+v0.2）/ T6 实验回填 / 编辑器 perf 实测——**执行主体 = 用户 / feel-tester**（AI 不可替代），详见 `docs/build-size-report.md` §四。
+- **口径**：**保持 BLOCKED 跟踪**、**不阻塞** v0.3 阶段推进、**不伪造数据**；四项全部闭合后 **M2 正式达成**。

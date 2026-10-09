@@ -5,27 +5,28 @@
 
 ## 1. 分层目录职责
 
-| 目录                             | 职责                                                                                              |
-| -------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `src/app/`                       | 应用入口与全局装配（`main.tsx`、`App.tsx`、i18n 初始化、Provider 等）                             |
-| `src/components/`                | 应用级组合组件（自建）                                                                            |
-| `src/components/ui/`             | shadcn/ui 源码组件（由 shadcn CLI 管理，落库为可编辑源码）                                        |
-| `src/ui/`                        | 通用可复用 UI 层（布局、非 shadcn 组合组件）                                                      |
-| `src/features/`                  | 面向用户的功能模块（按功能内聚）                                                                  |
-| `src/features/editor/`           | 编辑器与大纲树（Tiptap 基础编辑器；同域功能模块；i18n `editor` 命名空间启用）                     |
-| `src/features/review/`           | 审查 UI（权重配置 + 版本池回看；stage-06，**暂未接入 i18n**）                                     |
-| `src/features/research/`         | 研究/采样工作台（多模型无限制创作采样 + 素材候选；stage-07 建立）                                 |
-| `src/features/exploration/`      | 多温度并行推演（走向意向 → 分支推演 → 走向卡；stage-08 建立）                                     |
-| `src/domain/`                    | 纯 TS 领域模型与业务规则（无 UI、无网络）                                                         |
-| `src/data/iching/`               | 六十四卦只读静态数据（公有领域《周易》白文）+ **手写校验**（无第三方校验库；stage-09 建立）       |
-| `src/orchestration/`             | Agent 编排引擎（可插拔）                                                                          |
-| `src/orchestration/research/`    | 研究契约与采样调度器（**串行逐模型**；无预算裁剪 / 不触发审查 / 不进正文；stage-07 建立）         |
-| `src/orchestration/exploration/` | 推演引擎契约（温度集与 per-provider clamp / 走向卡解析 / **并行 + 乱序归位**编排；stage-08 建立） |
-| `src/ipc/`                       | 前端 IPC 封装（`invoke` 包装）                                                                    |
-| `src/store/`                     | 状态管理目录（Zustand 于 stage-04 接入）                                                          |
-| `src/lib/`                       | 通用工具（如 `cn`）                                                                               |
-| `src/locales/`                   | i18n 资源（zh-CN / en）                                                                           |
-| `src-tauri/`                     | Rust 后端（网络 / 密钥 / SQLite 边界）                                                            |
+| 目录                             | 职责                                                                                                                              |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `src/app/`                       | 应用入口与全局装配（`main.tsx`、`App.tsx`、i18n 初始化、Provider 等）                                                             |
+| `src/components/`                | 应用级组合组件（自建）                                                                                                            |
+| `src/components/ui/`             | shadcn/ui 源码组件（由 shadcn CLI 管理，落库为可编辑源码）                                                                        |
+| `src/ui/`                        | 通用可复用 UI 层（布局、非 shadcn 组合组件）                                                                                      |
+| `src/features/`                  | 面向用户的功能模块（按功能内聚）                                                                                                  |
+| `src/features/editor/`           | 编辑器与大纲树（Tiptap 基础编辑器；同域功能模块；i18n `editor` 命名空间启用）                                                     |
+| `src/features/review/`           | 审查 UI（权重配置 + 版本池回看；stage-06，**暂未接入 i18n**）                                                                     |
+| `src/features/research/`         | 研究/采样工作台（多模型无限制创作采样 + 素材候选；stage-07 建立）                                                                 |
+| `src/features/exploration/`      | 多温度并行推演（走向意向 → 分支推演 → 走向卡；stage-08 建立）                                                                     |
+| `src/domain/`                    | 纯 TS 领域模型与业务规则（无 UI、无网络）                                                                                         |
+| `src/data/iching/`               | 六十四卦只读静态数据（公有领域《周易》白文）+ **手写校验**（无第三方校验库；stage-09 建立）                                       |
+| `src/orchestration/iching/`      | 起卦与解卦（`deriveHexagram` 朱熹七情形 / `castRandom`·`castManual` / `buildGuideCard` / `buildFateCard`；纯函数，stage-09 建立） |
+| `src/orchestration/`             | Agent 编排引擎（可插拔）                                                                                                          |
+| `src/orchestration/research/`    | 研究契约与采样调度器（**串行逐模型**；无预算裁剪 / 不触发审查 / 不进正文；stage-07 建立）                                         |
+| `src/orchestration/exploration/` | 推演引擎契约（温度集与 per-provider clamp / 走向卡解析 / **并行 + 乱序归位**编排；stage-08 建立）                                 |
+| `src/ipc/`                       | 前端 IPC 封装（`invoke` 包装）                                                                                                    |
+| `src/store/`                     | 状态管理目录（Zustand 于 stage-04 接入）                                                                                          |
+| `src/lib/`                       | 通用工具（如 `cn`）                                                                                                               |
+| `src/locales/`                   | i18n 资源（zh-CN / en）                                                                                                           |
+| `src-tauri/`                     | Rust 后端（网络 / 密钥 / SQLite 边界）                                                                                            |
 
 > 空目录以 `.gitkeep` 占位，保证纳入版本管理。
 
@@ -165,3 +166,14 @@ plan v3 技术约束中的目录集为 `src/{app,components,features,domain,orch
 - **输出**：走向卡 `{ summary, keyTurns, settingCardIds }`；**非流式收口**（聚合全文后解析 JSON，容错复用 `review/json` 的 `extractJson`）。
 - **编排**：`runExploration` **并行**（默认并发 3）且**结果按输入顺序归位**（乱序完成不影响）；单分支失败置 `error` 不抛穿。
 - **无新增 IPC**：复用 `http_stream`（§6）与既有仓储命令（见 `docs/ipc.md`）。
+
+## 16. 易经卦象系统（stage-09）
+
+- **落点**：
+  - `src/data/iching/`：64 卦**只读静态数据**（公有领域《周易》白文；`excerpt` 口径见 `docs/iching-data.md`）+ **手写校验**（六条规则；**无第三方校验库**）。
+  - `src/orchestration/iching/`（**纯函数**）：`deriveHexagram`（本卦/之卦/变爻 + **朱熹七情形**解读指引）、`zhuXiReading`、`readingVerses`、`castRandom`/`createSeededRng`/`castManual`、`buildGuideCard`/`renderGuideText`、`buildFateCard`。
+  - `src/features/exploration/`：`IChingPanel`（随机/手动起卦 + 解读）、`FatePanel`（宿命提示 → 写入设定卡）、`useIChingEnabled`（**可选开关**，`localStorage['fatequill.iching.enabled']`，**缺省关闭**）。
+- **可选可关**：**缺省关闭**；关闭时起卦/宿命入口**不可见**，且不构建卦象引导（**零调用零副作用**）；开启时引导文本并入推演 **system 约束段**（`buildExplorationOptions.hexagramGuide?`）。
+- **不覆盖设定卡硬约束**：卦象引导**不进入 `converge` 的设定卡覆盖判据**（设定卡约束最高优先；`settingCardIds` 不变）。
+- **IPC**：**无新增 Rust 命令**——卦象为**前端静态数据 + 纯函数**（见 `docs/ipc.md`）。
+- **范围排除**：**大六壬**等其它术数**显式排除**，**留 stage-12** 评估（本阶段仅六十四卦）。

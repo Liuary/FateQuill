@@ -67,6 +67,7 @@ tests/fixtures/*.sse    # SSE 录制回放夹具（openai-compatible / anthropic
 - **无 AI SDK**：`orchestration` 任何文件不得 `import "ai"`（ADR-001）。
 - **审查评估（stage-06）**：`src/orchestration/review/` —— `Evaluator` 契约 / `Registry<Evaluator>` 注册表（`evaluateWithFallback` 有限重试 + 降级不抛穿）/ 四维评估器（剧情·世界观·真人感为 LLM-as-judge，经 `ModelProvider` **非流式收口**；合规为**规则引擎**，无需 Token）/ rubric（`REVIEW_RUBRIC_VERSION`）/ 加权归一 `weightedTotal` / `runReviewLoop`（自动重写上限 2，**合规低分仅人工裁决**，产物入池**不自动替换正文**）。
 - **提示模板 `skills` 扩展（stage-07 T6）**：`prompts/chapter-generation.ts` 的 `ChapterPromptInput.skills?`（`PromptSkill { title, rule }`）拼入 system 段（预算桶 **≤500 字**，计入总预算）；**缺省向后兼容**；生成链路经 skill 仓储加载并透传（`src/features/research/experiments/` 为该扩展的度量实验落点）。
+- **起卦解卦（`iching/`，stage-09）**：`deriveHexagram(lines)`（本卦/之卦/变爻 + **朱熹七情形**解读指引）、`zhuXiReading`、`readingVerses`、`castRandom`/`createSeededRng`/`castManual`、`buildGuideCard`/`renderGuideText`、`buildFateCard`——**纯函数**（无 IO、无依赖），数据取自 `src/data/iching/`；引导文本经 `buildExplorationOptions.hexagramGuide?` **可选**并入推演 system 段（缺省向后兼容）。
 - **研究域（stage-07）**：`src/orchestration/research/`（provider 无关）——采样调度 `runSampling`（**串行逐模型**，产出仅入会话候选 `MaterialCandidate`，**不进正文/不自动保存/不触发审查/无预算裁剪/跳过合规**）、交叉判断 `extractFlavorExcerpts`（复用 `review/json` 的 `extractJson`）与 `mergeByExcerpt`（**verbatim 引文精确交集** + 命中分级）、受控标签枚举 `tags.ts`。研究采样与生成路径**故意解耦**（详见 `manual/features/research.md`）。
 
 ## 测试基线（v0.1.0-stage-03）
