@@ -1,0 +1,8 @@
+{
+  "score": 68,
+  "reasons": ["存在若干套话（『不禁』『仿佛』）", "句式偏单调", "信息密度尚可"],
+  "findings": {
+    "dimension": "humanity",
+    "subDimensions": [{ "name": "套话密度", "verdict": "偏高" }]
+  }
+}

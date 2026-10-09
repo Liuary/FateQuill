@@ -1,0 +1,11 @@
+{
+  "score": 86,
+  "reasons": ["冲突推进清晰，主角目标明确", "第二幕伏笔在结尾有呼应"],
+  "findings": {
+    "dimension": "plot",
+    "subDimensions": [
+      { "name": "逻辑连贯", "verdict": "因果链完整" },
+      { "name": "冲突推进", "verdict": "每场戏都在推进目标" }
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "plot": { "min": 80, "max": 89 },
+  "worldview": { "min": 60, "max": 79 },
+  "humanity": { "min": 60, "max": 79 },
+  "compliance": {
+    "positive": { "min": 0, "max": 99 },
+    "negative": { "min": 100, "max": 100 }
+  }
+}

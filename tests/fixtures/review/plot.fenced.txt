@@ -1,0 +1,7 @@
+评审结果如下：
+
+```json
+{"score": 83, "reasons": ["节奏张弛有度", "转折略突兀"], "findings": {"dimension": "plot"}}
+```
+
+以上为剧情维度判定。
