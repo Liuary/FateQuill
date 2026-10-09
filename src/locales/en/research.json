@@ -38,6 +38,18 @@
     "translationese": "Translationese"
   },
   "cancel": "Cancel",
+  "materialLibrary": "Material library",
+  "materialFilterStatus": "Status",
+  "materialFilterSourceType": "Source channel",
+  "materialFilterKeyword": "Keyword",
+  "materialFilterAll": "All",
+  "exportJson": "Export JSON",
+  "exportCsv": "Export CSV",
+  "delete": "Delete",
+  "deleteReferenced": "Referenced by a skill — cannot delete",
+  "deleteFailed": "Delete failed",
+  "materialEmpty": "No materials yet",
+  "refresh": "Refresh",
   "skills": {
     "title": "Avoidance skill library",
     "empty": "No skill entries yet",

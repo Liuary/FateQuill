@@ -2,8 +2,8 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-09T19:21:26.403Z",
-    "revision": 254
+    "updated": "2026-10-09T19:16:59.423Z",
+    "revision": 248
   },
   "pipeline": {
     "phase": "active",
@@ -890,7 +890,7 @@
     },
     "v0.2.0-stage-07": {
       "name": "v0.2.0-stage-07",
-      "phase": "exec_running",
+      "phase": "test_failed",
       "status": "review_passed",
       "deps": [
         "v0.1.0-stage-03",
@@ -1018,23 +1018,6 @@
         },
         "op-008": {
           "title": "修复交叉判断无 UI 入口与标注入库静默失败（REV-018/019）(fix)",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        },
-        "op-009": {
-          "title": "修复素材库缺浏览/检索/导出/删除 UI（BUG-001）(fix)",
           "state": "pending",
           "assignee": "openfeel-executor",
           "attempts": 0,
@@ -3511,65 +3494,6 @@
         "stageName": "v0.2.0-stage-07",
         "from": "review_passed",
         "to": "test_pending"
-      }
-    },
-    {
-      "time": "2026-10-09T19:19:27.456Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.2.0-stage-07",
-        "from": "test_pending",
-        "to": "test_failed"
-      }
-    },
-    {
-      "time": "2026-10-09T19:19:27.771Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.2.0-stage-07",
-        "from": "test_failed",
-        "to": "scheme_pending"
-      }
-    },
-    {
-      "time": "2026-10-09T19:19:43.765Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.2.0-stage-07",
-        "opId": "op-009"
-      }
-    },
-    {
-      "time": "2026-10-09T19:20:12.034Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.2.0-stage-07",
-        "from": "scheme_pending",
-        "to": "scheme_review"
-      }
-    },
-    {
-      "time": "2026-10-09T19:21:26.093Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.2.0-stage-07",
-        "from": "scheme_review",
-        "to": "scheme_passed"
-      }
-    },
-    {
-      "time": "2026-10-09T19:21:26.403Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.2.0-stage-07",
-        "from": "scheme_passed",
-        "to": "exec_running"
       }
     }
   ]

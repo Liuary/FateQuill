@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useResearchStore } from "@/store/researchStore";
 import { AnnotationPanel } from "./AnnotationPanel";
+import { MaterialLibrary } from "./MaterialLibrary";
 import { SkillLibrary } from "./SkillLibrary";
 import { buildSelectedModels, useSampling } from "./useSampling";
 import { useCrossJudge } from "./useCrossJudge";
@@ -131,6 +132,8 @@ export function ResearchWorkbench() {
       </section>
 
       <AnnotationPanel />
+
+      <MaterialLibrary />
 
       <SkillLibrary />
     </div>

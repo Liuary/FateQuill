@@ -38,6 +38,18 @@
     "translationese": "翻译腔"
   },
   "cancel": "取消",
+  "materialLibrary": "素材库",
+  "materialFilterStatus": "状态",
+  "materialFilterSourceType": "来源通道",
+  "materialFilterKeyword": "关键字",
+  "materialFilterAll": "全部",
+  "exportJson": "导出 JSON",
+  "exportCsv": "导出 CSV",
+  "delete": "删除",
+  "deleteReferenced": "该素材被 skill 引用，无法删除",
+  "deleteFailed": "删除失败",
+  "materialEmpty": "暂无素材",
+  "refresh": "刷新",
   "skills": {
     "title": "规避 skill 库",
     "empty": "暂无 skill 条目",
