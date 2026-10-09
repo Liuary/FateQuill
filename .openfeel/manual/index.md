@@ -13,7 +13,7 @@
   - [`model-config.md`](core/model-config.md)：模型配置持久化（迁移 v2）、OS 密钥链（keyring）封装、设置页 UI（stage-03 建立）
 
 - **orchestration/** — AI 编排引擎（stage-03 建立）
-  - [`engine.md`](orchestration/engine.md)：可插拔 Provider/Agent/Pipeline 注册表、自研 SSE 协议适配器、Rust 侧流式中继与消费工具；**审查评估（`review/`：Evaluator 契约/四维评估器/rubric/合规规则/rewrite/loop）**（stage-06 补）
+  - [`engine.md`](orchestration/engine.md)：可插拔 Provider/Agent/Pipeline 注册表、自研 SSE 协议适配器、Rust 侧流式中继与消费工具；**审查评估（`review/`：Evaluator 契约/四维评估器/rubric/合规规则/rewrite/loop）**（stage-06 补）；**研究域（`research/`：采样/交叉判断契约与算法，provider 无关）**（stage-07 补）
 
 - **features/** — 用户功能模块（stage-04 建立）
   - [`editor.md`](features/editor.md)：章节编辑器（Tiptap 一章一实例、HTML 存储）、卷章大纲树与 dnd-kit 排序、自动保存、AI 增量插入接口（stage-04 建立）

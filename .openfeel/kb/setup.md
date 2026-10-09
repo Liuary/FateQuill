@@ -100,3 +100,13 @@ cargo test --manifest-path src-tauri/Cargo.toml   # Rust 测试
 - **用法**：`corepack pnpm tauri dev` → 按 M1~M10 逐项操作并填写「实际 / 结果」两列（含「关窗重开 → 内容 / 设定卡仍在」重启不丢项，以及无 Key 引导、停止/失败草稿保留等）。
 - **口径**：v0.1 **不引入 tauri-driver**（成本/收益低，留 v0.2+ 评估）；「重启不丢」由检查单一条手测承载；延迟/内存口径见 `src/features/editor/perf/README.md`（真实 WebView 基准）。
 - **结果汇总**：通过项 __/10 + 环境（OS/WebView2/日期/操作者）；未通过项须记录现象。
+
+## [+] v0.2 冒烟检查单用法（研究 / 审查流程，人工协验） (2026-10-10)
+
+- **落点**：`docs/smoke-check-v0.2.md`（表格：步骤 / 预期 / 实际 / 结果），承载 v0.2 的**真机（Tauri 窗口）人工协验**，与 `docs/smoke-check-v0.1.md` 并列。
+  - **审查流程（R1–R10）**：配置模型 → 生成章节 → 触发四维审查 → 查看分数/理由 → 改判 → 触发重写（产物入池不自动替换）→ 采纳版本（`replaceContent` 单条撤销）→ 审查记录可回溯（`list_review_records`）。
+  - **研究流程（S1–S5）**：模型勾选采样 → 交叉判断 → 待确认队列 → 用户标注入库 → skill 归纳 → **回注度量（skill 注入前后四维对比）**。
+  - **性能（P1–P3）**：REV-014 perf 回填（P95<16ms / 20 章 `.ProseMirror`==1 / 堆增幅<20%）。
+- **用法**：`corepack pnpm tauri dev` 后逐项操作并填写「实际/结果」两列；**需真实 WebView/真实 Key 的项**（AI 不可替代）如实标注 **BLOCKED（执行主体=用户/feel-tester）**，**严禁伪造数值**。
+- **联动**：T6 度量实验落点 `src/features/research/experiments/report.md`（**数据状态字段**：已回填/待回填）与检查单 S5 **同一检查单闭环**；无 GUI 会话时 `report.md` 允许「待回填」占位但须如实标注。
+- **判定**：BLOCKED 项**非失败、非通过**，不构成缺陷阻塞；闭合后随对应 REV（如 REV-009/014）一并 closed。测试基线（v0.2 收官）：`cargo test` **52/52**、Vitest **295/295**（64 文件）、lint 0 error、build 通过。

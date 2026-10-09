@@ -173,3 +173,38 @@ resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } }
 - **落点** `src/orchestration/review/budget.ts`：`REVIEW_CONTENT_BUDGET = PROMPT_BUDGET.total`（**单一来源复用** stage-05 装配预算，=8000 字符）、`REVIEW_TRIM_MARKER`、`trimReviewContent(content, budget?)`（≤预算原样；超限保留开头至预算 + 裁剪标记）。
 - **接入两处**：`evaluators/llm-judge.ts`（评审 user message 正文）与 `rewrite.ts`（`buildRewriteMessages` 待改正文）——避免长章正文全量进入每维评审（每章 4 次评审 + 最多 2 次重写）造成 Token 线性放大。
 - **验证**：临时探针以 5×预算超长正文调用，断言送入 LLM 的文本含标记且 `length ≤ 预算 + 标记长`、`< 原文长`（探针用后清理）。
+
+## [+] 引文精确交集合并（verbatim 为键 + 命中分级） (2026-10-10)
+
+- **场景**：多模型交叉判断「AI 味」共识——各模型独立摘取「AI 味片段 + 理由」，如何聚合为同一条标注。
+- **模式（v0.2 简化）**：`mergeByExcerpt(results: ModelExcerpts[]): CrossJudgeResult[]` —— 以模型返回的**原文引文（verbatim excerpt）为键**求**精确交集**（`Map<excerpt, {models:Set, reasons:Set}>`）；命中模型数 **≥2 → 高置信 `high`**、**=1 → 待确认 `pending`**；多模型对同一引文的不同 `reason` 以「；」连接去重。**不做模糊对齐**（大小写/空白不归一，v0.2 显式接受召回损失）。
+- **为何以引文为键**：LLM 返回的 **offset 不可靠（幻觉风险）**；引文原文虽需前端二次定位（文本搜索），但稳且可 verbatim 检索（见 `locate.ts`）。
+- **配套约定**：输出结构 `{excerpt, positionHint, models, reason, confidence, sourceType:"multi_model_cross"}`；**结果入待确认队列（会话内存）不入库直达**——用户确认后才经标注入库（避免模型误判污染素材库）。
+- **通用**：跨模型共识聚合优先用**可稳定比对的键**（原文片段）而非**易漂移的坐标**（offset/行号）。
+
+## [+] 三通道 sourceType 透传（枚举单一来源 + 按来源写入） (2026-10-10)
+
+- **背景**：素材有**三条采集通道** `multi_model_creation`（多模型采样）/ `multi_model_cross`（交叉判断）/ `user_manual`（用户手选），须在素材上可区分（检索/导出/统计）。
+- **单一来源**：`MaterialSourceType` 定义在 `src/domain/models/material.ts`（**domain 层**，供 `src/orchestration/research/` 引用）——避免双处定义漂移；`MaterialCandidate`/`CrossJudgeResult` 各自**自带 `sourceType`**（候选=creation、交叉项=cross），供下游透传。
+- **透传规则**：`useAnnotation.save` 的 `sourceType` **取自被标注项自带通道**（交叉待确认项 → `multi_model_cross`、采样候选 → `multi_model_creation`）；**仅「从零手选片段」**才用 `user_manual`。**禁止写死**某通道（写死会使检索过滤/导出统计/DoD「三通道」验收全部失真——REV-011 high）。
+- **守护**：测试以三通道用例断言 `save_material` 收到的 `source_type` 分别正确（`ResearchWorkbench.test.tsx`/`AnnotationPanel.test.tsx`）。
+
+## [+] skill 注入预算桶（system 拼接 + ≤500 字 + 向后兼容） (2026-10-10)
+
+- **落点**：`src/orchestration/prompts/chapter-generation.ts` —— `ChapterPromptInput.skills?: PromptSkill[]`（`PromptSkill { title, rule }`），`buildChapterPrompt` 将 skill 规则渲染为「规避要点：\n- 标题：规则」拼入 **system 段**。
+- **预算桶**：`PROMPT_BUDGET.skills = 500`（字符，计入 `total`）——**跨阶段扩展**（stage-07 T6 扩展 stage-05 装配器）；超总预算时裁剪序追加第 ③ 步「仍超再削 skill 段（可清空，**最后削**）」。
+- **向后兼容（硬约束）**：`skills` 缺省/空时**系统提示、预算、裁剪顺序与旧实现完全一致**——stage-05 既有 `chapter-generation.test.ts` **必须回归通过**；加载 skill 失败**静默降级为不注入**（`catch(() => [])`，保证生成链路可用）。
+- **两层验证**：单元 = 「注入后 `messages` 含 skill 文本」（可判定单测）；效果 = 注入前后四维评审对比（T6 度量）。
+- **注入口径**：注入 = **全部** `skill_entry`（表**无 status 维度**；入库 skill 均源自 confirmed 素材归纳）。
+
+## [+] UI 接线验证：生产调用非零 rg 断言（防「功能内置无入口」） (2026-10-10)
+
+- **教训来源**：REV-018（交叉判断 `extractFlavorExcerpts`/`mergeByExcerpt` 生产零调用，`multi_model_cross` 通道不可达）+ BUG-001（`export.ts` 三函数与 `material.remove` 生产零调用，素材库「可检索/可导出」UI 不可达）——**纯函数 + IPC 命令 + 契约测试全绿，但功能在 UI 层不可达**。
+- **模式**：对「已交付但可能缺 UI 入口」的能力，验证标准**必须**含**生产调用非零**的 `rg` 断言——
+  ```powershell
+  rg -n -e "materialsToJson" -e "materialsToCsv" -e "downloadExport" src --glob "!*.test.*"
+  rg -n "material.remove" src --glob "!*.test.*"
+  ```
+  预期命中**生产组件**（如 `MaterialLibrary.tsx` / `useMaterialLibrary.ts`），而非仅定义文件或测试。同理验证编排 hook 生产接线（`rg "runCrossJudge" ResearchWorkbench.tsx`）。
+- **关键认知**：**测试通过 ≠ 功能可用**——单测覆盖纯函数/契约时，若生产无调用方，缺陷会被全绿测试掩盖。凡「契约先行、UI 后接」的交付，收口须做**端到端可达性**核验（rg 生产调用 + 真实链路测试）。
+- **推广**：`--glob "!*.test.*"` 排除测试夹具，避免「仅测试引用」被误判为已接线（呼应「rg 验证口径区分逻辑/数据夹具」）。

@@ -151,3 +151,33 @@
 - **现象**：v0.2 新增审查面板（及后续 research 域）后，入口 chunk **持续增长**；`pnpm build` 仍报 Vite 警告「chunk > 500KB」（2026-10-10 实测 ~850KB / gzip ~268KB）。
 - **处理**：**v0.2 接受现状**（核心依赖懒加载收益有限）；**v0.3 评估** `manualChunks` 分包（editor / orchestration / research 分组）或 StarterKit → 精选扩展裁剪。
 - **判定**：非错误、不影响功能；与 stage-05 REV-015 登记口径衔接，**不单独立任务**，记为已知项备查。
+
+## [+] 「功能无入口」模式：纯函数/契约测试全绿但生产零调用（REV-018 / BUG-001 同类根因） (2026-10-10)
+
+- **现象**：功能在「纯函数 + IPC 命令 + Rust 层」全部成立、单测全绿，但**用户在 UI 上无法使用**——生产代码中**零调用**该能力。
+- **两处实证（stage-07）**：
+  - **REV-018（high）**：`extractFlavorExcerpts`/`mergeByExcerpt`/`addPendingResults` 仅命中**定义**，无生产调用方 → 研究台无「开始交叉判断」按钮 → `pendingResults` 恒空 → `multi_model_cross` 通道不可达 → DoD「三采集通道」断裂。
+  - **BUG-001（medium）**：`materialsToJson`/`materialsToCsv`/`downloadExport` 与 `material.remove` 仅测试引用 → 素材库缺读取侧 UI → DoD「可检索、可导出」界面不可达。
+- **根因**：方案层缺口（op 覆盖了纯函数/契约与测试，但**未规划 UI/编排调用落点**）；`*.test.ts` **正常覆盖纯函数**，于是「测试通过」掩盖了「功能不可用」。
+- **排查信号**：
+  ```powershell
+  rg -n "目标函数名" src --glob "!*.test.*"     # 仅命中定义文件 → 疑无入口
+  rg -n "目标仓储方法" src --glob "!*.test.*"    # 零命中或仅被无关功能引用 → 疑不可达
+  Get-ChildItem src/features/<域> -Filter *.tsx  # 列出 UI 组件，核对是否存在承载该能力的组件
+  ```
+- **修复范式**：新增**编排 hook**（如 `useCrossJudge`）+ **UI 组件**（如 `MaterialLibrary`）并挂载到宿主页；复用既有纯函数/仓储（**不改 Rust/迁移/IPC**）；补**端到端可达性测试**（真实链路经 `save_material` 断言）。
+- **预防**：契约先行/UI 后接的交付，收口验证**必须含生产调用非零断言**（见 `kb/patterns.md`「UI 接线验证」）；审查/验收时对「纯函数型交付」追问「谁调用它」。
+
+## [+] 删除引用防护：JSON 冗余引用无外键，删除前精确判定 (2026-10-10)
+
+- **背景**：`skill_entry.source_material_ids_json` 是对 `material.id` 的 **JSON 冗余引用**（无数据库外键）——直接删 `material` 会造成 skill 侧引用悬挂，破坏「来源素材可追溯」DoD。
+- **错误做法**：用 `source_material_ids_json LIKE '%<id>%'` 判定被引用会**误判**（如 `id=1` 命中 `"[11]"`）。
+- **正确模式**：`material::delete` 前**全表读 `skill_entry` + Rust 侧 `serde_json` 解析为 `Vec<i64>` 精确判定**（`ids.contains(&id)`）；被引用则**拒绝删除**，错误码 `FK_VIOLATION`、`detail` 携带引用它的 skill 列表 `[{id,title}]`；影响行 0 → `NOT_FOUND`。UI 侧据 `FK_VIOLATION` 显示 `delete-referenced` 专属提示。
+- **对称校验**：`skill::insert/update` 校验 `source_material_ids` 对应素材均存在（不存在 → `VALIDATION`）——双保险，防双向悬挂。
+- **通用**：JSON 冗余引用（无外键）的完整性**只能应用层保证**；判定「是否被引用」须**结构化解析**而非子串匹配（子串匹配在数字 id 场景必然误判）。
+
+## [+] 交叉判断 JSON 容错复用（extractJson + 逐模型容错） (2026-10-10)
+
+- **复用而非重造**：交叉判断 `extractFlavorExcerpts` 摘取片段时，**复用 `src/orchestration/review/json.ts` 的 `extractJson`**（去 JSON 代码围栏 / 取首 `{` 至末 `}`）解析模型输出，不另写解析器。
+- **抛错 vs 容错的分层**：`parseExcerpts` **非法 JSON 抛错**（与 review `parseEvaluationJson` 一致，**不静默返空**）；**逐模型容错由调用方负责**——`useCrossJudge` 对单模型摘取 `catch {}` **容错跳过**，其余模型结果仍参与精确交集，**整体不失败**（单模型异常不阻断交叉判断）。
+- **通用**：LLM 输出解析宜「**底层严格抛错 + 上层按粒度容错**」；同一项目内相似解析（评审 JSON ↔ 交叉判断 JSON）应**复用同一 `extractJson` 单一来源**，避免多套围栏剥离逻辑漂移。

@@ -1,7 +1,20 @@
 # 代码审查索引（公共域）
 
 > 存放各阶段审查关闭后的核心结论摘要。详细审查过程与逐提交点内容见私域 `.openfeel/users/{username}/code_review/REV-{stage}.md`。
-> 状态统计：**pending 6 ｜ fixing 0 ｜ resolved 0 ｜ closed 76**
+> 状态统计：**pending 2 ｜ fixing 0 ｜ resolved 11 ｜ closed 89**（pending 2 = stage-04 REV-014 + stage-05 REV-009 人工协验 BLOCKED）
+
+## v0.2.0-stage-07（去 AI 味研究子系统 v1，v0.2 收官）
+
+- **结论**：代码审查**通过**（2026-10-10 03:12 → 修复复审 03:22/03:38），stage 已 test_passed → archiving。**修复闭环**：REV-018（high）/REV-019（medium）经 op-008 修复；BUG-001（medium，素材库缺读取侧 UI）经 op-009 修复后测试官独立复验通过并关闭（修复 commit `9ad8693`）。
+- **心得总结**：[`v0.2.0-stage-07.md`](v0.2.0-stage-07.md)
+- **审查对象**：
+  1. 阶段计划 `plan.md`（02:00 → 复审 v2 02:04 通过）：REV-001~007 **closed**（7 条，含迁移 v4 / 采样语义 / 交叉合并 / skill 注入四大定稿）。
+  2. 操作方案 `ops/op-001~007.md`（02:15 → 复审 02:52 通过）：REV-008（blocking，perf 执行主体）**resolved**；REV-009~016 **resolved**（方案层闭环，含 REV-011 三通道 sourceType high）。
+  3. 执行产出代码审查（03:12）：REV-017 **closed**（文字级残留）；REV-018（high）/REV-019（medium）/REV-020（low）经 op-008 fix **resolved**。
+- **closed 合计 9 条**（计划 7 + REV-009 + REV-017）；**resolved 11 条**（方案/代码级修复闭环）。
+- **关键**：去 AI 味数据流闭环（采样→交叉→标注→素材库→skill 库→回注生成）；迁移 v4 双资产（`material` / `skill_entry`，7→9 表幂等）；**引文精确交集合并**（verbatim 为键 + 命中分级）；三通道 sourceType 透传；skill 注入（`ChapterPromptInput.skills?` 预算桶 ≤500，向后兼容）；删除引用防护；**UI 接线验证**（防「功能内置无入口」）。实测 `cargo test` **52/52**、Vitest **295/295**（64 文件）、lint 0 errors、build 通过（chunk 警告已知项）；DoD **10/10 通过**（第 2 条经 BUG-001 修复转正）。
+- **BUG-001（medium, closed）**：素材库缺读取侧 UI（浏览/检索/导出/删除），`export.ts` 三函数与 `material.remove` 生产零调用，DoD 第 2 条「可检索、可导出」界面不可达 → 新增 `MaterialLibrary` + `useMaterialLibrary`（复用既有纯函数/仓储，**不改 Rust/迁移/IPC**）；修复 commit `9ad8693`。
+- **遗留（非阻塞）**：人工协验 4 项 **BLOCKED**（真实 Key 端到端 / 真机 WebView / **T6 实验回填** / REV-009·014 perf）；stage-06 遗留 REV-008~011 已随 op-001 闭合。
 
 ## v0.2.0-stage-06（审查流水线：剧情/世界观/合规/真人感）
 

@@ -4,7 +4,7 @@
 
 ## 状态统计
 
-- **open 0 ｜ fixing 0 ｜ resolved 0 ｜ closed 6**
+- **open 0 ｜ fixing 0 ｜ resolved 0 ｜ closed 7**
 
 ## 按模块
 
@@ -41,3 +41,9 @@
 - **1 个 low Bug，已闭环**（修复 commit `1bbd3e8`，验收人 openfeel-feel-tester）；验收结论 **DoD 10 条 9 完整满足 + 1 项人工协验 BLOCKED**；门禁 `pnpm test` **52 文件 221/221**、lint/build、`cargo test` **45/45** 全绿。
 - [`review.md`](review.md)：**BUG-001** — 评审输入未沿用预算裁剪，长章正文全量送入四维评审与重写 prompt → 新增 `budget.ts`（`REVIEW_CONTENT_BUDGET` 单一来源复用 stage-05 装配预算=8000 + `trimReviewContent`），接入 `llm-judge.ts`/`rewrite.ts`；临时探针证实超长输入被裁剪。
 - 验收报告：`.openfeel/tmp/stage-06-acceptance.md`
+
+### v0.2.0-stage-07（去 AI 味研究子系统 v1）@openfeel-feel-tester
+
+- **1 个 medium Bug，已闭环**（修复 commit `9ad8693`，验收人 openfeel-feel-tester）；验收结论 **DoD 10/10 通过**（第 2 条经 BUG-001 修复转正；第 9 条工程交付达标、真机数据待回填）；门禁 `pnpm test` **64 文件 295/295**、lint/build、`cargo test` **52/52** 全绿。
+- [`research.md`](research.md)：**BUG-001** — 素材库缺读取侧 UI（浏览/检索/导出/删除），`export.ts` 三函数与 `material.remove` 生产零调用，DoD「可检索、可导出」界面不可达（与 REV-018 同类「功能无入口」根因）→ 新增 `MaterialLibrary` + `useMaterialLibrary`（复用既有纯函数/仓储，**不改 Rust/迁移/IPC**）+ i18n；feel-tester 独立复验转正。
+- 验收报告：`.openfeel/tmp/stage-07-acceptance.md`

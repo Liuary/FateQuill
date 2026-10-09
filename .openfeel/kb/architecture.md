@@ -153,3 +153,35 @@
 - **自动重写触发**：`triggerDims = failedDims \ {compliance}`；`triggerDims` 为空（仅合规未过）→ **不自动重写**、`needsHuman=true`。**上限 2 次**（`maxRounds`），默认开启、可在权重配置关闭（成本控制）。
 - **反馈注入**：`buildRewriteMessages` 结构化注入未通过维度的 `score + reasons` + 要求（保留原意、改进反馈项）。
 - **落地**：重写产物经 `onVersion` **入池 + 自动评分**，回路**不调用任何正文替换**（`replaceContent`/`setContent` 零调用）——由用户择优采纳，兼顾成本与安全。
+
+## [+] 去 AI 味数据流闭环（采样 → 交叉 → 标注 → 素材库 → skill → 回注） (2026-10-10)
+
+- **定位**：兑现大计划「双核心目的」之目的 2（研究「去 AI 味」），为**独立可研究、可积累的子系统**（约束 C-10），建立于 stage-07（v0.2 收官半边，M2 素材库半边）。
+- **四环节主线（数据资产与流程）**：
+  1. **多模型无限制创作采样**（T1）：列全部已配置 `model_config`、用户勾选 ≥1，**串行逐模型**`provider.stream` 聚合全文 → 内存 `MaterialCandidate`。产出**仅入候选**。
+  2. **多模型交叉判断**（T2）：对候选逐模型 LLM-as-judge 摘取 AI 味片段 → **引文精确交集合并**（命中 ≥2 高置信 / =1 待确认）→ 入**会话内存待确认队列**（`researchStore.pendingResults`，**不入库直达**）。
+  3. **用户标注**（T3）：受控标签枚举 + 备注 + **verbatim 引文搜索定位** → 经 `material` 仓储入库（`status=confirmed`，`sourceType` 按被标注项自带通道透传）。
+  4. **素材库 → 规避 skill 库 → 回注生成**（T4/T5/T6）：素材（含来源模型/判据/结论，可检索/导出 JSON·CSV、**默认仅本地**）→ 人工归纳为 `skill_entry`（`rule` = 可执行规避指令，以 `sourceMaterialIds` **引用**素材避免重复存储）→ 经 stage-05 装配器 `ChapterPromptInput.skills?` 拼入 system prompt **回注生成** → T6 固定样本集度量（真人感主指标）。
+- **分层落点**：契约/算法 `src/orchestration/research/`（provider 无关）；会话态 `src/store/researchStore.ts`（独立 `create`）；UI `src/features/research/`（独立路由页，采样低频）；持久化 Rust + IPC（迁移 v4）。
+- **测试口径**：单模型摘取失败**容错跳过**不整体失败；采样**副作用断言**（chapter.update 零调用 / editor·generation 快照不变 / runReviewLoop 零调用 / 无预算裁剪）；三采集通道经 `save_material` 的 `source_type` 断言。
+- **学术诚实**：v0.2 为小样本雏形度量（≥3 篇、温度 0），**非统计显著性验证**；`report.md` 数据状态字段如实标注（已回填/待回填），真机执行由用户/feel-tester 协验。
+
+## [+] 双数据资产（material / skill_entry）模型与迁移 v4 (2026-10-10)
+
+- **迁移 v4** `0004_material_skill.sql`：走 stage-02 迁移纪律（`include_str!` 单一来源 + `_sqlx_migrations` 幂等；表数 7→9 断言更新，`_sqlx_migrations`==4），共 2 张业务资产表。
+- **`material`（AI 味素材）**：`id, source_type, source_model, excerpt, position_json, reason, label, chapter_id, status, created_at`。
+  - `source_type ∈ {multi_model_creation, multi_model_cross, user_manual}`（**三采集通道一一对应**）；`status ∈ {candidate, confirmed}`（`candidate` 为**预留枚举**——本阶段待确认队列为会话内存，所有入库写路径均为 `confirmed`；见 REV-013）。
+  - **`excerpt` 为引文唯一权威列**；`position_json` **仅存上下文** `{contextBefore?, contextAfter?}`（各 ≤50 字，避免 offset 幻觉与冗余存储；REV-016①）；`chapter_id` `REFERENCES chapter(id) ON DELETE SET NULL`；隐私字段**仅本地**（无匿名聚合上传）。
+- **`skill_entry`（规避 skill）**：`id, version, title, rule, examples_json, source_material_ids_json, created_at`。**载体定稿 = DB 表**（与素材引用关系可校验、统一备份/迁移、可检索）；`rule` = 可执行规避指令；`version` 可管理。
+- **引用关系与防护**：素材 → skill 以 `source_material_ids_json` **id 引用**（避免重复存储、保证可追溯/学术性）；`material::delete` 删除前**全表解析引用精确判定**，被 skill 引用则**拒绝删除**（`FK_VIOLATION`，detail 携带 `[{id,title}]`）；`skill::insert/update` 校验 `source_material_ids` 素材均存在（不存在 → `VALIDATION`）。
+- **导出**：JSON + CSV（学术分析用途）；CSV `createdAt` 归一为 ISO 8601。IPC 命令：material 3（`save_material`/`list_materials`/`delete_material`）+ skill 4（`save_/list_/update_/delete_skill_entry`），合计数据访问 45（+ 流式 2 = 47）。
+
+## [+] 采样（研究）路径 vs 生成路径差异 (2026-10-10)
+
+- **研究采样 = 无限制创作采样**，与正常生成链路**故意解耦**（stage-07 T1）：
+  - **不触发自动审查**（`runReviewLoop` 零调用）；**不自动保存**（`chapter.update` 零调用、editor/generation store 快照不变）；**无预算裁剪**（不引用生成侧装配预算/`buildChapterPrompt`）；**产出绝不进编辑器正文、不落 `chapter`**（仅入 `researchStore.candidates`）。
+  - **跳过合规拦截**：研究采样保持样本纯净（合规规则引擎本地无 Token，绕过合规以采集含 AI 味/风险的原始样本用于研究）。
+  - **调度**：串行逐模型（采样无需并行，成本可控，∝ 勾选模型数）；`AbortSignal` 可停止（**已采集候选保留**）。
+- **生成路径（对照 stage-05）**：`subscribeChunks` → 节流 → `EditorController.appendChunk`（模式 A 流式直插正文），触发自动保存；受装配预算（总 ≤8000）与裁剪序约束；生成可挂 skill 注入。
+- **对比要点**：同为 `provider.stream` 消费，但采样**只读产出到内存候选**、生成**直插正文并落库**；采样无预算、无审查、无保存；生成有预算、审查可选、自动保存。
+- **成本**：多模型创作 = N×生成 Token（N = 勾选模型数）；交叉判断 = 每候选 × 每模型 1 次评审 Token（≈2× 评审基线）；成本 ∝ 勾选模型数，用户可控。
