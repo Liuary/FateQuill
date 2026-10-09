@@ -44,6 +44,7 @@ src/features/exploration/        # 推演 UI
 - **收敛（产出期第二层）**：覆盖率 = 有效引用 ∩ 注入集 / 注入集；**存在性校验**过滤**幻觉引用**（记入 `invalidSettingCardIds`）；`flagged = 低覆盖 ∨ 有无效引用 ∨ 低贴合度`；**仅降权 + 标注**（`weight` / `deviation`），**不过滤不删**；终选权归用户。
 - **采纳（REV-007 安全网）**：**主路径「新建下一章草稿」**（`chapter.create`，**不改当前章** → 无 DB 丢失）；**次路径「替换当前章」**（`EditorController.replaceContent` 单条撤销）**替换前强制入池快照（必做）**；两路径均经**内联二次确认**；丢弃 = 会话分支移除（无残留）。
 - **成本**：`estimateCost = 分支数 ×（输出上限 2048 + 输入估算 1024）`（输入侧 N 倍，每分支重复发送），**启动前显示**并注明口径。
+- **卦象引导可选注入（stage-09 T5，跨阶段扩展）**：`buildExplorationOptions` 增 **`hexagramGuide?: { text: string }`**——开启易经且已起卦时，把 `renderGuideText(buildGuideCard(casting))` 并入 **system 约束段**；**缺省/未传 → 输出与基线逐字段一致（无空段残留），且 `buildGuideCard`/`renderGuideText` 零调用**（关闭零副作用）。卦象引导**不进入 `converge` 的设定卡覆盖判据**（设定卡约束最高优先；`settingCardIds` 不变）。开关 `useIChingEnabled`（`localStorage['fatequill.iching.enabled']`，**缺省关闭**，不做强制前置）。
 
 ## 关联文档
 

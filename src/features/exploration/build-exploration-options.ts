@@ -32,6 +32,8 @@ export async function buildExplorationOptions(params: {
   intent: string;
   model: string;
   temperature: number;
+  /** 可选：卦象引导文本（开启易经时并入 **system 约束段**；缺省 → 输出与基线逐字段一致） */
+  hexagramGuide?: { text: string };
 }): Promise<{ options: ChatOptions; settingCardIds: number[] }> {
   const settingCards: ChapterSettingCard[] = (
     await repositories.settingCard.listByNovel(params.novelId)
@@ -53,9 +55,15 @@ export async function buildExplorationOptions(params: {
     settingCards.length > 0
       ? `用户设定约束：\n${settingCards.map((card) => `${card.title}: ${card.content}`).join("\n")}`
       : "";
-  const systemPrompt = constraints
-    ? `${TURN_CARD_SYSTEM_PROMPT}\n\n${constraints}`
-    : TURN_CARD_SYSTEM_PROMPT;
+  // 卦象引导（stage-09 T5，**可选**）：缺省/空 → 不产生空段，输出与基线**逐字段一致**
+  const guideText = params.hexagramGuide?.text?.trim();
+  const systemPrompt = [
+    TURN_CARD_SYSTEM_PROMPT,
+    constraints,
+    guideText ? `易经卦象引导：\n${guideText}` : "",
+  ]
+    .filter(Boolean)
+    .join("\n\n");
 
   const options = buildChapterPrompt({
     systemPrompt,

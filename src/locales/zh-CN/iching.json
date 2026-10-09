@@ -1,5 +1,8 @@
 {
   "tab": "起卦",
+  "enable": "启用易经推演（可选）",
+  "disableLabel": "关闭易经推演",
+  "enabledHint": "开启后，卦象引导将并入推演 system 段（设定卡约束仍最高优先）",
   "title": "起卦与解读",
   "castRandom": "随机起卦",
   "castManual": "手动起卦",

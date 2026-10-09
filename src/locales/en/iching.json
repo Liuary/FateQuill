@@ -1,5 +1,8 @@
 {
   "tab": "Cast",
+  "enable": "Enable I Ching exploration (optional)",
+  "disableLabel": "Disable I Ching exploration",
+  "enabledHint": "When enabled, the hexagram guide is folded into the exploration system prompt (setting cards still take precedence)",
   "title": "Casting and reading",
   "castRandom": "Cast at random",
   "castManual": "Cast manually",

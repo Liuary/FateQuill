@@ -18,9 +18,11 @@ import {
   type RunBranchInput,
 } from "@/orchestration/exploration/runner";
 import { clampTemperature } from "@/orchestration/exploration/temperature";
+import { buildGuideCard, renderGuideText } from "@/orchestration/iching";
 import { resolveProviderForConfig } from "@/features/generation/resolve-provider";
 import { useExplorationStore } from "@/store/explorationStore";
 import { buildExplorationOptions } from "./build-exploration-options";
+import { useIChingEnabled } from "./useIChingEnabled";
 
 /** 推演编排 */
 export function useExploration(opts: {
@@ -35,6 +37,19 @@ export function useExploration(opts: {
 
   /** 启动前显示的成本预估（分支数 ×（输出上限 + 输入估算）） */
   const cost = useMemo(() => estimateCost(temperatures.length), [temperatures.length]);
+
+  const { enabled: ichingEnabled } = useIChingEnabled();
+  const casting = useExplorationStore((s) => s.casting);
+
+  /**
+   * 卦象引导（可选，stage-09 T5）：**关闭或未起卦 → `undefined`**（零副作用；
+   * `buildGuideCard`/`renderGuideText` 均**不被调用**）。开启且已起卦 → 并入 system 约束段。
+   */
+  const hexagramGuide = useMemo(
+    () =>
+      ichingEnabled && casting ? { text: renderGuideText(buildGuideCard(casting)) } : undefined,
+    [ichingEnabled, casting],
+  );
 
   /** 装配单分支取流（设定约束并入 system；signal 透传以便中止） */
   const buildStream = useCallback(
@@ -51,6 +66,7 @@ export function useExploration(opts: {
         intent,
         model: config.modelName,
         temperature: branch.effectiveTemperature,
+        hexagramGuide,
       });
       const provider = resolveProviderForConfig(config);
       return {
@@ -58,7 +74,7 @@ export function useExploration(opts: {
         injectedSettingCardIds: built.settingCardIds,
       };
     },
-    [opts.chapterId],
+    [opts.chapterId, hexagramGuide],
   );
 
   /** 运行：全部温度分支（并行 + 排队）→ 收敛 → 入 store */

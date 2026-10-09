@@ -30,6 +30,7 @@ export interface ExplorationPanelProps {
 /** 多温度并行推演面板 */
 export function ExplorationPanel({ novelId, chapterId, editor = null }: ExplorationPanelProps) {
   const { t } = useTranslation("exploration");
+  const { t: tIChing } = useTranslation("iching");
   const { state, config } = useGenerationAvailability();
   const intent = useExplorationStore((s) => s.intent);
   const setIntent = useExplorationStore((s) => s.setIntent);
@@ -40,8 +41,8 @@ export function ExplorationPanel({ novelId, chapterId, editor = null }: Explorat
     chapterId,
     config,
   });
-  // 易经可选开关：缺省关闭 → 起卦/宿命入口**不可见**
-  const { enabled: ichingEnabled } = useIChingEnabled();
+  // 易经可选开关：缺省关闭 → 起卦/宿命入口**不可见**（开关 UI 于 stage-09 T5 落地）
+  const { enabled: ichingEnabled, setEnabled: setIChingEnabled } = useIChingEnabled();
 
   const canRun = state === "ready" && novelId != null && intent.trim().length > 0 && !running;
 
@@ -59,6 +60,17 @@ export function ExplorationPanel({ novelId, chapterId, editor = null }: Explorat
       </label>
 
       <TemperatureConfig />
+
+      <label className="flex items-center gap-1 text-xs">
+        <input
+          type="checkbox"
+          data-testid="iching-toggle"
+          checked={ichingEnabled}
+          onChange={(event) => setIChingEnabled(event.target.checked)}
+        />
+        {tIChing("enable")}
+      </label>
+      {ichingEnabled && <p className="text-xs opacity-70">{tIChing("enabledHint")}</p>}
 
       {ichingEnabled && (
         <>
