@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { ChatOptions, ModelProvider } from "@/orchestration/types";
 import { evaluateWithFallback } from "../evaluator";
+import { REVIEW_CONTENT_BUDGET, REVIEW_TRIM_MARKER } from "../budget";
 import type { ReviewInput } from "../types";
 import { createLlmJudgeEvaluator } from "./llm-judge";
 import plotValid from "../../../../tests/fixtures/review/plot.valid.json?raw";
@@ -42,5 +43,21 @@ describe("createLlmJudgeEvaluator（非流式收口）", () => {
     const provider = fakeProvider("", 1);
     const evaluator = createLlmJudgeEvaluator({ dimension: "plot", provider });
     await expect(evaluateWithFallback(evaluator, input)).resolves.toMatchObject({ score: 60 });
+  });
+
+  it("长正文：送入 LLM 的评审文本被裁剪至预算内（BUG-001）", async () => {
+    const provider = fakeProvider(plotValid, 3);
+    const evaluator = createLlmJudgeEvaluator({ dimension: "plot", provider });
+    const longInput: ReviewInput = {
+      dimension: "plot",
+      content: "字".repeat(REVIEW_CONTENT_BUDGET * 4),
+      model: "m",
+    };
+    await evaluateWithFallback(evaluator, longInput);
+
+    const sent = provider.calls[0].messages[1].content;
+    expect(sent).toContain(REVIEW_TRIM_MARKER); // 裁剪标记
+    expect(sent.length).toBeLessThanOrEqual(REVIEW_CONTENT_BUDGET + REVIEW_TRIM_MARKER.length);
+    expect(sent.length).toBeLessThan(longInput.content.length);
   });
 });

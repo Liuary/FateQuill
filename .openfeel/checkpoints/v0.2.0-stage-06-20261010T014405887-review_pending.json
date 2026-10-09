@@ -2,8 +2,8 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-09T17:50:15.310Z",
-    "revision": 209
+    "updated": "2026-10-09T17:44:05.571Z",
+    "revision": 207
   },
   "pipeline": {
     "phase": "active",
@@ -755,8 +755,8 @@
     },
     "v0.2.0-stage-06": {
       "name": "v0.2.0-stage-06",
-      "phase": "review_passed",
-      "status": "review_passed",
+      "phase": "review_pending",
+      "status": "planned",
       "deps": [
         "v0.1.0-stage-03",
         "v0.1.0-stage-05"
@@ -2955,26 +2955,6 @@
       "detail": {
         "opId": "v0.2.0-stage-06.op-007",
         "attempts": 1
-      }
-    },
-    {
-      "time": "2026-10-09T17:44:05.941Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.2.0-stage-06",
-        "from": "exec_running",
-        "to": "review_pending"
-      }
-    },
-    {
-      "time": "2026-10-09T17:50:15.310Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.2.0-stage-06",
-        "from": "review_pending",
-        "to": "review_passed"
       }
     }
   ]

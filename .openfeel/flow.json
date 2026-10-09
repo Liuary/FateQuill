@@ -2,14 +2,14 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-09T17:41:30.977Z",
-    "revision": 206
+    "updated": "2026-10-09T17:50:15.637Z",
+    "revision": 210
   },
   "pipeline": {
     "phase": "active",
     "current": {
       "stage": "v0.2.0-stage-06",
-      "op": "op-007"
+      "op": ""
     },
     "retry": 0
   },
@@ -755,8 +755,8 @@
     },
     "v0.2.0-stage-06": {
       "name": "v0.2.0-stage-06",
-      "phase": "exec_running",
-      "status": "planned",
+      "phase": "test_pending",
+      "status": "review_passed",
       "deps": [
         "v0.1.0-stage-03",
         "v0.1.0-stage-05"
@@ -866,9 +866,9 @@
         },
         "op-007": {
           "title": "审查结果持久化：迁移 v3 + CRUD + IPC（T6）",
-          "state": "pending",
+          "state": "done",
           "assignee": "openfeel-executor",
-          "attempts": 0,
+          "attempts": 1,
           "max_attempts": 3,
           "checkpoints": {
             "plan": "pending",
@@ -2946,6 +2946,45 @@
       "detail": {
         "opId": "v0.2.0-stage-06.op-006",
         "attempts": 1
+      }
+    },
+    {
+      "time": "2026-10-09T17:44:05.539Z",
+      "agent": "openfeel-executor",
+      "action": "attempt_pass",
+      "detail": {
+        "opId": "v0.2.0-stage-06.op-007",
+        "attempts": 1
+      }
+    },
+    {
+      "time": "2026-10-09T17:44:05.941Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.2.0-stage-06",
+        "from": "exec_running",
+        "to": "review_pending"
+      }
+    },
+    {
+      "time": "2026-10-09T17:50:15.310Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.2.0-stage-06",
+        "from": "review_pending",
+        "to": "review_passed"
+      }
+    },
+    {
+      "time": "2026-10-09T17:50:15.637Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.2.0-stage-06",
+        "from": "review_passed",
+        "to": "test_pending"
       }
     }
   ]

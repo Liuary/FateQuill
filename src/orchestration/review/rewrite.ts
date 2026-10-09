@@ -8,6 +8,7 @@
 
 import type { ChatMessage, ModelProvider } from "@/orchestration/types";
 import type { ReviewDimension } from "./types";
+import { trimReviewContent } from "./budget";
 
 /** 未通过维度的结构化反馈 */
 export interface FailedDimensionFeedback {
@@ -47,7 +48,8 @@ export function buildRewriteMessages(input: RewriteInput): ChatMessage[] {
 
   const user = [
     "【待改正文】",
-    input.content,
+    // 待改正文按预算裁剪（沿用装配预算；长章不全量送模型）
+    trimReviewContent(input.content),
     "",
     "【上一轮评审未通过项】",
     ...feedbackLines,

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { ChatOptions, ModelProvider } from "@/orchestration/types";
 import { buildRewriteMessages, rewriteChapter, type FailedDimensionFeedback } from "./rewrite";
+import { REVIEW_CONTENT_BUDGET, REVIEW_TRIM_MARKER } from "./budget";
 
 const feedback: FailedDimensionFeedback[] = [
   { dimension: "plot", score: 52, reasons: ["冲突推进乏力", "伏笔未呼应"] },
@@ -34,6 +35,15 @@ describe("buildRewriteMessages（反馈注入）", () => {
     expect(messages[0].role).toBe("system");
     expect(messages[0].content).toContain("保留原意");
     expect(messages[0].content).toContain("只输出改写后的正文");
+  });
+
+  it("长正文：重写 prompt 中的待改正文被裁剪至预算内（BUG-001）", () => {
+    const long = "字".repeat(REVIEW_CONTENT_BUDGET * 4);
+    const messages = buildRewriteMessages({ content: long, feedback });
+    const user = messages[1].content;
+    expect(user).toContain(REVIEW_TRIM_MARKER); // 裁剪标记
+    expect(user).not.toContain("字".repeat(REVIEW_CONTENT_BUDGET + 1)); // 不含超预算原文
+    expect(user.length).toBeLessThan(long.length);
   });
 });
 

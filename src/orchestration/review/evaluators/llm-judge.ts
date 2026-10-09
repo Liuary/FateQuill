@@ -8,6 +8,7 @@
 
 import type { ChatOptions, ModelProvider } from "@/orchestration/types";
 import type { Evaluator, ReviewDimension } from "../types";
+import { trimReviewContent } from "../budget";
 import { parseEvaluationJson } from "../json";
 import { buildReviewSystemPrompt } from "../rubric";
 
@@ -20,12 +21,14 @@ export function createLlmJudgeEvaluator(opts: {
   return {
     id: dimension,
     async evaluate(input) {
+      // 评审正文按预算裁剪（沿用装配预算；长章不全量送模型）
+      const content = trimReviewContent(input.content);
       const options: ChatOptions = {
         model: input.model,
         temperature: input.temperature ?? 0,
         messages: [
           { role: "system", content: buildReviewSystemPrompt(dimension) },
-          { role: "user", content: input.content },
+          { role: "user", content },
         ],
       };
       let full = "";
