@@ -70,8 +70,8 @@ stages:
     title: 去 AI 味研究子系统 v1
     version: v0.2
     hard: ["v0.1.0-stage-03", "v0.2.0-stage-06"]
-    soft: []
-    rationale: 需要多模型调用（引擎）与交叉判断基础设施（审查模块的评判能力）。
+    soft: ["v0.1.0-stage-05"]
+    rationale: 需要多模型调用（引擎）与交叉判断基础设施（审查模块的评判能力）；软依赖 stage-05 以扩展其装配器 skills 注入参数实现回注。
 
   "v0.3.0-stage-08":
     title: 多温度并行推演引擎

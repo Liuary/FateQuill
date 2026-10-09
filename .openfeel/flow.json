@@ -2,14 +2,14 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-09T17:59:20.396Z",
-    "revision": 215
+    "updated": "2026-10-09T18:44:41.657Z",
+    "revision": 231
   },
   "pipeline": {
     "phase": "active",
     "current": {
       "stage": "v0.2.0-stage-07",
-      "op": ""
+      "op": "op-001"
     },
     "retry": 0
   },
@@ -890,13 +890,133 @@
     },
     "v0.2.0-stage-07": {
       "name": "v0.2.0-stage-07",
-      "phase": "plan_review",
+      "phase": "exec_running",
       "status": "planned",
       "deps": [
         "v0.1.0-stage-03",
         "v0.2.0-stage-06"
       ],
-      "ops": {},
+      "ops": {
+        "op-001": {
+          "title": "清理 stage-06 遗留 REV-008/011（T7 chore）",
+          "state": "pending",
+          "assignee": "openfeel-executor",
+          "attempts": 0,
+          "max_attempts": 3,
+          "checkpoints": {
+            "plan": "pending",
+            "scheme": "pending",
+            "exec": {
+              "attempts": 0,
+              "self": "pending"
+            },
+            "review": "pending",
+            "test": "pending"
+          }
+        },
+        "op-002": {
+          "title": "多模型无限制创作调度器（采样模式）与素材候选（T1）",
+          "state": "pending",
+          "assignee": "openfeel-executor",
+          "attempts": 0,
+          "max_attempts": 3,
+          "checkpoints": {
+            "plan": "pending",
+            "scheme": "pending",
+            "exec": {
+              "attempts": 0,
+              "self": "pending"
+            },
+            "review": "pending",
+            "test": "pending"
+          }
+        },
+        "op-003": {
+          "title": "多模型交叉判断与判定基准对齐（T2）",
+          "state": "pending",
+          "assignee": "openfeel-executor",
+          "attempts": 0,
+          "max_attempts": 3,
+          "checkpoints": {
+            "plan": "pending",
+            "scheme": "pending",
+            "exec": {
+              "attempts": 0,
+              "self": "pending"
+            },
+            "review": "pending",
+            "test": "pending"
+          }
+        },
+        "op-004": {
+          "title": "素材库与迁移 v4：material 表 + CRUD + 检索 + 导出（T4）",
+          "state": "pending",
+          "assignee": "openfeel-executor",
+          "attempts": 0,
+          "max_attempts": 3,
+          "checkpoints": {
+            "plan": "pending",
+            "scheme": "pending",
+            "exec": {
+              "attempts": 0,
+              "self": "pending"
+            },
+            "review": "pending",
+            "test": "pending"
+          }
+        },
+        "op-005": {
+          "title": "用户标注工作台：受控标签与引文定位（T3）",
+          "state": "pending",
+          "assignee": "openfeel-executor",
+          "attempts": 0,
+          "max_attempts": 3,
+          "checkpoints": {
+            "plan": "pending",
+            "scheme": "pending",
+            "exec": {
+              "attempts": 0,
+              "self": "pending"
+            },
+            "review": "pending",
+            "test": "pending"
+          }
+        },
+        "op-006": {
+          "title": "规避 skill 库雏形：skill_entry + 归纳引用 + 版本（T5）",
+          "state": "pending",
+          "assignee": "openfeel-executor",
+          "attempts": 0,
+          "max_attempts": 3,
+          "checkpoints": {
+            "plan": "pending",
+            "scheme": "pending",
+            "exec": {
+              "attempts": 0,
+              "self": "pending"
+            },
+            "review": "pending",
+            "test": "pending"
+          }
+        },
+        "op-007": {
+          "title": "闭环回注与度量：skills 注入 + 实验报告（T6）",
+          "state": "pending",
+          "assignee": "openfeel-executor",
+          "attempts": 0,
+          "max_attempts": 3,
+          "checkpoints": {
+            "plan": "pending",
+            "scheme": "pending",
+            "exec": {
+              "attempts": 0,
+              "self": "pending"
+            },
+            "review": "pending",
+            "test": "pending"
+          }
+        }
+      },
       "stats": {
         "start_time": "2026-10-09T17:59:20.396Z",
         "end_time": "",
@@ -3042,6 +3162,159 @@
         "stageName": "v0.2.0-stage-07",
         "from": "plan_pending",
         "to": "plan_review"
+      }
+    },
+    {
+      "time": "2026-10-09T18:03:10.206Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.2.0-stage-07",
+        "from": "plan_review",
+        "to": "plan_pending"
+      }
+    },
+    {
+      "time": "2026-10-09T18:03:54.386Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.2.0-stage-07",
+        "from": "plan_pending",
+        "to": "plan_review"
+      }
+    },
+    {
+      "time": "2026-10-09T18:09:24.146Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.2.0-stage-07",
+        "from": "plan_review",
+        "to": "plan_passed"
+      }
+    },
+    {
+      "time": "2026-10-09T18:09:24.462Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.2.0-stage-07",
+        "from": "plan_passed",
+        "to": "scheme_pending"
+      }
+    },
+    {
+      "time": "2026-10-09T18:10:16.033Z",
+      "agent": "cli",
+      "action": "register_op",
+      "detail": {
+        "stageName": "v0.2.0-stage-07",
+        "opId": "op-001"
+      }
+    },
+    {
+      "time": "2026-10-09T18:10:16.366Z",
+      "agent": "cli",
+      "action": "register_op",
+      "detail": {
+        "stageName": "v0.2.0-stage-07",
+        "opId": "op-002"
+      }
+    },
+    {
+      "time": "2026-10-09T18:10:16.706Z",
+      "agent": "cli",
+      "action": "register_op",
+      "detail": {
+        "stageName": "v0.2.0-stage-07",
+        "opId": "op-003"
+      }
+    },
+    {
+      "time": "2026-10-09T18:10:17.017Z",
+      "agent": "cli",
+      "action": "register_op",
+      "detail": {
+        "stageName": "v0.2.0-stage-07",
+        "opId": "op-004"
+      }
+    },
+    {
+      "time": "2026-10-09T18:10:17.321Z",
+      "agent": "cli",
+      "action": "register_op",
+      "detail": {
+        "stageName": "v0.2.0-stage-07",
+        "opId": "op-005"
+      }
+    },
+    {
+      "time": "2026-10-09T18:10:17.643Z",
+      "agent": "cli",
+      "action": "register_op",
+      "detail": {
+        "stageName": "v0.2.0-stage-07",
+        "opId": "op-006"
+      }
+    },
+    {
+      "time": "2026-10-09T18:10:17.960Z",
+      "agent": "cli",
+      "action": "register_op",
+      "detail": {
+        "stageName": "v0.2.0-stage-07",
+        "opId": "op-007"
+      }
+    },
+    {
+      "time": "2026-10-09T18:12:09.465Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.2.0-stage-07",
+        "from": "scheme_pending",
+        "to": "scheme_review"
+      }
+    },
+    {
+      "time": "2026-10-09T18:31:47.474Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.2.0-stage-07",
+        "from": "scheme_review",
+        "to": "scheme_pending"
+      }
+    },
+    {
+      "time": "2026-10-09T18:36:38.097Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.2.0-stage-07",
+        "from": "scheme_pending",
+        "to": "scheme_review"
+      }
+    },
+    {
+      "time": "2026-10-09T18:44:41.323Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.2.0-stage-07",
+        "from": "scheme_review",
+        "to": "scheme_passed"
+      }
+    },
+    {
+      "time": "2026-10-09T18:44:41.657Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.2.0-stage-07",
+        "from": "scheme_passed",
+        "to": "exec_running"
       }
     }
   ]

@@ -28,6 +28,8 @@
 | ---------- | ----------------------------------------------- | :---------------------: | :---------------------: | :---------------------: | ----------------- |
 | 2026-10-10 | Windows / WebView2 / `pnpm tauri dev`（无 GUI） | BLOCKED(需人工 WebView) | BLOCKED(需人工 WebView) | BLOCKED(需人工 WebView) | openfeel-executor |
 
-> **BLOCKED(需人工 WebView)**：本轮执行环境**无 GUI 会话**（非交互 agent 无法启动/操作 `pnpm tauri dev` 窗口），真实 WebView 的 P95 / 切 20 章实例数 / 堆增幅**无法实测** —— 按 op-001 的 BLOCKED 处置如实标注，**不伪造数值**、**不阻塞其余任务**。REV-009（stage-05）与 REV-014（stage-04）待人工实测后再 `closed`。
+> **BLOCKED(需人工 WebView)**：执行环境**无 GUI 会话**（非交互 agent 无法启动/操作 `pnpm tauri dev` 窗口），真实 WebView 的 P95 / 切 20 章实例数 / 堆增幅**无法实测** —— 按 BLOCKED 处置如实标注，**不伪造数值**、**不阻塞其余任务**。
 >
-> **所需步骤（人工）**：① `corepack pnpm tauri dev`；② 窗口内 BenchPanel「运行延迟基准（200 次插入）」读取 **P95**（目标 < 16ms）；③ 依次切换 20 章后「统计 .ProseMirror 实例数」（应 = 1）；④ 「记录堆增幅」（目标 < 20%）；⑤ 将三项连同日期/环境/操作者填入上表（替换 BLOCKED 行）。
+> **执行主体**：真实 WebView 操作**由用户 / feel-tester 协验执行**（AI 不可替代）。**stage-06 op-001 与 stage-07 op-001 均复核并再次登记 BLOCKED**（不得静默跳过）；REV-009（stage-05）/ REV-014（stage-04）待人工实测回填后随对应 op `closed`。
+>
+> **所需步骤（人工）**：① `corepack pnpm tauri dev`；② 窗口内 BenchPanel「运行延迟基准（200 次插入）」读取 **P95**（目标 < 16ms）；③ 依次切换 20 章后「统计 .ProseMirror 实例数」（应 = 1）；④ 「记录堆增幅」（目标 < 20%）；⑤ 将三项连同日期/环境/操作者填入上表（替换 BLOCKED 行），并同步填写 `docs/smoke-check-v0.1.md` / `docs/smoke-check-v0.2.md` 的「实际/结果」列。

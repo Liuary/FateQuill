@@ -145,3 +145,9 @@
 - **问题**：四维审查 = 每次生成（含重写轮次）附带 4 次 LLM 评审调用（每维一次），Token 成本约为纯生成的 4~5 倍；重写再加生成 + 复审。
 - **缓解**：① 评审**复用 `model_config` 默认模型**（独立廉价评审模型 `reviewModelName?` 仅预留不实现）；② **非流式收口**（聚合后解析 JSON，不新增流式 UI）；③ 评审输入**沿用生成装配预算裁剪**（见 patterns「评审预算裁剪」）；④ 用户可关闭自动审查 / 自动重写以省 Token。
 - **注意**：`word_count` 为近似值，**不得**用作精确 token 估算（见「Token 超限防护」条）。
+
+## [+] chunk 体积（Tiptap/ProseMirror 入口，v0.2 持续增长） (2026-10-10, stage-07 REV-011②)
+
+- **现象**：v0.2 新增审查面板（及后续 research 域）后，入口 chunk **持续增长**；`pnpm build` 仍报 Vite 警告「chunk > 500KB」（2026-10-10 实测 ~850KB / gzip ~268KB）。
+- **处理**：**v0.2 接受现状**（核心依赖懒加载收益有限）；**v0.3 评估** `manualChunks` 分包（editor / orchestration / research 分组）或 StarterKit → 精选扩展裁剪。
+- **判定**：非错误、不影响功能；与 stage-05 REV-015 登记口径衔接，**不单独立任务**，记为已知项备查。

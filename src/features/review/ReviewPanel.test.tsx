@@ -1,6 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import type { Editor } from "@tiptap/react";
+import { Editor } from "@tiptap/core";
 import i18n from "@/app/i18n";
 import {
   DEFAULT_WEIGHTS,
@@ -9,6 +9,7 @@ import {
 } from "@/orchestration/review/aggregate";
 import { createEvaluatorRegistry } from "@/orchestration/review/evaluator";
 import type { Evaluator, ReviewDimension } from "@/orchestration/review/types";
+import { editorExtensions } from "@/features/editor/editor-extensions";
 import { useReviewStore } from "@/store/reviewStore";
 import { ReviewPanel } from "./ReviewPanel";
 
@@ -25,14 +26,26 @@ vi.mock("@/orchestration/review/register", () => ({
   registerBuiltinEvaluators: () => hoisted.registryHolder.current,
 }));
 vi.mock("@/orchestration/review/rewrite", () => ({ rewriteChapter: hoisted.rewriteSpy }));
-vi.mock("@/features/editor/EditorController", () => ({
-  createEditorController: () => ({
-    appendChunk: vi.fn(),
-    flushPending: vi.fn(),
-    replaceContent: hoisted.replaceSpy,
-    dispose: hoisted.disposeSpy,
-  }),
-}));
+// 委托真实实现（复用真实 EditorController，供 REV-008 的监听器配平断言）
+vi.mock("@/features/editor/EditorController", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/features/editor/EditorController")>();
+  return {
+    createEditorController: (editor: Editor, opts?: { throttleMs?: number }) => {
+      const controller = actual.createEditorController(editor, opts);
+      return {
+        ...controller,
+        replaceContent: (html: string) => {
+          hoisted.replaceSpy(html);
+          controller.replaceContent(html);
+        },
+        dispose: () => {
+          hoisted.disposeSpy();
+          controller.dispose();
+        },
+      };
+    },
+  };
+});
 
 const cfgRow = {
   id: 1,
@@ -46,7 +59,13 @@ const cfgRow = {
   updated_at: "u",
 };
 
-const fakeEditor = { getHTML: () => "<p>正文</p>" } as unknown as Editor;
+let editors: Editor[] = [];
+/** 真实 Tiptap 编辑器（供 adopt 经真实 EditorController 走查） */
+function newEditor(html = "<p>初版正文</p>") {
+  const editor = new Editor({ extensions: editorExtensions, content: html });
+  editors.push(editor);
+  return editor;
+}
 
 /** 构造脚本化评估器 */
 const fixedEvaluator = (
@@ -117,6 +136,13 @@ beforeEach(async () => {
   seed([]);
 });
 
+afterEach(() => {
+  for (const editor of editors) {
+    editor.destroy();
+  }
+  editors = [];
+});
+
 describe("ReviewPanel", () => {
   it("渲染四维分数与理由", async () => {
     seed([
@@ -128,7 +154,7 @@ describe("ReviewPanel", () => {
         { plot: ["冲突推进乏力", "伏笔未呼应"] },
       ),
     ]);
-    const { container } = render(<ReviewPanel novelId={1} chapterId={1} editor={fakeEditor} />);
+    const { container } = render(<ReviewPanel novelId={1} chapterId={1} editor={newEditor()} />);
 
     await waitFor(() => expect(items()).toHaveLength(1));
     const text = container.textContent ?? "";
@@ -149,7 +175,7 @@ describe("ReviewPanel", () => {
       version("v1", "初版", 0, { plot: 50, humanity: 50 }),
       version("v2", "重写1", 1, { plot: 90, humanity: 90 }),
     ]);
-    render(<ReviewPanel novelId={1} chapterId={1} editor={fakeEditor} />);
+    render(<ReviewPanel novelId={1} chapterId={1} editor={newEditor()} />);
 
     await waitFor(() => expect(items()).toHaveLength(2));
     expect(labels()[0]).toContain("重写1"); // 总分高者在前
@@ -161,11 +187,44 @@ describe("ReviewPanel", () => {
     expect(useReviewStore.getState().activeVersionId).toBe("v2");
   });
 
+  it("REV-008：采纳后 composition 监听器配平（无残留累积）", async () => {
+    seed([version("v1", "初版", 0, { plot: 90 })]);
+    const editor = newEditor();
+    const dom = editor.view.dom;
+
+    let added = 0;
+    let removed = 0;
+    const originalAdd = dom.addEventListener.bind(dom);
+    const originalRemove = dom.removeEventListener.bind(dom);
+    vi.spyOn(dom, "addEventListener").mockImplementation(
+      (...args: Parameters<typeof originalAdd>) => {
+        added += 1;
+        return originalAdd(...args);
+      },
+    );
+    vi.spyOn(dom, "removeEventListener").mockImplementation(
+      (...args: Parameters<typeof originalRemove>) => {
+        removed += 1;
+        return originalRemove(...args);
+      },
+    );
+
+    render(<ReviewPanel novelId={1} chapterId={1} editor={editor} />);
+    await waitFor(() => expect(items()).toHaveLength(1));
+
+    fireEvent.click(within(items()[0]).getByRole("button", { name: "采纳" }));
+    await waitFor(() => expect(hoisted.disposeSpy).toHaveBeenCalled());
+
+    // 一次性 controller 的 composition 监听已全部移除（无累积泄漏）
+    expect(added).toBeGreaterThan(0);
+    expect(removed).toBe(added);
+  });
+
   it("合规低分：显示人工裁决提示，且触发重写不调用重写（仅人工裁决）", async () => {
     hoisted.registryHolder.current = registryWith(fixedEvaluator("compliance", 40, ["含广告导流"]));
     seed([version("v1", "初版", 0, { compliance: 40, plot: 90 })]);
 
-    const { container } = render(<ReviewPanel novelId={1} chapterId={1} editor={fakeEditor} />);
+    const { container } = render(<ReviewPanel novelId={1} chapterId={1} editor={newEditor()} />);
     await waitFor(() => expect(items()).toHaveLength(1));
     expect(container.textContent).toContain("人工裁决"); // complianceManual 提示
 
@@ -179,7 +238,7 @@ describe("ReviewPanel", () => {
       version("v1", "初版", 0, { plot: 50, humanity: 50 }),
       version("v2", "重写1", 1, { plot: 60, humanity: 60 }),
     ]);
-    render(<ReviewPanel novelId={1} chapterId={1} editor={fakeEditor} />);
+    render(<ReviewPanel novelId={1} chapterId={1} editor={newEditor()} />);
 
     await waitFor(() => expect(items()).toHaveLength(2));
     expect(labels()[0]).toContain("重写1"); // 60 在 50 之前
