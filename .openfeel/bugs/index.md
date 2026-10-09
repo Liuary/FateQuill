@@ -4,7 +4,7 @@
 
 ## 状态统计
 
-- **open 0 ｜ fixing 0 ｜ resolved 0 ｜ closed 8**
+- **open 0 ｜ fixing 0 ｜ resolved 0 ｜ closed 9**
 
 ## 按模块
 
@@ -59,3 +59,9 @@
 - **1 个 medium Bug，已闭环**（修复 commit `48ce6e8`，验收人 openfeel-feel-tester）；验收结论 **DoD 10/10 通过**（第 4/9 条在 BUG-001 修复后真实 UI 路径恢复满足）；门禁 `pnpm test` **84 文件 415/415**、lint/build、`cargo test` **52/52** 全绿。
 - [`exploration.md`](exploration.md)：**BUG-001** — 运行时「启用易经推演」开关不生效：开关（`ExplorationPanel`）与推演引擎（`useExploration`）各持独立 `useIChingEnabled()` hook 的 `useState`，两份状态互不相通（写 `localStorage` 后另一实例不重读）→ `hexagramGuide` 恒 `undefined`、引导未注入 system 段（反向：挂载时开、运行关仍注入）→ `ichingEnabled` 提升为 `explorationStore` 单例 + store 薄封装（API 不变、**零新增依赖**），运行时切换即时生效；独立回归探针复现原失败路径并验证消除。
 - 验收报告：`.openfeel/tmp/stage-09-acceptance.md`
+
+### v0.4.0-stage-10（角色 Agent 多声部对话，v0.4 收官 / 里程碑 M4）@openfeel-feel-tester
+
+- **1 个 medium Bug，已闭环**（修复 commit `311dd63`，验收人 openfeel-feel-tester）；验收结论 **DoD 11/11 通过**；门禁 `pnpm test` **99 文件 503/503**、lint/build、`cargo test` **52/52** 全绿。
+- [`dialogue.md`](dialogue.md)：**BUG-001** — 多声部生产装配未含「设定卡 + 前章末尾/当前章正文 + 用户场景指令」，场景上下文仅落地「公共对话历史」1/4：`useDialogue` 本地最小 `buildPublicContext`（op-003 占位）与 `context.buildPublicContext`（op-006 完整装配，**生产零调用**）**同名重名** → 删除本地最小实现改调共享函数（**单源**）+ 新增 `useSceneContext`（设定卡 + 前章末尾）+ 面板补场景指令输入；补「生产调用非零 + 四块入实际 options + 空输入零副作用」断言；独立回归探针（真实 `DialoguePanel` 生产路径）复验通过。
+- 验收报告：`.openfeel/tmp/stage-10-acceptance.md`

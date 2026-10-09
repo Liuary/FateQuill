@@ -55,10 +55,10 @@ research/              # 研究域（stage-07，provider 无关）：采样 / �
 dialogue/              # 多声部对话（stage-10，provider 无关；非流式收口）
 ├── types.ts           # DialogueEntry / DialogueProfile / DialogueAgentInput / BatchLineResult
 ├── profile.ts         # PROFILE_TEXT_KEYS / normalizeProfile / toProfileRecord（与 features/characters 单一来源）
-├── persona.ts         # buildPersona（角色档案 → persona 段）
+├── persona.ts         # buildCharacterAgentPrompt / buildNarratorAgentPrompt（角色/旁白 persona 段）
 ├── agents.ts          # 角色 / 旁白 Agent 定义注册
 ├── context.ts         # buildPublicContext（**白名单装配**：他人仅公开身份摘要 → 防串味）
-├── assemble.ts        # assembleDialogue（会话条目 → 章节 HTML，orderIndex 保序）
+├── assemble.ts        # assembleDialogueHtml（会话条目 → 章节 HTML，orderIndex 保序）
 ├── generate.ts        # generateLine / toCharacterOptions / toNarratorOptions / generateBatch
 ├── cost.ts            # estimateDialogueCost / selectParticipants（majorOnly 过滤）
 ├── concurrency.ts     # DEFAULT_DIALOGUE_CONCURRENCY=3 / runWithConcurrency（工作池）

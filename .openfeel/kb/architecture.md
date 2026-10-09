@@ -233,3 +233,26 @@
 - **状态源单一（BUG-001 修复后定稿）**：`ichingEnabled` 落在 **`explorationStore` 单例**（`setIChingEnabled` 写 store + `localStorage`），`useIChingEnabled` 为 **store 薄封装**（API 不变、无本地 `useState`），开关 UI（`ExplorationPanel`）与消费侧（`useExploration`）**同源** → **运行时切换即时生效**（无需重启，见 `troubleshooting.md`）。**复用既有 store，零新增依赖**。
 - **关闭零副作用（可判定验收）**：关闭时 `buildExplorationOptions` 输出与**基线逐字段一致**（空白 guide 视为未传、无空段残留），且 `buildGuideCard`/`renderGuideText` **零调用**；开启且已起卦 → system 段含卦象引导文本。
 - **通用**：可插拔/可选能力应「**状态单例共享 + 缺省旁路 + 关闭零副作用可判定**」三件套；开关状态勿用多份独立 `useState`（会致跨组件不同步）。
+
+## [+] 多声部对话编排（角色 Agent + persona 契约 + 旁白/对话分离，零迁移/无 IPC 增量） (2026-10-10)
+
+- **定位**：兑现 M4「主要角色各自独立 Agent 生成台词，旁白与对话可分离创作与合并」——把「一个 Agent 写全文」升级为「**旁白 Agent + 每角色独立 Agent**」多声部协作（**stage-10 / v0.4 收官**）。
+- **分层落点**：契约/装配/编排 `src/orchestration/dialogue/`（provider 无关，复用 `http_stream` **非流式收口**）；会话态 `src/store/dialogueStore.ts`（独立 `create`，内存）；UI `src/features/dialogue/`；角色档案 `src/features/characters/`；**无新增 IPC / 无迁移**（复用既有 `character` 五命令 + `chapter` 命令 + `http_stream`）。
+- **persona 契约（零迁移方案 A）**：`character.profile` 为 **JSON 文本列**（`character` 表原为极简占位），最小字段 `{ identity, personality, speechStyle, goal, extra, major? }`（自由文本；`major: boolean` 供「仅主要角色」过滤）；`CHARACTER_PROFILE_KEYS` 为字段**单一来源**，`normalizeProfile`/`toProfileRecord`（`profile.ts`）做归一（缺失补空串、未知键剔除、异常安全）；装配模板 `buildCharacterAgentPrompt`（persona **完整注入本人 Agent**）；`buildNarratorAgentPrompt`（叙述者 persona，**仅 system 差异、同装配链**）。
+- **旁白/对话分离创作**：条目模型 `{ id, kind: "dialogue"|"narration", speakerId?, speakerName?, content, orderIndex }`（**会话内存**，同 stage-08 `explorationStore` 范式）；旁白与角色台词**分别生成、分别编辑**；轮次**用户主导**（选中角色 → 生成 → 追加历史 → 可反复）；「导演式自动编排」留待后续。
+- **产物与合并**：格式单一规范（对话 `<p class="dialogue"><strong>{speakerName}</strong>：{content}</p>` / 旁白 `<p class="narration">…</p>`，样式由 CSS 承担）；`assembleDialogueHtml` 按 `orderIndex` 保序拼接（HTML 转义防注入）；合并**双路径**（主：新建下一章草稿无损 / 次：替换当前章 + 强制入池快照 + 单撤销；详见 `kb/patterns.md`）。
+- **成本/并发**：复用 stage-08 `estimateCost` 范式（**参与角色数 × 输出上限**，**启动前显示**）；`runWithConcurrency`（默认 3，超限排队，乱序归位，单项失败不抛穿）；`selectParticipants({ majorOnly })` 按 `profile.major` 过滤。
+- **评审衔接（可选）**：`review-bridge.ts` 对齐 stage-06 `ReviewInput`（**不新增评估器、不改 stage-06 契约**）；「千人一腔」判据与 stage-06 `humanity`「真人感」**互认**（登记 `docs/review-rubric.md` §4.1）。
+- **与 stage-11 边界**：本阶段只**交付 persona 装配输入契约**（Agent 仅依赖 `profile` 约定字段）；stage-11 的设定分级**在该契约之上**结构化，**不回改本阶段**。
+
+## [+] 上下文隔离白名单（防串味：本人 persona 完整 + 公共场景 + 公共对话历史 + 他人公开身份摘要） (2026-10-10)
+
+- **背景（本阶段核心约束）**：「多声部」要求角色 Agent 之间**不共享私有上下文**，但**对话历史（他人已说台词）必须共享**（否则无法接话）——「公共/私有」二分需精确化（stage-10 T5，REV-001 high 定稿）。
+- **白名单（显式化）**：每角色 Agent 输入 = **本人 persona（完整）** + **公共场景** + **公共对话历史**；**不含他人 persona 全文**（可含他人**公开身份一行摘要**）。
+  - **可共享**：场景设定（设定卡）、已定稿对话 `{speaker, content}`、旁白、他人**公开身份摘要**。
+  - **私有（不共享）**：他人 persona 细节、内心独白、秘密。
+- **场景上下文四构成**：设定卡（经 stage-05 装配）+ 前章末尾 / 当前章正文 + 用户**场景指令** + **公共对话历史**（结构化）；由 `buildPublicContext({ settingCards, previousChapterTail, sceneInstruction, history })` **单源**产出。
+- **装配入口（单一白名单入口）**：`buildCharacterAgentInput({ selfProfile, publicContext, others })` → `{ system, user }`（system=本人 persona 完整；user=公共上下文 + `【在场角色（仅公开身份）】他人（公开身份）：{summary}` 小节）；`toCharacterOptions`/`toNarratorOptions`/`generateBatch` **只经白名单装配**（杜绝调用方绕过传全量角色列表）。
+- **公开身份摘要**：`buildPublicSummary(profile, fallbackName)` 仅取 `identity`（缺省回退角色名），**私有字段一律不参与**。
+- **判据（可判定，非语义）**：自动判据 = **装配层 prompt 不含他人私有**（构造「角色 A persona 含秘密 X」→ 断言角色 B 的 `system+user` 不含 `X`）；**产出文本语义符合度**（「千人一腔」「符合人设」）走 stage-06 评审**人工协验**，**不在装配层断言**。
+- **生产接线（BUG-001 教训）**：声明白名单后须核验**生产可达**——`useDialogue` 经 `useSceneContext` 装载四块、调 `context.buildPublicContext`（**单源**，见 `kb/troubleshooting.md`）；否则白名单仅在单元函数层成立、生产零调用（场景上下文仅落地 1/4）。

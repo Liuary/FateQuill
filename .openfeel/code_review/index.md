@@ -1,7 +1,21 @@
 # 代码审查索引（公共域）
 
 > 存放各阶段审查关闭后的核心结论摘要。详细审查过程与逐提交点内容见私域 `.openfeel/users/{username}/code_review/REV-{stage}.md`。
-> 状态统计：**pending 5 ｜ fixing 0 ｜ resolved 17 ｜ closed 99**（pending 5 = stage-04 REV-014 + stage-05 REV-009 人工协验 BLOCKED + stage-08 REV-009 快照会话内存级 / REV-010 abort 语义·新章落卷末 + stage-09 REV-009 组合用例/kind 治理）
+> 状态统计：**pending 5 ｜ fixing 0 ｜ resolved 22 ｜ closed 101**（pending 5 = stage-04 REV-014 + stage-05 REV-009 人工协验 BLOCKED + stage-08 REV-009 快照会话内存级 / REV-010 abort 语义·新章落卷末 + stage-10 REV-007 台词评审维度子集）
+
+## v0.4.0-stage-10（角色 Agent 多声部对话，v0.4 收官 / 里程碑 M4）
+
+- **结论**：代码审查**通过**（2026-10-10 06:10 计划 v2 复审 + 06:34 代码审查），stage 已 test_passed → archiving。**修复闭环**：1 个 medium Bug（dialogue BUG-001）经 op-009 修复，独立回归复验通过并关闭（修复 commit `311dd63`）。
+- **心得总结**：[`v0.4.0-stage-10.md`](v0.4.0-stage-10.md)
+- **审查对象**：
+  1. 阶段计划 `plan.md` v1（22 行）→ 复审 v2（05:58 → 06:10 通过）：REV-001~005 **resolved**（多声部运行机制 / persona 契约 / 产物与合并 / IPC·持久化·成本 / 范式五大定稿）。
+  2. 操作方案 `ops/op-001~008.md`（05:33）：REV-006（low，`DialogueAgentInput` 接线）**closed**。
+  3. 执行产出代码审查 + BUG-001 修复（op-009）：REV-006 代码级闭环；登记 REV-007（low）**pending**（非阻塞，台词评审维度子集）。
+- **closed 合计 2 条**（REV-006 + 承接 stage-09 REV-009）；**resolved 5 条**（计划层）；**pending 1**（REV-007 非阻塞登记）。
+- **关键**：每角色独立 Agent（`buildCharacterAgentPrompt`）+ 旁白 Agent（仅 system 差异）；旁白/对话分离创作与 `dialogueStore`（会话内存、`orderIndex` 恒连续）；**上下文隔离白名单防串味**（本人 persona 完整 + 公共场景 + 公共对话历史 + 他人公开身份摘要；装配断言「A 秘密 X 不入 B prompt」）；**合并双路径**（复用 stage-08 安全网：主新建下一章无损 / 次替换 + 强制快照 + 单撤销）；成本/并发（`estimateDialogueCost` + `runWithConcurrency` + `major` 过滤）；台词评审**可选**衔接（对齐 stage-06 `ReviewInput`，不新增评估器）；**零迁移 / 无 IPC 增量**。实测 `cargo test` **52/52**、Vitest **503/503**（99 文件）、lint 0 errors、build 无 `>500kB` 警告；DoD **11/11**、门禁 **6/6**。
+- **BUG-001（medium, closed）**：多声部生产装配仅含公共对话历史 1/4——`useDialogue` 本地最小 `buildPublicContext`（op-003 占位）未替换为 `context.buildPublicContext`（op-006 完整装配，**生产零调用**），且两者**同名重名** → 删除本地最小实现改调共享函数（**单源**）+ 新增 `useSceneContext`（设定卡 + 前章末尾）+ 面板补场景指令输入；修复 commit `311dd63`，独立回归探针（真实 `DialoguePanel` 生产路径）四块全部进入实际 `options`。
+- **遗留（非阻塞）**：REV-007（low，台词评审默认全四维，片段级维度适配性可议，建议后续维度子集/可勾选）；**人工协验 3 项 BLOCKED**（真实 Key 多声部端到端 / 真机 WebView / 台词评审语义符合度）+ v0.2~v0.4 遗留跟踪。
+- **承接清理**：**stage-09 REV-009**（起卦→注入组合用例 + `SettingCardForm.kind` 枚举治理）经本阶段首 op（op-001 chore）清理 **closed**。
 
 ## v0.3.0-stage-09（易经卦象系统，v0.3 收官 / 里程碑 M3）
 

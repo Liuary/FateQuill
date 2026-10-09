@@ -272,3 +272,38 @@ resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } }
 - **求值稳定性**：消费侧以 `useMemo([enabled, casting])` 计算 guide（关闭或未起卦 → `undefined`），避免每次渲染重算并保证关闭时**零调用**。
 - **零副作用断言落点**：`buildExplorationOptions` 本身**不引用**卦象模块（文本由调用方渲染）——故「模块零调用」断言落于宿主组件（`vi.mock` 记录 `buildGuideCard`/`renderGuideText`）；装配层测试保留「缺省/空白 → 与基线逐字段一致」。
 - **通用**：向后兼容的可选注入 = **可选参数缺省旁路 + 空值语义归一（空白=未传）+ 数组拼装无空段 + 消费侧 memo 稳定求值**；跨阶段扩展须回写 `manual/` 并做既有测试全量回归。
+
+## [+] 防串味装配断言（秘密 X 不入他人 prompt，白名单穷举） (2026-10-10)
+
+- **场景**：多声部对话须可判定地保证「角色 A 的私有设定（秘密/内心/目标）不泄漏进角色 B 的 prompt」。
+- **模式（装配层断言，而非产出台词抽查）**：构造「角色 A `profile.personality` 含唯一秘密串 `X`」，断言 `buildCharacterAgentInput({ selfProfile: B, publicContext, others: [A] })` 的 **`system + user` 拼串不含 `X`**；同时断言 B 输入**含** A 的公开身份**一行摘要**（`identity`）、**不含** A 的 `personality`/`speechStyle` 私有细节。
+- **白名单穷举**：随机注入多角色，断言**仅 self persona 全文**被包含（他人一律只透公开摘要）；`toCharacterOptions` 生产入口端到端覆盖（杜绝调用方绕过）。
+- **独立探针复验（防自证）**：验收阶段以**唯一标记**（如 `ZXQ9137_SECRET_月蚀弑父`）走**真实生产路径**（`DialoguePanel` → provider 捕获实际 `options`）复核，**不复用实现方用例**。
+- **口径边界（诚实声明）**：自动判据 = **prompt 构造正确性**（装配层）；**产出文本语义符合度**不在此断言，走 stage-06 评审人工协验。
+- **通用**：对「隔离 / 防泄漏」类需求，把判据落在**装配层的可判定断言**（注入唯一标记 + 断言其不出现在非授权对象），而非对 LLM 产出做关键词抽查（产出可变、不可稳定判定）。
+
+## [+] 合并落章双路径复用（安全网不重复踩坑） (2026-10-10)
+
+- **背景**：多声部对话产物「合并落章」是**破坏性动作**（可能覆盖当前章正文 + stage-04 自动保存持久化）——直接复用 stage-08 采纳分支的**双路径安全网范式**（REV-007 教训），**不重复踩坑**。
+- **主路径「新建下一章草稿」（推荐、无损）**：`chapter.create`（`orderIndex = 卷内 max+1`，追加卷末），**不改当前章 DB 行** → 自动保存不可能覆盖原正文；**不适用 `Ctrl+Z`**。
+- **次路径「替换当前章」（危险）**：`EditorController.replaceContent`（**单条撤销**）；执行前**强制**入池快照（`reviewStore.addVersion({ label: "dialogue-merge-safety", content: 替换前正文 })`，**必做非可选**）+ `finally dispose()`。
+- **确认门**：两路径均经**内联二次确认**（复用 `ConfirmInline`）；取消 → **零副作用**（无 create / 无 replace / 无入池）。
+- **顺序断言**：次路径以 mock `replaceContent` + `vi.spyOn(reviewStore.addVersion)` **共用调用序数组**，断言 `["addVersion","replaceContent"]`（**先快照后替换**，顺序可判定）；主路径断言 `update_chapter` **零调用**（当前章 DB 行不被覆盖）。
+- **不自动清空**：合并后会话条目**保留**（可回看 / 再次合并到别处），用户手动清空——**数据安全优先**。
+- **通用**：破坏性动作 = **确认门 + 无损替代路径 + 强制回滚点**（同 `kb/troubleshooting.md`「采纳误触致数据丢失」）；跨阶段**复用已验证的安全网范式**而非另起炉灶。
+
+## [+] 会话内存 store 范式：独立 create + orderIndex 恒连续 + 单例共享 (2026-10-10)
+
+- **范式（跨阶段复用）**：会话级产物（stage-08 分支 `explorationStore`、stage-10 对话条目 `dialogueStore`）以**独立 `create()` 的 Zustand store** 承载，**内存不落库**（关闭即弃；「合并后的正文才是资产」）；与 `editorStore`/`generationStore` **并列、不互相 `setState`**。
+- **orderIndex 恒连续**：条目排序以显式 `orderIndex` 为序（非数组下标 / 生成时间）；`addEntry`（末尾 +1）/ `insertAt`（clamp `[0,n]`，其后重排）/ `removeEntry` / `moveEntry`（相邻交换，越界**原样返回**）后，`entries.map(e => e.orderIndex)` **恒为 `0..n-1`**（**不变量入测试**）。
+- **单例共享**：`dialogueStore` 经 `src/store/index.ts` 导出**单例**，跨组件读写**同源**（避免多份独立 `useState` 不同步，见 `kb/troubleshooting.md`「多实例独立 useState」）。
+- **会话内存边界断言**：store 文件仅 `create()`、**无持久化**（`rg -e "create" -e "persist"` 核验）；`clear()` 清条目保持空。
+- **通用**：会话级中间产物用「**独立 create + 内存 + 显式序标不变量 + 单例共享**」四件套；与既有 store 严格隔离，仅经受控命令面（如 `EditorController`）跨域通信。
+
+## [+] 单源装配（删除本地最小实现，改调共享函数 + 生产调用非零断言） (2026-10-10)
+
+- **教训来源**：BUG-001——`useDialogue` 内为过渡保留了**同名最小 `buildPublicContext`**（op-003 占位），而完整的 `context.buildPublicContext`（op-006）**生产零调用**，二者**重名**，致场景上下文仅落地 1/4（详见 `kb/troubleshooting.md`）。
+- **模式**：**删除**宿主内本地最小实现，**改调共享模块函数**（`import { buildPublicContext } from "@/orchestration/dialogue/context"`）→ **单一来源**；`rg "const buildPublicContext" src/features/dialogue` **零命中**（消除重名）。
+- **验证双断言**：① **生产调用非零**——`vi.mock(path, importOriginal)` **spy 包装真实实现**，断言调用次数 ≥1（既不破坏输出断言，又能证明生产可达）；② **输出正确**——断言实际送入 provider 的 `options.messages` 含预期各块（四块场景上下文）。
+- **反向用例**：空输入 → 对应块**不出现**（零副作用），避免「有调用但输出错误」假绿。
+- **通用**：**同义函数只应有一份**——过渡期占位必须在接线时**替换（非并存）**；凡「契约先行、接线后补」的交付，收口须以「**单源 rg 零命中 + 生产调用非零 spy**」双断言核验，否则测试全绿亦掩盖缺陷。

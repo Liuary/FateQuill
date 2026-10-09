@@ -16,10 +16,10 @@ FateQuill 的**多声部对话域**（**可选**能力）：以角色档案（`p
 src/orchestration/dialogue/      # 契约与编排（provider 无关）
 ├── types.ts                     # DialogueEntry / DialogueProfile / DialogueAgentInput / BatchLineResult
 ├── profile.ts                   # PROFILE_TEXT_KEYS / normalizeProfile / toProfileRecord（与 characters 单一来源）
-├── persona.ts                   # buildPersona（角色档案 → persona 段）
+├── persona.ts                   # buildCharacterAgentPrompt / buildNarratorAgentPrompt（角色/旁白 persona 段）
 ├── agents.ts                    # 角色 / 旁白 Agent 注册（对话专用 Agent 定义）
 ├── context.ts                   # 白名单装配（buildPublicContext / 他人仅公开身份摘要）——防串味
-├── assemble.ts                  # assembleDialogue（条目 → 章节 HTML；orderIndex 保序）
+├── assemble.ts                  # assembleDialogueHtml（条目 → 章节 HTML；orderIndex 保序）
 ├── generate.ts                  # generateLine（单条）/ toCharacterOptions / toNarratorOptions / generateBatch
 ├── cost.ts                      # estimateDialogueCost / selectParticipants（majorOnly 过滤）
 ├── concurrency.ts               # DEFAULT_DIALOGUE_CONCURRENCY=3 / runWithConcurrency（工作池）
@@ -33,6 +33,7 @@ src/features/dialogue/           # UI
 ├── CharacterLineComposer.tsx    # 角色选择 + 台词生成入口
 ├── DialogueEntryList.tsx        # 会话条目视图（对话/旁白）
 ├── useDialogue.ts               # 编排：generateNarration / generateCharacterLine / generateBatchLines（并发）/ stop
+├── useSceneContext.ts           # 场景上下文装载（设定卡 + 前章末尾 + 场景指令），供装配四块（BUG-001 修复）
 ├── useDialogueCost.ts           # 启动前成本预估（参与角色数 × 输出上限）
 └── useMergeDialogue.ts          # 双路径落章：主「新建下一章」/ 次「替换当前章」（强制快照）
 ```
@@ -40,7 +41,7 @@ src/features/dialogue/           # UI
 ## 核心 API / 约定
 
 - **条目模型（`dialogueStore`，会话内存）**：`{ kind: "narration" | "dialogue", speakerId?, speakerName?, content, orderIndex }`；
-  `orderIndex` **恒连续**（增删移动后重排），`assembleDialogue` / `assembleDialogueText` 按 `orderIndex` 升序输出。
+  `orderIndex` **恒连续**（增删移动后重排），`assembleDialogueHtml` / `assembleDialogueText` 按 `orderIndex` 升序输出。
 - **防串味（T5，白名单装配）**：`buildCharacterAgentInput` 仅注入 —— **本人 persona 全文** + **公共上下文** +
   **他人公开身份摘要**；`context.ts` 提供 `buildPublicContext()`；**A 的私密档案永不进入 B 的 prompt**（5 组断言覆盖）。
 - **生成（非流式收口）**：`generateLine` 单条；`generateBatch` 经 **`runWithConcurrency`**（默认并发 3，超限排队，

@@ -239,3 +239,32 @@
 - **验证三件套（可判定）**：① **输出逐字段一致**——关闭时 `buildExplorationOptions` 的 `options` 与「改造前基线」`toEqual`（含 `messages` 深相等），空白 guide 视为未传、无空段；② **下游模块零调用**——`vi.mock("@/orchestration/iching")` 记录 `buildGuideCard`/`renderGuideText`，关闭态调用记录为 `[]`；③ **旁路边界**——装配函数本身不 import 被测模块（文本由调用方渲染），故「零调用」断言落于**宿主组件**而非装配层（避免断言在错误层而空洞）。
 - **运行时态同样断言**：缺省关闭与**运行时切换关闭**均 `guideCalls=[]`（防「仅缺省态零调用」假绿；BUG-001 教训）。
 - **通用**：可选/可关能力的验收**必须含「关闭态零副作用」可判定断言**，且区分**缺省态**与**运行时切换态**；「零调用」断言要落在真实持有调用点的层。
+
+## [+] 「生产端最小占位未替换为完整实现」模式（BUG-001 根因，与 stage-07「功能无入口」/stage-09 同类） (2026-10-10)
+
+> 登记：stage-10 BUG-001（dialogue, medium, closed）。
+
+- **现象**：完整能力在 `orchestration` 层实现且**单测全绿**，但**生产不可达**——宿主（`useDialogue`）仍停留在早期的**最小占位实现**，「稍后替换为完整装配」的约定**未兑现**；结果：文档 / DoD 声明的能力（场景上下文四块：设定卡 / 前文 / 场景指令 / 公共对话历史）**生产仅落地 1/4**。
+- **根因分层**：① 过渡期**本地最小占位**与目标**共享函数同名**（`buildPublicContext` 双份）→ 替换时易漏、易误留；② 占位「稍后在 op-006 替换」为**意图而非强制**（无断言守护）→ 跨 op 交接处静默断裂；③ 既有测试只覆盖**单元函数**（`context.test.ts`），未覆盖**生产装配路径**（`useDialogue`）→ 全绿掩盖。
+- **排查信号**：
+  ```powershell
+  rg -n "const buildPublicContext" src/features            # 本地最小实现仍存在 → 疑未替换
+  rg -n "@/orchestration/dialogue/context" src/features/dialogue/useDialogue.ts  # 应命中（生产调用完整装配）
+  ```
+  同类历史：stage-07 REV-018（交叉判断纯函数生产零调用）/ stage-07 BUG-001（素材库导出函数生产零调用）——**「契约先行、UI 后接」的高危断裂点**。
+- **修复范式**：删除本地占位、改调**共享函数（单源）**；补「**生产调用非零** + **输出正确** + **空输入零副作用**」三断言（spy 包装真实实现，见 `kb/patterns.md`「单源装配」）。
+- **预防**：跨 op 交接的「占位 → 完整」约定，须在**收口 op 用断言强制兑现**（生产调用非零 rg/spy），而非仅靠备注；对纯函数型交付，审查 / 验收追问「**谁在生产调用它**」。
+
+## [+] context 单源消除重名（同名双实现 → 删除本地最小实现改调共享模块） (2026-10-10)
+
+> 登记：stage-10 BUG-001 修复要点。
+
+- **现象 / 根因**：`useDialogue` 内本地最小 `buildPublicContext` 与 `@/orchestration/dialogue/context` 的完整 `buildPublicContext` **同名重名**——前者遮蔽后者，生产实际只调到最小实现，完整装配**不可达**（BUG-001）。
+- **处理（单源三件套）**：① **删除**本地同名函数；② 从共享模块 **import 完整实现**（`useDialogue.ts` 顶部 `import { buildPublicContext } from "@/orchestration/dialogue/context"`）；③ 宿主内 `assemblePublicContext()` 负责**把 store 条目实时映射为 history** 后调共享函数（宿主只做「取数据 + 传参」，不含装配逻辑）。
+- **可判定核验**：
+  ```powershell
+  rg -n "const buildPublicContext" src/features/dialogue   # 期望：零命中（单源）
+  rg -n "@/orchestration/dialogue/context" src/features/dialogue/useDialogue.ts  # 期望：命中
+  ```
+  另以 `vi.mock(path, importOriginal)` **spy 真实实现**断言调用次数 ≥1。
+- **通用教训**：**同名函数 = 隐性遮蔽**——「本地占位 + 共享完整实现」并存必致调用漂移；消除重名的唯一可靠方式是**删除占位并显式 import 单源**，并以 rg「零命中 + 命中」双断言守护。
