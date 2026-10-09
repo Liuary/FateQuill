@@ -130,6 +130,12 @@
 - **备选**：① 前端直连（否决：CORS + 密钥下发，违反 C-04/C-05）；② 保留 AI SDK + 自定义 fetch 桥（否决：把 IPC 事件流伪装成 `Response` 的胶水复杂度/中断/背压透传风险 > v0.1 收益，且 AI SDK 的多 provider 抽象与自建 `ModelProvider` 接口重复，违反 C-08）。
 - **后果**：需自写 provider 的 SSE 解析（openai-compatible 一个实现即覆盖多数国产/兼容 API，量小可控）；换取干净的数据面、密钥零下发与可取消的流式通道。AI SDK 的流式 UI hooks（`useCompletion` 等）亦与自建 `generationStore`（stage-05）重复，不再需要。后续多模型交叉判断场景（stage-06/07）如需再评估，可在 fetch 桥或 Node sidecar 方案间重新决策。
 
+#### ADR-002：生成内容落地交互 = 流式直插编辑器（模式 A）
+- **背景**：stage-04 已交付 `EditorController.appendChunk/flushPending` + `useChunkInjection`（撤销会话合并/IME 排队/节流批次），专为流式直插设计；原 stage-05「预览面板 + 显式插入」会使其投资空转。
+- **决策**：**模式 A 流式直插**——`generationStore` 订阅 stage-03 `subscribeChunks` → 节流 → `EditorController.appendChunk`；生成面板**仅承载状态**（进度/停止/重试/错误），不设预览面板。
+- **备选**：模式 B（预览 + 一次性插入）——否决（stage-04 T8 机制闲置；与 M1「流式插入」不符）。
+- **后果**：M1 字面兑现；生成期间编辑器零 React 重渲染（React Profiler 断言）；停止/失败时已插入内容按草稿保留，`Ctrl+Z` 一次撤销整段。详见 `.openfeel/dev/decisions.md` ADR-002。
+
 ---
 
 ## 4. 核心里程碑
