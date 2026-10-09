@@ -14,3 +14,4 @@ export type {
 } from "./model-config-repository";
 export type { ReviewRecordRepository } from "./review-record-repository";
 export type { MaterialRepository } from "./material-repository";
+export type { SkillEntryRepository, SkillEntryInput } from "./skill-entry-repository";

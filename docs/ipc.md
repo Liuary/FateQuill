@@ -86,9 +86,9 @@
 
 ## 8. 数据访问命令与错误结构
 
-### 8.1 数据访问命令清单（41 个）
+### 8.1 数据访问命令清单（45 个）
 
-> 另见 §6 流式通道命令（`http_stream` / `abort_stream`）——故全仓实际注册命令共 43 条。
+> 另见 §6 流式通道命令（`http_stream` / `abort_stream`）——故全仓实际注册命令共 47 条。
 
 5 实体 × [list / get / create / update / delete]，命令名 snake_case：
 
@@ -143,6 +143,15 @@
 | Material | `list_materials`  | `{ status?, sourceType?, query? }`                                                      | 列出/检索素材（`excerpt`/`label`/`reason` LIKE；时间倒序）                           |
 | Material | `delete_material` | `{ id }`                                                                                | 删除素材；**被 skill_entry 引用则拒绝**（`FK_VIOLATION` + detail 引用列表，REV-012） |
 
+skill 命令（skill_entry，共 4 个；stage-07 T5）：
+
+| 类别  | 命令                 | 参数（前端 camelCase）                                                             | 语义                                                               |
+| ----- | -------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Skill | `save_skill_entry`   | `{ version, title, rule, examples?: SkillExample[], sourceMaterialIds: number[] }` | 保存 skill 条目（**来源素材以 id 引用**；无效素材 → `VALIDATION`） |
+| Skill | `list_skill_entries` | 无                                                                                 | 列出 skill（时间倒序）                                             |
+| Skill | `update_skill_entry` | `{ id, version, title, rule, examples?, sourceMaterialIds }`                       | 更新（含**版本管理**）                                             |
+| Skill | `delete_skill_entry` | `{ id }`                                                                           | 删除 skill 条目                                                    |
+
 #### 素材与存储语义（stage-07 T4）
 
 - 表 `material(id, source_type, source_model, excerpt, position_json, reason, label, chapter_id, status, created_at)`：
@@ -151,6 +160,13 @@
   - `chapter_id` 外键 `ON DELETE SET NULL`（删章后素材保留、定位置空）。
 - **隐私**：素材**默认仅本地**（无匿名聚合上传）；导出（JSON/CSV）在前端本地生成并下载。
 - **删除防护（REV-012）**：任一 `skill_entry.source_material_ids_json` 含该素材 id 时**拒绝删除**，错误 `detail` 携带引用它的 skill 列表（`[{id,title}]`）。
+
+#### skill 与素材引用语义（stage-07 T5）
+
+- 表 `skill_entry(id, version, title, rule, examples_json, source_material_ids_json, created_at)`：`rule` 为**可执行的规避指令**，`version` 支持版本管理。
+- **素材 → skill 以 id 引用**（`source_material_ids_json`），**不重复存储素材内容**（REV-004）；保存/更新时校验所引用的 `material` 均存在（否则 `VALIDATION`）。
+- **归纳需人工参与**（不做自动归纳）：用户在研究工作台选 `confirmed` 素材 + 填 `rule`。
+- 与 `delete_material` 的**删除防护交叉**（REV-012）：被 skill 引用的素材**不可删除**。
 
 #### review_record 关联语义（stage-06 T6）
 
@@ -164,7 +180,7 @@
 - `model_config(provider, label)` ↔ keyring 条目：`service = fatequill`、`account = {provider}/{label}`（即 `fatequill/{provider}/{label}`）。
 - 经 `keyring_set` / `keyring_delete` / `keyring_exists` 三命令管理（**无 `keyring_get`**）：**Key 不入库**（`model_config` 表不含 key 列，C-05）、**不下发前端**；仅 Rust 中继（`http_stream`）在注入授权头时内部读取。
 
-> 后续 op 新增命令须同步本清单（stage-03 已完成 `http_stream` / `abort_stream`（§6）与模型配置/密钥命令；stage-06 T6 追加审查记录命令；stage-07 T4 追加素材命令）。
+> 后续 op 新增命令须同步本清单（stage-03 已完成 `http_stream` / `abort_stream`（§6）与模型配置/密钥命令；stage-06 T6 追加审查记录命令；stage-07 T4 追加素材命令、T5 追加 skill 命令）。
 
 ### 8.2 错误结构与错误码表
 

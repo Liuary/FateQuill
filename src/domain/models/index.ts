@@ -6,3 +6,4 @@ export * from "./character";
 export * from "./model-config";
 export * from "./review-record";
 export * from "./material";
+export * from "./skill-entry";

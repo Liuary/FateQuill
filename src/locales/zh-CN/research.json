@@ -32,5 +32,22 @@
     "parallelism": "排比",
     "empty": "空洞形容",
     "translationese": "翻译腔"
+  },
+  "cancel": "取消",
+  "skills": {
+    "title": "规避 skill 库",
+    "empty": "暂无 skill 条目",
+    "induct": "归纳入库",
+    "update": "更新",
+    "edit": "编辑",
+    "delete": "删除",
+    "version": "版本",
+    "name": "标题",
+    "rule": "规则",
+    "examples": "示例",
+    "examplesHint": "每行一条：坏例 => 好例",
+    "sourceMaterials": "来源素材",
+    "noMaterials": "暂无 confirmed 素材",
+    "saveFailed": "保存失败（检查来源素材是否有效）"
   }
 }

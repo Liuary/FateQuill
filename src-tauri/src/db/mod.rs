@@ -9,6 +9,7 @@ pub mod ordering;
 pub mod model_config;
 pub mod review;
 pub mod material;
+pub mod skill;
 #[cfg(test)]
 pub mod seed;
 #[cfg(test)]

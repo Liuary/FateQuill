@@ -32,5 +32,22 @@
     "parallelism": "Parallelism",
     "empty": "Empty wording",
     "translationese": "Translationese"
+  },
+  "cancel": "Cancel",
+  "skills": {
+    "title": "Avoidance skill library",
+    "empty": "No skill entries yet",
+    "induct": "Induct",
+    "update": "Update",
+    "edit": "Edit",
+    "delete": "Delete",
+    "version": "Version",
+    "name": "Title",
+    "rule": "Rule",
+    "examples": "Examples",
+    "examplesHint": "One per line: bad => good",
+    "sourceMaterials": "Source materials",
+    "noMaterials": "No confirmed materials",
+    "saveFailed": "Save failed (check source materials)"
   }
 }

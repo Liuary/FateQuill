@@ -339,3 +339,68 @@ pub async fn list_materials(
 pub async fn delete_material(app: AppHandle, id: i64) -> Result<(), IpcError> {
     db::material::delete(&pool(&app).await?, id).await
 }
+
+// ---------- Skill (T5) ----------
+/// 保存 skill 条目（`examples`/`source_material_ids` 由 Rust 侧序列化为 JSON）
+#[tauri::command]
+pub async fn save_skill_entry(
+    app: AppHandle,
+    version: String,
+    title: String,
+    rule: String,
+    examples: Option<Vec<serde_json::Value>>,
+    source_material_ids: Vec<i64>,
+) -> Result<db::skill::SkillEntryRow, IpcError> {
+    let examples_json = serde_json::to_string(&examples.unwrap_or_default())
+        .map_err(|e| IpcError::new(codes::INTERNAL, e.to_string()))?;
+    let source_ids_json = serde_json::to_string(&source_material_ids)
+        .map_err(|e| IpcError::new(codes::INTERNAL, e.to_string()))?;
+    db::skill::insert(
+        &pool(&app).await?,
+        &version,
+        &title,
+        &rule,
+        &examples_json,
+        &source_ids_json,
+    )
+    .await
+}
+
+/// 列出 skill 条目（时间倒序）
+#[tauri::command]
+pub async fn list_skill_entries(app: AppHandle) -> Result<Vec<db::skill::SkillEntryRow>, IpcError> {
+    db::skill::list(&pool(&app).await?).await
+}
+
+/// 更新 skill 条目（含版本与来源素材）
+#[tauri::command]
+pub async fn update_skill_entry(
+    app: AppHandle,
+    id: i64,
+    version: String,
+    title: String,
+    rule: String,
+    examples: Option<Vec<serde_json::Value>>,
+    source_material_ids: Vec<i64>,
+) -> Result<db::skill::SkillEntryRow, IpcError> {
+    let examples_json = serde_json::to_string(&examples.unwrap_or_default())
+        .map_err(|e| IpcError::new(codes::INTERNAL, e.to_string()))?;
+    let source_ids_json = serde_json::to_string(&source_material_ids)
+        .map_err(|e| IpcError::new(codes::INTERNAL, e.to_string()))?;
+    db::skill::update(
+        &pool(&app).await?,
+        id,
+        &version,
+        &title,
+        &rule,
+        &examples_json,
+        &source_ids_json,
+    )
+    .await
+}
+
+/// 删除 skill 条目
+#[tauri::command]
+pub async fn delete_skill_entry(app: AppHandle, id: i64) -> Result<(), IpcError> {
+    db::skill::delete(&pool(&app).await?, id).await
+}
