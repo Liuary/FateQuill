@@ -1,11 +1,12 @@
-# 一致性误报率标注样本集报告（stage-11 T3）
+# 一致性误报率标注样本集报告（stage-11 T3；op-007 收尾）
 
-> 阶段：v0.5.0-stage-11（T3）｜样本：`samples/conflict-01..03.txt` + `samples/ground-truth.json`（人工标注真值）
+> 阶段：v0.5.0-stage-11（T3 建立 / **op-007 收尾**）｜样本：`samples/conflict-01..03.txt` + `samples/ground-truth.json`（人工标注真值）
 > 自动验收：`src/features/consistency/experiments/misreport.test.ts`（L1 口径，离线、零 LLM）
+> 说明：`samples/sample-01.txt` 为 **T2 归档抽取器**单测样本（非本报告样本集）；本报告样本集为 `conflict-01..03.txt`。
 
 ## 数据状态
 
-- **L1 自动口径**：**已执行**（`misreport.test.ts` 每次门禁运行；数值见下表）
+- **L1 自动口径**：**已执行**（`misreport.test.ts` 每次门禁运行；数值见下表）——**报出 3 / 漏报 0 / 误报 0（0.0 ≤ 0.2）**
 - **L2 语义口径**：**待回填（BLOCKED）** —— 需真实模型调用，属**人工协验/真机**范畴（AI 不可替代）
 - **人工标注核验**（误报由人复核）：**待回填（BLOCKED）**
 - **阈值 X**：**未拍板** —— 占位 `MISREPORT_THRESHOLD = 0.2`（建议默认 ≤20%；拍板后改常量）

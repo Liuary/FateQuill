@@ -195,16 +195,17 @@ plan v3 技术约束中的目录集为 `src/{app,components,features,domain,orch
 
 ## 18. 设定分级与一致性（stage-11）
 
-> 本阶段为 **v0.5.0-stage-11** 的**骨架登记**（`op-001` 建立）：落点与契约先登记，实现随 op-002~op-006 落地，模块详文由 **op-007** 收尾。
+> 本阶段为 **v0.5.0-stage-11**：实现随 **op-002~op-006** 落地（迁移 v5 / 抽取 / L1+L2 / 冲突面板与落库 / 分级注入），模块详文见 `manual/features/consistency.md`（**op-007** 收尾）。
 
 - **落点**：
-  - `src/orchestration/consistency/`（provider 无关；**规划**）：`extract`（归档抽取：LLM + `evidence` 原文回查防幻觉 + 名称去重）、`rules`（L1 规则校验，零幻觉）、`judge`（L2 语义判定，建议性）、`report`（冲突报告 `{aId,bId,type,evidence,severity}`）、`inject`（分级注入装配：白名单 `{main,short}`，**排除 `dark`**）。
-  - `src/features/consistency/`（**规划**）：冲突面板（处置动作：改分级 / 跳转 / 标记误报 / 忽略）+ 「归档本章」入口（候选入**待确认队列**，**不入库直达**）。
-  - `setting_card.tier` **装载侧过滤点**（分级注入）：`buildChapterPrompt`（`src/orchestration/prompts/chapter-generation.ts`）、`buildExplorationOptions`（`src/features/exploration/build-exploration-options.ts`）、`buildCharacterAgentPrompt`（`src/orchestration/dialogue/persona.ts`）。
-- **分级模型**：四级 `main` / `dark` / `short` / `temp`（**与 `kind` 正交**，不扩 `kind`）；迁移 **v5** 增 `setting_card.tier`（`DEFAULT 'short'`）+ `conflict_record` 表（op-002 落地；**v5 不含**版本池快照持久化——stage-08 REV-009 **独立跟踪**）。
-- **持久化边界**：候选与抽取结果**仅会话内存**（待确认队列）；**冲突记录 `conflict_record` 落库**。
-- **i18n**：新增 `consistency` 命名空间。
-- **迁移影响（v0.5 起，可感知行为变更；REV-008①）**：设定卡**按 `tier` 注入**——`main`/`short` 注入正文生成 / 推演 / 多声部对话 prompt；**`dark`（暗线）与 `temp` 从上述 prompt 中移出**（暗线泄露 = 剧透事故，属**硬隔离**，无开关可绕过）。**存量卡**因迁移 v5 默认 `tier='short'` **仍照常注入**；但用户标为 `dark` 的暗线卡**不再进入 prompt**（安全上正确，属可感知变更）。同一句见模块手册 `manual/features/consistency.md`（op-007 补）。
-- **IPC**：`setting_card` 命令**签名扩展、命令数不变**；**计划新增 6 命令**（归档批落库 1 + 冲突记录 5）——**计数与明细由 op-003 / op-005 与实现同提交更新**（见 `docs/ipc.md` §8.4）。
-- **与评审的边界**：一致性引擎 = **设定库内冲突（设定 vs 设定）**；四维评审「世界观」= **正文 vs 设定（文本质量）**——职责切分，见 `docs/review-rubric.md` §4.2。
-- **详文**：模块手册 `manual/features/consistency.md`（stage-11 建立，**详文于 op-007 收尾**）。
+  - `src/orchestration/consistency/`（provider 无关；**仅 L2 经 provider**）：`types`（契约）、`extract`（归档抽取：LLM + `evidence` **原文回查** + `toPlainText`）、`dedupe`（**名称精确匹配**）、`run`（`runExtraction`：收口 → 解析 → 回查剔除 → 去重；`{ok,candidates,error?}`）、`rules`（**L1 纯函数**：结构化断言比对，零幻觉）、`judge`（**L2**：语义判定 `advisory:true`，失败降级 `uncertain`）、`report`（`severityOf` / `dedupeReports` / `toConflictReport`）、`inject`（**分级注入白名单** `{main,short}`，**恒排 `dark`**）。
+  - `src/features/consistency/`：冲突面板（`ConsistencyPanel` / `ConflictCard` / `useConflicts` / `useResolveConflict`：四动作 **改分级 / 编辑设定卡（跳转 + verbatim 定位）/ 标记误报 / 忽略**）+ 归档（`ArchivePanel` / `useArchiveChapter`：候选入**待确认队列**，**不入库直达**）；会话态 `src/store/archiveStore.ts`（待确认队列）与 `src/store/consistencyStore.ts`（跨面板定位请求）。
+  - `setting_card.tier` **装载侧过滤点**（分级注入，**实现为三处**）：`buildExplorationOptions`（`src/features/exploration/build-exploration-options.ts`）、`buildChapterGenerationOptions`（`src/features/generation/build-chapter-options.ts`）、`useSceneContext`（`src/features/dialogue/scene-context.ts`）——均在 `listByNovel` 后经 `selectInjectableCards` 过滤；可选 `injectSettings`（默认 `true`；关 = 完全不注入）。`buildCharacterAgentPrompt`（`src/orchestration/dialogue/persona.ts`）的公共上下文**来自上述装载结果**，故 stage-10 契约**未回改**。
+- **分级模型**：四级 `main` / `dark` / `short` / `temp`（**与 `kind` 正交**，不扩 `kind`）；迁移 **v5** 增 `setting_card.tier`（`CHECK` 四级、`DEFAULT 'short'`）+ `conflict_record` 表 + 索引（op-002 落地；**v5 不含**版本池快照持久化——stage-08 REV-009 **独立跟踪**）。
+- **持久化边界**：候选与抽取结果**仅会话内存**（待确认队列）；**冲突记录 `conflict_record` 落库**（跨会话可查，6 命令 CRUD）。
+- **i18n**：新增 `consistency` 命名空间（归档区 + 冲突区）。
+- **迁移影响（v0.5 起，可感知行为变更；REV-008①）**：设定卡**按 `tier` 注入**——`main`/`short` 注入正文生成 / 推演 / 多声部对话 prompt；**`dark`（暗线）与 `temp` 从上述 prompt 中移出**（暗线泄露 = 剧透事故，属**硬隔离**，无开关可绕过）。**存量卡**因迁移 v5 默认 `tier='short'` **仍照常注入**；但用户标为 `dark` 的暗线卡**不再进入 prompt**（安全上正确，属可感知变更）。同一句见模块手册 `manual/features/consistency.md`（「迁移影响」小节）。
+- **IPC**：`setting_card` 五命令**签名扩展、命令数不变**（`tier?` / 过滤 / 返回 `tier`）；**新增 6 命令**——归档批落库 `save_extracted_settings`（op-003）+ 冲突记录 `save/list/get/resolve/delete_conflict_record`（op-005）；**计数已与实现同提交回填**：§8.1 **51** / 全仓 **53**（见 `docs/ipc.md` §8.1 明细与 §8.4 双口径）。
+- **与评审的边界**：一致性引擎 = **设定库内冲突（设定 vs 设定）**；四维评审「世界观」= **正文 vs 设定（文本质量）**——职责切分、**同一 rubric 引用**（见 `docs/review-rubric.md` §4.2）。
+- **误报率验收**：`MISREPORT_THRESHOLD = 0.2`（**占位，待用户拍板**）+ ≥3 章预埋冲突样本集（`src/features/consistency/experiments/`，L1 自动口径实测见其 `report.md`；L2 与人工核验待回填）。
+- **详文**：模块手册 `manual/features/consistency.md`（建立并收尾于 **op-007**）。
