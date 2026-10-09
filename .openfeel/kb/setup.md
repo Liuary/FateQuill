@@ -110,3 +110,13 @@ cargo test --manifest-path src-tauri/Cargo.toml   # Rust 测试
 - **用法**：`corepack pnpm tauri dev` 后逐项操作并填写「实际/结果」两列；**需真实 WebView/真实 Key 的项**（AI 不可替代）如实标注 **BLOCKED（执行主体=用户/feel-tester）**，**严禁伪造数值**。
 - **联动**：T6 度量实验落点 `src/features/research/experiments/report.md`（**数据状态字段**：已回填/待回填）与检查单 S5 **同一检查单闭环**；无 GUI 会话时 `report.md` 允许「待回填」占位但须如实标注。
 - **判定**：BLOCKED 项**非失败、非通过**，不构成缺陷阻塞；闭合后随对应 REV（如 REV-009/014）一并 closed。测试基线（v0.2 收官）：`cargo test` **52/52**、Vitest **295/295**（64 文件）、lint 0 error、build 通过。
+
+## [+] 发布流程（bundle / 许可 / Release / tag 人工） (2026-10-10)
+
+- **版本同步**：`node scripts/sync-version.mjs 0.6.0` → `package.json` / `src-tauri/tauri.conf.json` / `src-tauri/Cargo.toml` 三处同步；`node scripts/check-version.mjs`（`pnpm version:check`）校验三处一致（不一致退出码 1）。
+- **许可清单**：`corepack pnpm licenses:gen`（= `scripts/gen-licenses.mjs`）→ 生成 `docs/dependency-licenses.md`（npm 运行时依赖 + MIT 兼容白名单 + 例外登记）；Rust 侧需先 `cargo install cargo-license`（未装则跳过并标注回填指引）。
+- **打包**：`corepack pnpm tauri build --bundles nsis`（Windows 为主；产物 `src-tauri/target/release/bundle/nsis/*.exe`）；`tauri.conf.json` `bundle.targets=["nsis"]` + `bundle.windows.webviewInstallMode={type:"downloadBootstrapper"}`（WebView2 在线引导；离线改 `offlineInstaller`）。
+- **CI / Release**：`.github/workflows/ci.yml`（lint + test + build + cargo，**不含 bundle**）；`.github/workflows/release.yml`（`workflow_dispatch` + `push: tags v*` → verify + bundle(windows-latest) + release(附产物, body 取 CHANGELOG)）。
+- **发布动作（用户人工执行）**：`git tag v0.6.0` + 推送 + 触发 Release workflow（GitHub Release 附 nsis 产物）——**AI 不代打 tag / 不代发布**；真机 bundle **可安装启动**为人工协验项。
+- **CHANGELOG**：`CHANGELOG.md`（Keep a Changelog）随版本维护。
+- **自动化门禁基线（v0.6 收官）**：`pnpm test` **670/670**（127 文件）、`cargo test` **62/62**、lint 0 error、build 0、`format:check` 通过、`version:check` 通过。

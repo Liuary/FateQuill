@@ -297,3 +297,31 @@
 - **根因**：文档计数是**随实现递增的过程量**，不能在实现之前预写终态；双口径（§8.1 数据访问子集 vs 全仓含 §6 流式）混用无定义加剧歧义。
 - **修正范式**：① **首个 chore op 只做「占位声明」**（明示「本 op 不改计数数值」+ 计划新增命令清单 + 终态预期），**不写终态数值**；② **计数更新收归到命令实现 op，与实现同提交**（op-003：45→46 / 47→48；op-005：46→51 / 48→53）；③ 补**双口径定义**（§8.1 = 数据访问命令子集；全仓 = §8.1 + §6 流式 2）；④ 验证标准加**防回归断言**（`rg` 确认首个 op 无终态计数句）。
 - **通用**：**文档中的「随实现增长的计数」不得早于实现写入**——占位声明先行、与实现同提交更新、口径显式定义；跨 op 的中间态须与前一 op 衔接（勿跳号）。
+
+## [+] 迁移 v6 断点续跑：幂等断言递增，已完成章不重跑 (2026-10-10)
+
+- **场景**：全自动创作须「中断后重启可续跑」——断点落库（`0006_autopilot.sql`：`autopilot_run` + `autopilot_chapter`）。
+- **迁移纪律（沿用 stage-02/v5 范式）**：`include_str!` 单一来源 + `_sqlx_migrations` 幂等；`db/migrations.rs` 追加 `version:6`；**升级后须同步更新既有幂等断言**——表名集合追加两表且 `rows.len()` **10 → 12**、`_sqlx_migrations` **5 → 6**（否则旧期望误报）。
+- **续跑语义**：run 起点 `running`；**每章起点 `running`（中断后据此识别未完成章）/ 终点 `done|degraded`**；终态 `completed`/`paused`/`aborted`；`config_json` 落 `{config, outline}` 供 `resume(runId)` 恢复（**宽松解析**：破损 → 回退默认 + 空大纲，不抛穿）。
+- **「不重跑已完成章」的实现**：载入章断点 → `isChapterSettled`（`done`/`degraded`）过滤为 `SettledChapter[]` → 链内**按大纲顺序 seed 章结果并跳过**（不重跑、不另落 running 断点）；测试以「**已完成章无 `running`/`done` 落库**」断言（`useAutopilotRun.test.ts`：载入 `paused` run + 已完成 index 0/1 → 仅 index 2 有落库）。
+- **upsert 防重**：`save_chapter` 以 `UNIQUE(run_id, order_index)` + `ON CONFLICT DO UPDATE`（见 `patterns.md`）。
+- **通用**：新增迁移 = **「新表存在 + 迁移计数递增 + 二次 run no-op」**；**续跑** = 「**唯一键 upsert 落断点 + 载入过滤已完成项跳过**」，并以「已完成项零落库」断言守护。
+
+## [+] `conflict_record` FK `ON DELETE CASCADE` 的留痕缝隙（采纳文档声明处置） (2026-10-10)
+
+- **现象/根因（stage-11 REV-009 → stage-12 决策）**：`0005_setting_tier_conflict.sql` 的 `conflict_record.a_id/b_id` 均 `REFERENCES setting_card(id) ON DELETE CASCADE`——**任一关联设定卡被删除时，冲突记录（含 `status=ignored`/`false_positive` 处置留痕）随之静默删除**，与「冲突记录落库（跨会话留痕）」承诺有缝隙（留痕寿命受制于关联卡存在）。
+- **排查信号**：「跨会话留痕/审计」承诺 vs 留痕表外键 `ON DELETE CASCADE` → 命中「留痕寿命受制于被引用实体」模式。
+- **决策（stage-12 采纳③ 文档声明）**：保留 `CASCADE`，**显式声明**「关联设定卡删除 → 其冲突记录与处置留痕随之删除（**非审计日志**）」，并把 **DoD 措辞下调**为「处置状态在**记录存续期内**可查」（落 `docs/ipc.md` §8.1 + `manual/features/consistency.md`）。
+- **备选（未采纳，留后续）**：① `ON DELETE SET NULL` + `a_id/b_id` 可空；② 删卡前校验未关闭冲突则提示（阻断）。
+- **通用**：「审计/留痕」表若外键 `CASCADE` 于业务实体，须**显式声明留痕寿命边界 + 下调 DoD 措辞**（不得默认为永久审计日志）；`SET NULL`/删除前校验为可选升级路线。
+
+## [+] 发布 bundle 打包坑（`tauri bundle --bundles nsis` / WebView2 引导 / 生成物格式化 / `tsc` 无 node 类型） (2026-10-10)
+
+- **打包目标**：`tauri.conf.json` 的 `bundle.targets` 由 `"all"` → **`["nsis"]`**（Windows 为主；macOS/Linux 显式 best-effort/不支持）；`pnpm tauri build --bundles nsis`（等价 `tauri bundle --bundles nsis`）。产物 `src-tauri/target/release/bundle/nsis/*.exe`。
+- **WebView2 引导**：`bundle.windows.webviewInstallMode = { "type": "downloadBootstrapper" }`——已装则直用，未装由安装程序**在线引导下载**；**离线部署**改 `offlineInstaller`（口径写入 README）。
+- **Release 自动化**：`.github/workflows/release.yml` 三 job——`verify`（install --frozen-lockfile → `version:check` → `licenses:gen` → lint/test/build/cargo test）、`bundle`（windows-latest：`--bundles nsis` + 产物 artifact，**缺产物即失败**）、`release`（tag 触发 → `softprops/action-gh-release@v2` 附产物 + body 取 `CHANGELOG.md`）；触发 `workflow_dispatch` + `push: tags v*`。
+- **生成物 vs `format:check`**：`docs/dependency-licenses.md`（工具生成）须加入 `.prettierignore`，否则「生成 → format:check 失败」循环。
+- **`tsc` 无 node 类型（TS2591）**：`src/**` 下使用 `node:fs`/`process` 会致 `pnpm build`（`tsc && vite build`）失败；改用 Vite `import.meta.glob(..., { query:"?raw", import:"default", eager:true })`（见 `patterns.md`「i18n 键完整性测试」）。
+- **`tauri info` 观察（非本 op 引入）**：提示 `@tauri-apps/plugin-sql`（JS 侧）未安装——本项目 SQL 走 Rust 命令，属**既有状态**，不影响打包与运行。
+- **纪律**：`git tag v0.6.0` 与 GitHub Release 为**发布动作（用户执行）**，AI 不代打 tag/不代发布；真机 bundle **可安装启动**为**人工协验项**（`tauri info` 仅做配置解析校验）。
+- **通用**：`tauri bundle` 须**显式收敛目标平台 + 声明 WebView2 安装模式**；CI 产物**缺则失败**；工具生成物排除格式化；`src/**` 避免 node 原生模块 API。

@@ -2,6 +2,8 @@
 
 > 最多 30 条，最新在上。格式：`{yyyy-mm-dd} {username}: 变更描述`（含跳转链接）。
 
+- **2026-10-10** Liuary（openfeel-archiver）：**v0 系列收官**——stage-12 归档完成，更新 `plan/index.md`（v0 状态→**✅ 已完成 12/12**）、`plan/v0/index.md`、`roadmap/v0.md` 状态为「v0 系列已完成（M1~M6 代码/自动层达成）」；产出 `dev/v0.6-summary.md`（v0.6 收口）与 `dev/v0-summary.md`（**v0 系列整体总结**：12 阶段全览 + M1~M6 状态 + 总遗留引用 + v0.7+/v1.0 展望）。
+
 - **2026-10-10** Liuary（openfeel-planner）：依 REV-v0.6.0-stage-12（5 条，4 blocking）按 v2 范式重写收官阶段计划至 v2：定稿全自动运行机制（决策规则表/冲突默认暂停+授权忽略/熔断三层/迁移 v6 断点续跑）、大六壬（手动月将起步/公有领域数据/与易经并列 `liurenGuide?`/可选可关）、发布工程（`tauri bundle` Windows 为主/许可工具化/Release 流程）、英文收口自动化（键完整性测试 en⊇zh-CN/豁免清单/新 UI 命名空间）；补 C-07 验证列、IPC/事件盘点、开关交互矩阵、遗留处置（stage-11 REV-009 三选一 + 人工协验总清算）、待拍板/需 schemer 两节；同步 stage-12 `overview.md` 与 `roadmap/v0.md`。
 - **2026-10-10** Liuary（openfeel-planner）：依 REV-v0.5.0-stage-11（6 条，4 blocking）按 v2 范式重写 stage-11 计划至 v2：定稿分级模型（四级定义/生命周期/与 kind 正交/迁移 v5 加 tier 列/装载侧衔接）、自动归档抽取器（LLM+evidence 回查/名称去重/手动触发/待确认队列）、一致性引擎（L1 规则+L2 语义/冲突报告结构/误报率样本集可验收/与 stage-06 边界）、注入策略与暗线保密（白名单排除 dark/预算/对比验证）、冲突处置与 IPC/持久化（动作集/conflict_record 落库/IPC 盘点）；补 C-07 验证列、i18n、文档回写、遗留处置（stage-10 REV-007、stage-08 REV-009 与 v5 联动）、待拍板/需 schemer 两节；同步 stage-11 `overview.md` 与 `roadmap/v0.md`。
 - **2026-10-10** Liuary（openfeel-planner）：依 REV-v0.4.0-stage-10（5 条，4 blocking）按 v2 范式重写 stage-10 计划至 v2：定稿多声部运行机制（场景上下文/用户主导轮次/上下文白名单/串味判据）、角色数据与 persona 契约（profile JSON 零迁移 + stage-11 边界 + persona 模板）、产物形态与合并算法（dialogueStore 条目 + orderIndex + 格式规范 + 双路径）、IPC/持久化/成本（无增量/会话内存+合并落库/无 v5/estimateCost+major）；补 C-07 验证列、i18n、文档回写、遗留处置（stage-08 REV-009/010、stage-09 REV-009）、审查衔接、待拍板/需 schemer 两节；同步 stage-10 `overview.md` 与 `roadmap/v0.md`。

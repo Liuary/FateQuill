@@ -340,3 +340,45 @@ resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } }
 - **阈值**：`MISREPORT_THRESHOLD = 0.2`（**占位待拍板**，单一来源 `report.ts`）。
 - **数据状态纪律**：`report.md` 区分**已执行（L1 自动口径=实测）**与**待回填（L2 语义/人工标注核验=BLOCKED）**；**阈值未拍板前不得填任何人工/LLM 分数**（避免占位/编造）。
 - **通用**：NLP/统计类验收须「**标注真值集 + 锚点实测值 + 召回断言 + 刻意反例**」；数据状态字段严格区分自动与人工口径，未执行不填分。
+
+## [+] 决策规则纯函数 + 依赖注入端口（编排层不 import `@/ipc`） (2026-10-10)
+
+- **场景**：全自动编排（`autopilot/chain.ts`）需串起推演/生成/审查/重写/归档，且**可 mock 单测**又**真机可跑**——分层约束要求编排层**不 import `@/ipc` / store**。
+- **模式**：**决策规则抽为纯函数**（`decide.ts`：`pickBranch`/`shouldRewrite`/`markDegraded`/`shouldAutoConfirmArchive`/`isPassed`，全部无 IO、无 provider、可单测边界）；**外部副作用收敛为注入端口**（`AutopilotDeps`：`streamFor`/`evaluators`/`archiveFn`/`persistence`/`detectConflicts`/`conflictSink`）——真机在 `useAutopilot.ts` 装配（provider / stage-06 注册表 / stage-11 归档 + 冲突端口 / 迁移 v6 持久化），**mock/离线缺省不注入**（纯内存链路）。
+- **复用而非重写**：链内**显式引用**既有契约（`buildChapterPrompt` / `runExploration` / `evaluateWithFallback` + `rewriteChapter` + `weightedTotal` / `runExtraction`），以 `rg` 断言「命中既有契约」作可验证性；`reviewFn?` 保留为**测试注入「假审查」**的覆盖点。
+- **缺省零副作用**：未注入的可选端口（如 `detectConflicts`/`conflictSink`/`persistence`）→ **不检测、不落库、纯内存**——既有 mock 单测**零改动**通过。
+- **通用**：编排层 = 「**纯函数决策 + 注入端口副作用**」；**依赖注入端口**使同一链路在 mock（快、可判定）与真机（装配具体实现）两条路径复用，且不破坏分层（不越界 import IPC/store）。
+
+## [+] 断点 upsert（`UNIQUE(run_id,order_index)` + `ON CONFLICT DO UPDATE` 防重） (2026-10-10)
+
+- **场景**：无人值守全自动的**断点落库**须幂等——中断/续跑会**重复写同一章**（run 起点、每章起点/终点），若仅 INSERT 会撞唯一约束或产生重复行。
+- **模式**：`autopilot_chapter` 以 **`UNIQUE(run_id, order_index)`** 约束 + Rust 侧 `save_chapter` 用 **`ON CONFLICT(run_id, order_index) DO UPDATE`** 做 **upsert**（按 run + 章序定位），保证「同章多次写 → 单行收敛」；`save_run` 同法（`id` 缺省 → INSERT，否则 UPDATE）。
+- **配套**：状态/章状态以 `VALID_*` 常量 + DB `CHECK` **双保险**（非法 → `VALIDATION`）；`autopilot_run` 删 → `autopilot_chapter` 级联删。
+- **验证**：Rust 单测覆盖 save/get/list/**upsert 幂等**（重复写同 `(run_id, order_index)` → 行数不变、字段更新）。
+- **通用**：**可续跑**的进度/断点表 = **「业务唯一键 `UNIQUE` + `ON CONFLICT DO UPDATE` upsert」**；写路径按「唯一键定位」而非「每次新增行」，避免续跑产生重复进度。
+
+## [+] i18n 键完整性测试（`en ⊇ zh-CN` + 双层豁免 + 卫生断言 + CI 防回归） (2026-10-10)
+
+- **场景**：英文版收口（界面基本信息）不能靠人工逐页核对——需**可判定、防回归**的自动化。
+- **模式**（`src/locales/i18n-completeness.test.ts`）：遍历命名空间，递归取**扁平键路径集合**，断言**每命名空间 `enKeys ⊇ zhKeys`**（缺失即 fail + 列出缺失路径）+ **命名空间集合一一对应**。
+- **双层豁免**（`i18n-exemptions.ts`，**键路径全限 `命名空间.键`**）：① `EXEMPT_KEY_PATHS`（允许 `en` 缺的键 + 理由；**UI 标签不得豁免**）；② `VALUE_EXEMPTIONS`（**键仍必须存在**，仅登记「内容类白文不译」范围）——**值豁免不得当后门**（专项断言：命中值豁免的键**仍须存在于 `en`**）。
+- **卫生断言**：豁免条目须在 `zh-CN` **真实存在**（防陈旧豁免）+ `reason` 非空 + 总数 **≤ 3**（超须评审）。
+- **加载方式坑**：语言 JSON 用 **Vite `import.meta.glob("./*/*.json", { query:"?raw", import:"default", eager:true })`** 而非 `node:fs`——`tsc` 在 `src/**` 下对 `node:fs`/`process` 报 **TS2591**（无 node 全局类型），`pnpm build`（`tsc && vite build`）会因此失败；glob 方案**零新增依赖、零 tsconfig 变更**，`tsc` 与 vitest 均通过。
+- **负向自检**：以**构造样本**断言机制（缺键检出 / 完整样本空 / 显式豁免后空），**不污染真实语言文件**；CI 的 `pnpm test` 已覆盖 → 无需新 job。
+- **通用**：多语言「键完整性」用**集合超集断言**（`en ⊇ zh-CN`）+ **受限豁免机制**（显式、有理由、有卫生上限）+ **构造样本负向自检**；`src/**` 下读文件优先 Vite glob（避 `node:fs` 的 TS2591）。
+
+## [+] 发布版本三同步（脚本化 `package.json`/`tauri.conf.json`/`Cargo.toml` + 校验脚本） (2026-10-10)
+
+- **场景**：Tauri 桌面应用的版本号散落**三处**（`package.json` / `src-tauri/tauri.conf.json` / `src-tauri/Cargo.toml`），手改易漂移。
+- **模式**：`scripts/sync-version.mjs`（**纯 Node 零依赖**，导出 `readVersions`/`writeVersions`）+ `scripts/check-version.mjs`（**校验脚本**：三处不一致 → 退出码 1）——`package.json` 增 `version:sync` / `version:check`；发布前 `node scripts/sync-version.mjs 0.6.0` 三处同步 + `version:check` 断言。
+- **测试落点坑**：`vitest.config.ts` 的 `include` **仅覆盖 `src/**`**，`scripts/*.test.mjs` **不会被收集** → 版本校验改用**独立校验脚本**（非 vitest 用例）。
+- **通用**：多处重复的发布元数据（版本号）用**同步脚本 + 校验脚本**双件套（写 + 断言），并纳入 CI `verify` job；校验脚本须独立于测试运行器（避免 `include` 范围外漏跑）。
+
+## [+] 依赖许可工具化（`license-checker` + `cargo license` + MIT 兼容白名单 + 例外登记） (2026-10-10)
+
+- **场景**：开源发布需核查依赖**许可兼容 MIT**——人工逐个核对 npm/crate 树不现实也无存证。
+- **模式**：`scripts/gen-licenses.mjs`（`license-checker`（npm，**仅 production 依赖** = 随包分发者，`excludePrivatePackages` 排除项目自身）+ `cargo license`（Rust；**未安装 → 跳过并显式标注 + 回填指引**））→ 生成 `docs/dependency-licenses.md`（清单 + **MIT 兼容判定** + **例外逐一登记理由**）。
+- **白名单 + SPDX**：MIT 兼容白名单（`MIT`/`ISC`/`Apache-2.0`/`BSD-*`/`0BSD`/`Unlicense`/`CC0-1.0`/`Zlib` 等）+ **SPDX `OR` 表达式支持**（`Apache-2.0 OR MIT` → 兼容 ✅）；已知例外表（MPL-2.0/LGPL-3.0/GPL-3.0/**OFL-1.1**/UNKNOWN/UNLICENSED）**逐条登记理由**。
+- **依赖纪律**：工具化所需 `license-checker` 为**唯一新增依赖**——放 **`devDependencies`（显式声明，不入 runtime bundle）**，并登记其传递依赖；`src/**` 无 import（`rg license-checker src/` 零命中）。
+- **生成物卫生**：`.prettierignore` 增 `docs/dependency-licenses.md`（**生成物不参与 `format:check`**，避免「生成 → 检查失败」循环）；**生成可复现性**已核验（重跑后 `git status` 无差异）。
+- **通用**：合规/元数据类清单优先**工具生成 + 白名单判定 + 例外显式登记**；生成物排除格式化检查；工具自身依赖置于 dev 并显式声明。

@@ -2,6 +2,7 @@
 
 > 系列 v0 ｜ 主题：FateQuill（命笔）首发系列 ｜ 阶段根目录：`.openfeel/plan/v0/`
 > 大计划见 `../plan.md`；分期大纲见 `.openfeel/roadmap/v0.md`；依赖见 `.openfeel/deps.yaml`。
+> **状态：✅ 已完成（12/12 阶段全部归档，2026-10-10）**——里程碑 M1~M6 代码/自动层均达成；真机/语义层待统一人工协验批次（见 `stage-12/clearance.md`）；整体总结见 `.openfeel/dev/v0-summary.md`。
 
 ## 核心摘要
 

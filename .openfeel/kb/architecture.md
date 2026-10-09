@@ -283,3 +283,34 @@
 - **开关语义（安全优先决策）**：注入开关定义为「**是否注入设定卡**」——开 = 注入 `{main,short}`，关 = 不注入；**生产恒排除 `dark`（硬隔离、无开关可绕过）**。否决「关=回退 v0.4 全量注入」备选（会泄露 `dark`）。
 - **迁移影响（可感知行为变更）**：v0.5 起 `dark`/`temp` 移出三处 prompt；**存量卡**默认 `tier='short'` 仍注入，用户标 `dark` 的暗线卡**不再进 prompt**。
 - **可判定验收**：注入开 → prompt **含 `main`/`short` 且不含 `dark`/`temp`**（断言）；关 → 与无卡基线**逐字段一致**。
+
+## [+] 大六壬课体引导系统（手动月将起步 + 与易经并列可选，零依赖/无 IPC） (2026-10-10)
+
+- **定位**：兑现 M6「大六壬可选」——把大六壬课体（四课/三传/天盘/天将）建模为**可选可关的剧情引导系统**，与**易经卦象并列**、可叠加（stage-12 / v0.6）。**仅作叙事参考，非断卦**。
+- **历法方案 b（拍板）**：**手动指定「月将 + 时辰 + 日干支」起课**（**不引历法库**，C-08）；自动农历/节气转换**留后续**（与 stage-09 时间起卦推迟同源）。**`dayGanzhi` 必填**（REV-006 定稿：四课由「日干支 × 2 + 时支 × 2」构成，缺则无据）。
+- **数据层**（`src/data/liuren/`，**只读静态 + 手写守卫**，零第三方依赖）：**公有领域古籍白文**（课体框架 + 基础断语；**今人断语集不引入**）；`types`/`ganzhi`（十天干/十二地支/六十甲子/十干寄宫）/`generals`（12 天将）/`palaces`（12 宫）/`lessons`（四课三传 + 九宗门）/`validate`（手写守卫：12/12/4/3/9/60/十干寄宫）；`docs/liuren-data.md` 登记来源/许可/校对/简化口径/版本（复用 stage-09 `iching-data` 范式）。
+- **算法层**（`src/orchestration/liuren/`，**纯函数、无 IO**）：`castLiuren({monthGeneral, hourBranch, dayGanzhi})` → 盘面口径「**月将加时顺布** → 四课（一课取日干**寄宫支**上神）→ 取用（**先判天地盘特例**：月将=时辰 → `伏吟课`；相冲 → `返吟课`；再**贼克法**：下贼上优先，多则取比日干者，无贼取克，俱无 → `昴星课`）→ 三传 → **天将**（天乙贵人按**昼/夜贵**起宫，落 `亥..辰` 顺布 / `巳..戌` 逆布）」。非法输入 `{ok:false,error}` **早返回不抛穿**。`buildLiurenCard` / `renderLiurenText`。
+- **注入（并列可选）**：`buildExplorationOptions.liurenGuide?` / `buildChapterGenerationOptions.liurenGuide?`——与 `hexagramGuide?` **并列可选、可叠加**；**缺省/空白 → 与基线逐字段一致（零副作用）**；文本固定声明「**仅为叙事参考，不得违背用户设定约束**」。与一致性 tier 注入**相互独立**（三引导开关矩阵见 `docs/structure.md` §21）。
+- **开关单源**：`explorationStore.liurenEnabled`（单例，`localStorage['fatequill.liuren.enabled']`，缺省关闭）+ `useLiurenEnabled` **store 薄封装**（无本地 `useState`）；起课结果落 `explorationStore.liurenChart` 供跨组件共享。
+- **简化口径（明示不夸大）**：`涉害/遥克/别责/八专` **仅登记课体名目**，不据此细分取用；本域不断验。
+- **边界**：**零新增依赖 / 无迁移 / 无新 IPC 命令**（前端静态数据 + 纯函数，`rg liuren src-tauri/src/commands.rs` 零命中）；未改 stage-05/09/10/11 契约（仅**可选参数扩展** + store 字段新增）。
+
+## [+] 全自动创作编排（六环节决策规则表 + 依赖全注入复用既有契约） (2026-10-10)
+
+- **定位**：兑现 M6「全自动创作可跑通」——给定**大纲（每行一章）**后，**无人值守**串起「推演择优 → 生成 → 审查 → 重写 → 过阈/降级 → 归档」，全程**零人工交互**（stage-12 / v0.6）。
+- **分层落点**：契约/决策/熔断/冲突策略在 `src/orchestration/autopilot/`（**纯函数 + 编排；依赖全注入、不 import `@/ipc`/store**）；进度态在 `src/store/autopilotStore.ts`（**单源**）；UI 在 `src/features/autopilot/`（第三栏 `autopilot` tab）；断点持久化 = 迁移 v6 + 5 命令。
+- **每环节自动决策规则表**（纯函数 `decide.ts`）：**推演** = 大纲约束下**多温度择优**（对每成功分支走向卡做一次 stage-06 审查 → `weightedTotal` → `pickBranch` 取最高；全无卡片 → `null` 回退无推演生成）｜**生成** = 大纲 + 前置章上下文单次生成｜**审查** = 四维阈值（复用 stage-06 `passThreshold`）｜**重写** = **≤ N 轮（默认 2）** + 反馈注入｜**仍不达标** = `markDegraded(reason)` **降级收录 + 原因，不阻塞续跑**｜**归档** = 每章完成后**自动一致性抽取**（复用 stage-11，`shouldAutoConfirmArchive` 决定自动确认入库或入待确认队列）。
+- **依赖全注入（`AutopilotDeps`）**：`{ model; streamFor; evaluators: EvaluatorRegistry; archiveFn; reviewFn?; contextFor?; persistence?; detectConflicts?; conflictSink? }`——`streamFor`/`reviewFn?`/`archiveFn`/`persistence`/`detectConflicts`/`conflictSink` 均可注入；**mock/离线缺省不注入**（纯内存链路，既有 mock 单测零改动）。
+- **复用不重写（显式引用既有契约）**：`buildChapterPrompt`（stage-05 装配）、`runExploration`（stage-08 多温度）、`evaluateWithFallback` + `rewriteChapter` + `weightedTotal`（stage-06）、`runExtraction` + 分级注入 + `conflict_record`（stage-11）——**未重写任何既有实现**（`rg runExploration|buildChapterPrompt|evaluateWithFallback src/orchestration/autopilot` 命中）。
+- **单章失败语义**：单章异常（含 abort）→ **降级收录 + 原因**（`章生成失败：…`）且**不阻塞续跑**；每章结束即 `archiveFn`（含降级章）；`signal.aborted` → 不再启动新章、已完成章保留、`aborted: true`。
+- **契约**：`runAutopilot({ outline, config, deps, onProgress?, signal?, runId?, completed?, spentTokens? })` → `RunOutcome = { chapters, passed, degraded, aborted, conflicts, trippedBy?, trippedDetail? }`；**零人工交互 = 不 await 任何用户输入**（`window.confirm`/`prompt` spy 未被调用）。
+- **边界**：本域**不含**正文落库（产出为章正文文本 + 断点记录）；`autopilot_chapter.chapter_id` 当前恒 `null`（留后续接线）。
+
+## [+] 无人值守安全机制：熔断三层 + 迁移 v6 断点续跑 + 冲突策略双路径留痕 (2026-10-10)
+
+- **背景（REV-001 high）**：无人值守需兜底「失控」与「中断续跑」，并解决「无人值守 × 用户裁决」核心矛盾（stage-12 / v0.6）。
+- **熔断三层**（`breaker.ts` `checkBreakers`，**顺序 预算 → 连续失败（K 默认 3）→ 章数**）：① **预算上限**（`estimateTokens(text)=ceil(length)` 逐章累加生成正文长度；**用于熔断无需精确**；未配置 → 该层永不触发）；② **连续失败/低分 ≥ K 章**；③ **总章数上限**（启动新章前判定 `producedChapters >= maxChapters`）。任一触发 → **即停 + 出报告**（`trippedBy` ∈ `budget`/`consecutive-failure`/`max-chapters`/`conflict` + `trippedDetail` 可读原因）。
+- **迁移 v6 断点续跑**（`0006_autopilot.sql`）：`autopilot_run`（`status` ∈ `running`/`paused`/`completed`/`aborted`/`failed` + `config_json`）+ `autopilot_chapter`（`state` ∈ `pending`/`running`/`done`/`degraded`/`failed` + `score`/`degraded_reason`/`attempt`，**`UNIQUE(run_id, order_index)`**）+ 2 索引。**run 起点 `running` → 每章起点 `running` / 终点 `done|degraded` → 终态 `completed`/`paused`/`aborted`**；`config_json` 落 `{config, outline}` 供 `resume(runId)` 恢复配置与大纲（**宽松解析**：破损回退默认 + 空大纲，不抛穿）；**已完成章（`done`/`degraded`）不重跑**（`isChapterSettled` 过滤为 `SettledChapter[]` → seed 跳过）。
+- **冲突策略（双路径均留痕）**（`conflict-policy.ts` `decideConflictPolicy`）：**默认** `pause` → `status:"open"` 留痕 + **暂停 run（`RunOutcome.trippedBy="conflict"` → 复用断点 `paused` 可续跑）** + 通知；**显式授权**（`pauseOnConflict:false`）→ `ignore-continue` → `status:"ignored"` + `action:"ignore"` 留痕 + **继续产出**；两路径均经注入端口落库（真机 = `save_conflict_record` / `resolve_conflict_record`）；同一冲突 `(aId,bId,type)` 以 `conflictKey` **去重**。「自动忽略」**默认关闭，仅用户显式授权后生效**（不违背「建议非结论」）。
+- **开关单源**：进度与授权开关均在 `autopilotStore`（`status`/`currentIndex`/`chapters`/`report`/`autoIgnoreConflicts`），**无本地运行态 `useState`**。
+- **可判定验收**：≥3 章大纲 → ≥3 章产出（每章过阈或 `degraded`）+ 零人工交互断言；熔断三层各自触发 + 顺序；中断后重启**从断点续、不重跑已完成章**；冲突两路径均留痕。

@@ -2,8 +2,8 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-09T23:40:04.813Z",
-    "revision": 441
+    "updated": "2026-10-09T23:28:11.960Z",
+    "revision": 435
   },
   "pipeline": {
     "phase": "active",
@@ -1632,8 +1632,8 @@
     },
     "v0.6.0-stage-12": {
       "name": "v0.6.0-stage-12",
-      "phase": "archiving",
-      "status": "archiving",
+      "phase": "review_pending",
+      "status": "planned",
       "deps": [
         "v0.3.0-stage-09",
         "v0.5.0-stage-11"
@@ -5991,68 +5991,6 @@
       "detail": {
         "opId": "v0.6.0-stage-12.op-008",
         "attempts": 1
-      }
-    },
-    {
-      "time": "2026-10-09T23:28:12.295Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.6.0-stage-12",
-        "from": "exec_running",
-        "to": "review_pending"
-      }
-    },
-    {
-      "time": "2026-10-09T23:34:21.509Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.6.0-stage-12",
-        "from": "review_pending",
-        "to": "review_passed"
-      }
-    },
-    {
-      "time": "2026-10-09T23:34:21.832Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.6.0-stage-12",
-        "from": "review_passed",
-        "to": "test_pending"
-      }
-    },
-    {
-      "time": "2026-10-09T23:37:00.827Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.6.0-stage-12",
-        "from": "test_pending",
-        "to": "test_passed"
-      }
-    },
-    {
-      "time": "2026-10-09T23:37:01.151Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.6.0-stage-12",
-        "from": "test_passed",
-        "to": "archiving"
-      }
-    },
-    {
-      "time": "2026-10-09T23:40:04.813Z",
-      "agent": "openfeel-archiver",
-      "action": "archive_stage",
-      "detail": {
-        "stageName": "v0.6.0-stage-12",
-        "opsCount": 8,
-        "reviewsCount": 0,
-        "knowledgeCount": 0,
-        "archivePath": "C:\\Users\\Liuary\\Dev\\Mine\\AI\\Novel\\NovelCreate\\.openfeel\\log\\archive-v0.6.0-stage-12.md"
       }
     }
   ]

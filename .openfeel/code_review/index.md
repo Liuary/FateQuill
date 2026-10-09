@@ -1,7 +1,21 @@
 # 代码审查索引（公共域）
 
 > 存放各阶段审查关闭后的核心结论摘要。详细审查过程与逐提交点内容见私域 `.openfeel/users/{username}/code_review/REV-{stage}.md`。
-> 状态统计：**pending 6 ｜ fixing 0 ｜ resolved 28 ｜ closed 103**（pending 6 = stage-04 REV-014 + stage-05 REV-009 人工协验 BLOCKED + stage-08 REV-009 快照会话内存级 / REV-010 abort 语义·新章落卷末 + stage-10 REV-007 台词评审维度子集 + **stage-11 REV-009 conflict_record 级联删除留痕缝隙（非阻塞）**）
+> 状态统计：**pending 5 ｜ fixing 0 ｜ resolved 34 ｜ closed 106**（pending 5 = stage-04 REV-014 + stage-05 REV-009 人工协验 BLOCKED + stage-08 REV-009 快照会话内存级 / REV-010 abort 语义·新章落卷末 + stage-10 REV-007 台词评审维度子集；**stage-11 REV-009 conflict_record 级联删除留痕缝隙已由 stage-12 op-008 以③文档声明落地 → closed**）
+
+## v0.6.0-stage-12（大六壬 + 全自动创作 + 发布打磨，v0.6 收官 / **v0 系列 12 阶段完结**）
+
+- **结论**：代码审查**通过**（2026-10-10 计划 v2 复审 + 方案复审 + 代码审查），stage 已 test_passed → archiving。**0 Bug**（测试验收未提交新缺陷）。
+- **心得总结**：[`v0.6.0-stage-12.md`](v0.6.0-stage-12.md)
+- **审查对象**：
+  1. 阶段计划 `plan.md` v1（25 行，收官三块详度不足）→ 复审 v2（08:06 通过）：REV-001~005 **resolved**（**REV-001/002 high** 全自动运行机制 + 大六壬历法；REV-003/004 medium 发布工程 + 英文收口；REV-005 low 结构与可判定性）。
+  2. 操作方案 `ops/op-001~008.md`：REV-006（low，`castLiuren.dayGanzhi` 必填）**closed**；REV-007（medium，IPC 计数时序错位/**基数漂移复发**）**closed**；REV-008（low，注入行为变更声明 + 抽取失败形态）**resolved**。
+  3. 执行产出代码审查 + 收尾（op-008）：登记 REV-009（low，`conflict_record` 级联删除留痕缝隙）→ **op-008 采纳③文档声明落地**（**本表已闭合**）。
+- **closed 合计 3 条**（REV-006 + REV-007 + 承接 **stage-11 REV-009**）；**resolved 6 条**（计划 5 + REV-008）。
+- **关键**：**大六壬**（手动月将 + 时辰 + 日干支起课，公有领域白文 + 手写校验，与易经 `liurenGuide?` **并列可选**，关闭零副作用）；**全自动创作**（**六环节决策规则表** 推演择优/生成/审查/重写 ≤N/降级收录/自动归档 + **依赖全注入复用既有契约** + **熔断三层**（预算/连续失败 K=3/章数）+ **迁移 v6 断点续跑**（已完成章不重跑）+ **冲突策略双路径留痕**（默认暂停 + 授权忽略））；**发布工程**（`tauri bundle` nsis + 许可清单工具化 + 版本三同步 + `release.yml` + `CHANGELOG.md`）；**英文收口**（`i18n-completeness.test.ts` en ⊇ zh-CN + 双层豁免）；**5 条新 IPC**（§8.1 51→56 / 全仓 53→58）。实测 `pnpm test` **670/670**（127 文件）、`cargo test` **62/62**、lint 0 error、build 0、`format:check` 通过；DoD **11/11**、门禁 **6/6**。
+- **遗留（非阻塞）**：观察项 O1（预算熔断层 UI 不可配，low）/ O2（冲突去重仅链内，low）/ O3（预算计量用 `estimateTokens`，low）/ O4（tag/Release 未创建，info，用户发布动作）；**人工协验 6 项 BLOCKED**（#13 大六壬真机 / **#14 全自动真机 ≥3 章且可续跑** / #15 冲突策略真机 / **#16 打包安装** / #17 语言切换 E2E / #18 Rust 许可回填）。
+- **承接清理**：**stage-11 REV-009** 经 op-008 ③文档声明 **closed**；**stage-10 REV-007**（台词评审维度子集）归属人工协验批处理 / 后续迭代（登记）；**stage-08 REV-009/010** 独立跟踪。
+
 
 ## v0.5.0-stage-11（设定分级归档与一致性引擎，v0.5 收官 / 里程碑 M5）
 
