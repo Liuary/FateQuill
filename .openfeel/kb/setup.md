@@ -55,3 +55,10 @@ cargo test --manifest-path src-tauri/Cargo.toml   # Rust 测试
 - **数据工厂**：`db::seed`（`#[cfg(test)]`）按参数生成 50 章 × 3000 字数据集；基准 `bench::seed_query_under_100ms` 断言单次查询 < 100ms。
 - **命令**：`cargo test --manifest-path src-tauri/Cargo.toml`（基准耗时用 `-- --nocapture` 观测，写路径耗时仅观测不作门禁）。
 - **当前基线**：`cargo test` 28/28、Vitest 36/36、`pnpm lint` 0 errors、`pnpm build` 通过。
+
+## [+] 密钥链（keyring） (2026-10-09)
+
+- crate：`keyring = "4"`（默认 `v1` feature 自动选择平台后端）。
+- Windows 后端 = **凭据管理器（Credential Manager）**；条目：`service = fatequill`、`account = {provider}/{label}`（如 `fatequill/openai-compatible/default`）。
+- 调试 / 重置：Windows「凭据管理器 → Windows 凭据」删除 `fatequill/*` 条目。
+- 前端**无 `keyring_get`**：Key 仅经 `keyring_set`/`keyring_delete`/`keyring_exists` 管理，永不回传前端。

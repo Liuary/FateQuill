@@ -85,7 +85,7 @@
 
 ## 8. 数据访问命令与错误结构
 
-### 8.1 命令清单（28 个）
+### 8.1 命令清单（36 个）
 
 5 实体 × [list / get / create / update / delete]，命令名 snake_case：
 
@@ -108,7 +108,29 @@
 | Ordering | `reorder_chapters` | `{ volumeId, orderedIds: number[] }` | 同上（卷下章）                                                         |
 | Ordering | `move_chapter`     | `{ chapterId, toVolumeId, toIndex }` | 跨卷移动章，源卷/目标卷均紧凑化（`toIndex` 越界 clamp），事务内        |
 
-> 后续 op 新增命令须同步本清单（stage-03 将新增 `http_stream` / `abort_stream` 与模型配置命令）。
+模型配置命令（model_config，共 5 个）：
+
+| 类别        | 命令                                      | 参数（前端 camelCase）                                                | 语义                            |
+| ----------- | ----------------------------------------- | --------------------------------------------------------------------- | ------------------------------- |
+| ModelConfig | `list_model_configs` / `get_model_config` | 无 / `{ id }`                                                         | 列出 / 获取模型配置             |
+| ModelConfig | `create_model_config`                     | `{ provider, label, baseUrl, modelName, temperature, isDefault }`     | 新增（`(provider,label)` 唯一） |
+| ModelConfig | `update_model_config`                     | `{ id, provider, label, baseUrl, modelName, temperature, isDefault }` | 更新                            |
+| ModelConfig | `delete_model_config`                     | `{ id }`                                                              | 删除                            |
+
+密钥命令（keyring，共 3 个；**无 `keyring_get`**，Key 永不回传前端）：
+
+| 类别    | 命令             | 参数（前端 camelCase）     | 语义                                  |
+| ------- | ---------------- | -------------------------- | ------------------------------------- |
+| Keyring | `keyring_set`    | `{ provider, label, key }` | 写入/更新 OS 密钥链（Key 不下发前端） |
+| Keyring | `keyring_delete` | `{ provider, label }`      | 删除密钥                              |
+| Keyring | `keyring_exists` | `{ provider, label }`      | 查询是否存在（布尔；不返回 Key）      |
+
+#### 配置表 ↔ 密钥链条目关联
+
+- `model_config(provider, label)` ↔ keyring 条目：`service = fatequill`、`account = {provider}/{label}`（即 `fatequill/{provider}/{label}`）。
+- 经 `keyring_set` / `keyring_delete` / `keyring_exists` 三命令管理（**无 `keyring_get`**）：**Key 不入库**（`model_config` 表不含 key 列，C-05）、**不下发前端**；仅 Rust 中继（`http_stream`）在注入授权头时内部读取。
+
+> 后续 op 新增命令须同步本清单（stage-03 已完成 `http_stream` / `abort_stream`（§6）与模型配置/密钥命令（本清单））。
 
 ### 8.2 错误结构与错误码表
 

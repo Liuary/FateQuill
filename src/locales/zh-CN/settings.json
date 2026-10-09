@@ -1,1 +1,20 @@
-{}
+{
+  "title": "设置",
+  "home": "主页",
+  "add": "新增模型配置",
+  "edit": "编辑",
+  "cancel": "取消",
+  "provider": "提供方",
+  "label": "标签",
+  "baseUrl": "接口地址",
+  "modelName": "模型名称",
+  "temperature": "温度",
+  "isDefault": "默认",
+  "apiKey": "API Key",
+  "apiKeyHint": "输入后保存，仅写入系统密钥链，不回显",
+  "save": "保存",
+  "delete": "删除",
+  "deleteKey": "删除 Key",
+  "keyConfigured": "已配置 Key",
+  "keyMissing": "未配置 Key"
+}

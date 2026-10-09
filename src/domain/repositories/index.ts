@@ -7,3 +7,8 @@ export type {
 } from "./chapter-repository";
 export type { SettingCardRepository } from "./setting-card-repository";
 export type { CharacterRepository } from "./character-repository";
+export type {
+  ModelConfigRepository,
+  ModelConfigCreateInput,
+  ModelConfigUpdateInput,
+} from "./model-config-repository";

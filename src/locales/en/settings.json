@@ -1,1 +1,20 @@
-{}
+{
+  "title": "Settings",
+  "home": "Home",
+  "add": "Add model config",
+  "edit": "Edit",
+  "cancel": "Cancel",
+  "provider": "Provider",
+  "label": "Label",
+  "baseUrl": "Base URL",
+  "modelName": "Model",
+  "temperature": "Temperature",
+  "isDefault": "Default",
+  "apiKey": "API Key",
+  "apiKeyHint": "Saved to OS keychain only; never echoed back",
+  "save": "Save",
+  "delete": "Delete",
+  "deleteKey": "Delete key",
+  "keyConfigured": "Key configured",
+  "keyMissing": "No key"
+}

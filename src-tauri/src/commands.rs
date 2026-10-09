@@ -208,3 +208,56 @@ pub async fn abort_stream(registry: State<'_, SharedStreamRegistry>, request_id:
         })
         .unwrap_or(false))
 }
+
+// ---------- Model config (T4) ----------
+#[tauri::command]
+pub async fn list_model_configs(app: AppHandle) -> Result<Vec<db::model_config::ModelConfigRow>, IpcError> {
+    db::model_config::list(&pool(&app).await?).await
+}
+#[tauri::command]
+pub async fn get_model_config(app: AppHandle, id: i64) -> Result<db::model_config::ModelConfigRow, IpcError> {
+    db::model_config::get(&pool(&app).await?, id).await
+}
+#[tauri::command]
+pub async fn create_model_config(
+    app: AppHandle,
+    provider: String,
+    label: String,
+    base_url: String,
+    model_name: String,
+    temperature: f64,
+    is_default: bool,
+) -> Result<db::model_config::ModelConfigRow, IpcError> {
+    db::model_config::create(&pool(&app).await?, &provider, &label, &base_url, &model_name, temperature, is_default).await
+}
+#[tauri::command]
+pub async fn update_model_config(
+    app: AppHandle,
+    id: i64,
+    provider: String,
+    label: String,
+    base_url: String,
+    model_name: String,
+    temperature: f64,
+    is_default: bool,
+) -> Result<db::model_config::ModelConfigRow, IpcError> {
+    db::model_config::update(&pool(&app).await?, id, &provider, &label, &base_url, &model_name, temperature, is_default).await
+}
+#[tauri::command]
+pub async fn delete_model_config(app: AppHandle, id: i64) -> Result<(), IpcError> {
+    db::model_config::delete(&pool(&app).await?, id).await
+}
+
+// ---------- Keyring (T4) ----------
+#[tauri::command]
+pub async fn keyring_set(provider: String, label: String, key: String) -> Result<(), IpcError> {
+    crate::keyring_store::set(&provider, &label, &key)
+}
+#[tauri::command]
+pub async fn keyring_delete(provider: String, label: String) -> Result<(), IpcError> {
+    crate::keyring_store::delete(&provider, &label)
+}
+#[tauri::command]
+pub async fn keyring_exists(provider: String, label: String) -> Result<bool, IpcError> {
+    crate::keyring_store::exists(&provider, &label)
+}

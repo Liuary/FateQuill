@@ -71,3 +71,11 @@
 - **超时/脱敏**：connect 10s / read 60s → `TIMEOUT`，无自动重试；错误 payload 仅 `{code,message,statusCode?}`，不含 URL/headers/body/Key。
 - **事件切分（REV-012）**：按空行边界切分，跨块 `\r` 状态机归一化，兼容 `\n\n` / `\r\n\r\n` / `\r\r`，并冲刷无空行终止的末块。
 - **扩展点（REV-007②）**：新增 Provider = 新建适配器文件 + 在 `src/orchestration/providers/register.ts` 注册一行；`orchestration` 核心文件零改动。前端经 `src/ipc/stream.ts` 的 `httpStream()`（`requestId` 可选）消费。
+
+## [+] 模型配置持久化 + 密钥链 (2026-10-09)
+
+- **迁移 v2** `0002_model_config.sql`：`model_config(id, provider, label, base_url, model_name, temperature, is_default, created_at, updated_at)`，**不含 key 字段**（C-05）；`UNIQUE(provider,label)`。走内置 migrations 数组（`include_str!` 单一来源 + `_sqlx_migrations` 幂等），**不旁路**。
+- **三段式**：`src/domain/repositories/model-config-repository.ts`（接口）→ `src/ipc/repositories/model-config-repository.ts`（经 `invokeCommand`，snake_case↔camelCase，`is_default` 0/1↔boolean）→ `src-tauri/src/commands.rs`（5 命令）+ `src-tauri/src/db/model_config.rs`。
+- **Key 仅经 OS 密钥链**（`crate::keyring_store`）：命令 `keyring_set`/`keyring_delete`/`keyring_exists`（**无 get**）；Key 不入库、不下发前端，仅 Rust 中继注入授权头时内部读取。
+- **config ↔ keyring 关联**：`model_config(provider,label)` ↔ `fatequill/{provider}/{label}`。
+- **设置页**：`src/features/settings/{SettingsPage,ModelConfigForm,ModelConfigList}.tsx`（i18n `settings` 命名空间，双语）；`src/app/App.tsx` 提供可达入口。
