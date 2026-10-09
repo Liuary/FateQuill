@@ -78,14 +78,17 @@ plan v3 技术约束中的目录集为 `src/{app,components,features,domain,orch
 
 `src/orchestration/` 为与 UI/IPC 解耦的**可插拔 AI 编排引擎**（纯 TS，**不触网**——网络在 Rust 侧，见 §5 / `docs/ipc.md`）。
 
-| 子结构        | 职责                                                                                                                 |
-| ------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `types.ts`    | 契约：`Chunk` / `ChatMessage` / `ChatOptions` / `ModelProvider` / `ModelRef` / `Agent` / `PipelineStep` / `Pipeline` |
-| `registry.ts` | 泛型 `Registry<T>` 与 `createRegistries()`（providers / agents / pipelines）                                         |
-| `providers/`  | 自研 SSE 协议适配器（≥2 个），实现 `ModelProvider.stream()`                                                          |
-| `agents/`     | Agent 角色定义与注册                                                                                                 |
-| `pipeline/`   | Pipeline 步骤与组合                                                                                                  |
-| `stream/`     | 流式消费工具（T6）                                                                                                   |
+| 子结构        | 职责                                                                                                                                           |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `types.ts`    | 契约：`Chunk` / `ChatMessage` / `ChatOptions` / `ModelProvider` / `ModelRef` / `Agent` / `PipelineStep` / `Pipeline`                           |
+| `registry.ts` | 泛型 `Registry<T>` 与 `createRegistries()`（providers / agents / pipelines）                                                                   |
+| `providers/`  | 自研 SSE 协议适配器（≥2 个），实现 `ModelProvider.stream()`                                                                                    |
+| `agents/`     | Agent 角色定义与注册                                                                                                                           |
+| `pipeline/`   | Pipeline 步骤与组合                                                                                                                            |
+| `stream/`     | 流式消费工具（T6）                                                                                                                             |
+| `review/`     | 审查评估（stage-06）：`Evaluator` 契约 / `Registry<Evaluator>` 注册表 / JSON 容错降级；含四维评估器（情节·世界观·合规·人文）与规则引擎、rubric |
+
+- **审查评估落点（stage-06 REV-001）**：`src/orchestration/review/`——契约 `types.ts`（`ReviewDimension`/`EvaluationResult`/`ReviewInput`/`Evaluator`）、注册表与降级 `evaluator.ts`（`createEvaluatorRegistry`/`evaluateWithFallback`/`DEGRADED_SCORE`）、JSON 容错 `json.ts`（`extractJson`/`parseEvaluationJson`）；**复用引擎契约、不含 provider 语义**（`model`/`temperature` 由调用方从默认 `model_config` 提供）。
 
 - **不引入 `ai` 包**（ADR-001 / DoD 1）：`orchestration` 任何文件不得 `import "ai"`。
 - **扩展点（REV-007②）**：新增 Provider 仅需「新建适配器文件 + 在 `providers/register.ts` 注册一行」，核心文件（`types.ts` / `registry.ts` / `stream/**` / `pipeline/**`）**`git diff` 为零**。

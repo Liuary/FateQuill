@@ -16,3 +16,4 @@
 | [2026-10-10-Liuary-011.md](2026-10-10-Liuary-011.md) | Liuary | v0.1.0-stage-05.op-006 执行通过 |
 | [2026-10-10-Liuary-012.md](2026-10-10-Liuary-012.md) | openfeel-archiver | v0.1.0-stage-05 归档完成 & v0.1 里程碑收口（知识库/模块手册/审查索引/Bug 索引/v0.1 总结） |
 | [2026-10-10-Liuary-013.md](2026-10-10-Liuary-013.md) | Liuary | 阶段 v0.1.0-stage-05 完成 |
+| [2026-10-10-Liuary-014.md](2026-10-10-Liuary-014.md) | Liuary | v0.2.0-stage-06.op-001 执行通过 |
