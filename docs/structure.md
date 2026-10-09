@@ -72,3 +72,21 @@ plan v3 技术约束中的目录集为 `src/{app,components,features,domain,orch
   - **计数单位 = 非空白字符数**（面向中文「字数」）。
   - **为近似值（REV-011）**：`html` 分支为**简易去标签 + 常用实体解码**（`&amp;`/`&lt;`/`&gt;`/`&quot;`/`&#39;`/`&nbsp;`），**未处理**属性值内 `>`、`<script>/<style>` 文本与未知实体；需精确字数时后续引入 HTML 解析器，或以 `tiptap-json` 文本节点遍历为准。
 - **基准**：`src-tauri/src/db/bench.rs`（`#[cfg(test)]`）基于 seed（50 章 × 3000 字）验证「单次查询 < 100ms」；仅覆盖单查询路径，写路径（seed INSERT）耗时由 `--nocapture` 观测，不作门禁（REV-012③）。
+
+## 8. orchestration 引擎结构（stage-03）
+
+`src/orchestration/` 为与 UI/IPC 解耦的**可插拔 AI 编排引擎**（纯 TS，**不触网**——网络在 Rust 侧，见 §5 / `docs/ipc.md`）。
+
+| 子结构        | 职责                                                                                                                 |
+| ------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `types.ts`    | 契约：`Chunk` / `ChatMessage` / `ChatOptions` / `ModelProvider` / `ModelRef` / `Agent` / `PipelineStep` / `Pipeline` |
+| `registry.ts` | 泛型 `Registry<T>` 与 `createRegistries()`（providers / agents / pipelines）                                         |
+| `providers/`  | 自研 SSE 协议适配器（≥2 个），实现 `ModelProvider.stream()`                                                          |
+| `agents/`     | Agent 角色定义与注册                                                                                                 |
+| `pipeline/`   | Pipeline 步骤与组合                                                                                                  |
+| `stream/`     | 流式消费工具（T6）                                                                                                   |
+
+- **不引入 `ai` 包**（ADR-001 / DoD 1）：`orchestration` 任何文件不得 `import "ai"`。
+- **扩展点（REV-007②）**：新增 Provider 仅需「新建适配器文件 + 在 `providers/register.ts` 注册一行」，核心文件（`types.ts` / `registry.ts` / `stream/**` / `pipeline/**`）**`git diff` 为零**。
+- **授权头不入前端**：`ChatOptions.headers` 仅承载非 Key 头（Content-Type/Accept 等）；授权头由 Rust 侧注入（op-003）。
+- **Pipeline 启用时点（REV-014②）**：`Pipeline` / `PipelineStep` 为**契约先行**；v0.1 仅实现最小单步（op-006 的 `GenerationStep`），**多步组合管线于 stage-06/08 启用**（届时 `Pipeline.steps` 泛型上下文细化）。

@@ -2,14 +2,14 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-09T14:31:07.414Z",
-    "revision": 99
+    "updated": "2026-10-09T14:32:01.070Z",
+    "revision": 100
   },
   "pipeline": {
     "phase": "active",
     "current": {
       "stage": "v0.1.0-stage-03",
-      "op": "op-001"
+      "op": "op-002"
     },
     "retry": 0
   },
@@ -325,9 +325,9 @@
       "ops": {
         "op-001": {
           "title": "清理 stage-02 遗留 REV-013/014（T7 chore）",
-          "state": "pending",
+          "state": "done",
           "assignee": "openfeel-executor",
-          "attempts": 0,
+          "attempts": 1,
           "max_attempts": 3,
           "checkpoints": {
             "plan": "pending",
@@ -1513,6 +1513,15 @@
         "stageName": "v0.1.0-stage-03",
         "from": "scheme_passed",
         "to": "exec_running"
+      }
+    },
+    {
+      "time": "2026-10-09T14:32:01.038Z",
+      "agent": "openfeel-executor",
+      "action": "attempt_pass",
+      "detail": {
+        "opId": "v0.1.0-stage-03.op-001",
+        "attempts": 1
       }
     }
   ]
