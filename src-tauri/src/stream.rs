@@ -164,9 +164,6 @@ mod tests {
         }
     }
     impl MemSink {
-        fn events(&self) -> Vec<StreamEvent> {
-            self.0.lock().unwrap().clone()
-        }
         fn chunks(&self) -> Vec<String> {
             self.0
                 .lock()

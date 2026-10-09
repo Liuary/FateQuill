@@ -119,7 +119,6 @@ pub async fn delete(pool: &SqlitePool, id: i64) -> Result<(), IpcError> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::str::FromStr;
     use crate::db::test_util::test_pool_migrated;
 
     #[tokio::test]
@@ -169,40 +168,39 @@ mod tests {
 
     #[tokio::test]
     async fn model_config_not_persist_key() {
-        // 表结构无 key / api_key 列
         let pool = test_pool_migrated().await;
-        let cols: Vec<String> = sqlx::query_scalar("SELECT name FROM pragma_table_info('model_config')")
+
+        // ① 列集合精确匹配预期（新增任意列即失败）；结构上排除密钥类列
+        let mut cols: Vec<String> = sqlx::query_scalar("SELECT name FROM pragma_table_info('model_config')")
             .fetch_all(&pool)
             .await
             .unwrap();
-        assert!(
-            cols.iter().all(|c| c != "key" && c != "api_key"),
-            "model_config 不应含 key 列: {cols:?}"
+        cols.sort();
+        assert_eq!(
+            cols,
+            vec![
+                "base_url",
+                "created_at",
+                "id",
+                "is_default",
+                "label",
+                "model_name",
+                "provider",
+                "temperature",
+                "updated_at"
+            ],
+            "model_config 列集合不符（不应含密钥类列）"
         );
 
-        // 临时文件库：写入配置后，库文件字节不含哨兵 Key
+        // ② 可证伪的负向断言：尝试直接写入 api_key 列应被拒绝
+        //    （若有人给表新增该列，本断言即失败，从而捕获回归）
         const SENTINEL: &str = "SENTINEL_SECRET_KEY_12345";
-        let nanos = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap()
-            .as_nanos();
-        let path = std::env::temp_dir().join(format!("fatequill_np_{}_{nanos}.db", std::process::id()));
-        let url = format!("sqlite:{}", path.to_string_lossy().replace('\\', "/"));
-        let opts = sqlx::sqlite::SqliteConnectOptions::from_str(&url)
-            .unwrap()
-            .create_if_missing(true);
-        let file_pool = sqlx::sqlite::SqlitePoolOptions::new()
-            .max_connections(1)
-            .connect_with(opts)
-            .await
-            .unwrap();
-        sqlx::migrate!("./migrations").run(&file_pool).await.unwrap();
-        create(&file_pool, "openai-compatible", "default", "https://api.example.com", "m", 0.7, true)
-            .await
-            .unwrap();
-        file_pool.close().await;
-        let text = String::from_utf8_lossy(&std::fs::read(&path).unwrap()).to_string();
-        assert!(!text.contains(SENTINEL), "库文件不应含哨兵 Key");
-        let _ = std::fs::remove_file(&path);
+        let err = sqlx::query(
+            "INSERT INTO model_config (provider,label,base_url,model_name,api_key) VALUES ('p','l','u','m',?)",
+        )
+        .bind(SENTINEL)
+        .execute(&pool)
+        .await;
+        assert!(err.is_err(), "model_config 不应接受 api_key 列（Key 不落库）");
     }
 }
