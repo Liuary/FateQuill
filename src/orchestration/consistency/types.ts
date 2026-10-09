@@ -35,3 +35,37 @@ export interface ExtractionResult {
   candidates: ExtractionCandidate[];
   error?: string;
 }
+
+/** 冲突严重度（写入 `conflict_record.severity`） */
+export type ConflictSeverity = "high" | "medium" | "low";
+
+/**
+ * 冲突类型：
+ * - `life-status` / `timeline` / `numeric` → **L1 规则**（结构化断言比对，零幻觉）；
+ * - `semantic` → **L2 语义**（LLM 判定，**建议非结论**）。
+ */
+export type ConflictType = "life-status" | "timeline" | "numeric" | "semantic";
+
+/** L1 属性维度（与 `ConflictType` 的结构化子集一一对应） */
+export type L1Attribute = "life-status" | "timeline" | "numeric";
+
+/** 冲突报告（`conflict_record` 落库载体；`evidence` 为**原文片段**） */
+export interface ConflictReport {
+  /** 冲突设定卡 A（id 较小者） */
+  aId: number;
+  /** 冲突设定卡 B（id 较大者） */
+  bId: number;
+  /** 冲突类型 */
+  type: ConflictType;
+  /** 判定依据（**原文逐字片段**，L1 零幻觉 / L2 引自候选或约束卡） */
+  evidence: string;
+  /** 严重度 */
+  severity: ConflictSeverity;
+}
+
+/** L2 判定结论（**建议非结论**） */
+export interface JudgeVerdict {
+  verdict: "contradiction" | "consistent" | "uncertain";
+  reason: string;
+  evidence?: string;
+}

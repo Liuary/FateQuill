@@ -2,14 +2,14 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-09T22:02:06.840Z",
-    "revision": 389
+    "updated": "2026-10-09T22:06:48.188Z",
+    "revision": 390
   },
   "pipeline": {
     "phase": "active",
     "current": {
       "stage": "v0.5.0-stage-11",
-      "op": "op-003"
+      "op": "op-004"
     },
     "retry": 0
   },
@@ -1523,9 +1523,9 @@
         },
         "op-003": {
           "title": "自动归档抽取器（evidence 回查 + 名称去重）（T2）",
-          "state": "pending",
+          "state": "done",
           "assignee": "openfeel-executor",
-          "attempts": 0,
+          "attempts": 1,
           "max_attempts": 3,
           "checkpoints": {
             "plan": "pending",
@@ -5392,6 +5392,15 @@
       "action": "attempt_pass",
       "detail": {
         "opId": "v0.5.0-stage-11.op-002",
+        "attempts": 1
+      }
+    },
+    {
+      "time": "2026-10-09T22:06:48.157Z",
+      "agent": "openfeel-executor",
+      "action": "attempt_pass",
+      "detail": {
+        "opId": "v0.5.0-stage-11.op-003",
         "attempts": 1
       }
     }

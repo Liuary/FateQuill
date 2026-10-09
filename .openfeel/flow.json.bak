@@ -2,14 +2,14 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-09T21:58:41.266Z",
-    "revision": 388
+    "updated": "2026-10-09T22:02:06.840Z",
+    "revision": 389
   },
   "pipeline": {
     "phase": "active",
     "current": {
       "stage": "v0.5.0-stage-11",
-      "op": "op-002"
+      "op": "op-003"
     },
     "retry": 0
   },
@@ -1506,9 +1506,9 @@
         },
         "op-002": {
           "title": "分级模型与迁移 v5（tier 列 + conflict_record）（T1）",
-          "state": "pending",
+          "state": "done",
           "assignee": "openfeel-executor",
-          "attempts": 0,
+          "attempts": 1,
           "max_attempts": 3,
           "checkpoints": {
             "plan": "pending",
@@ -5383,6 +5383,15 @@
       "action": "attempt_pass",
       "detail": {
         "opId": "v0.5.0-stage-11.op-001",
+        "attempts": 1
+      }
+    },
+    {
+      "time": "2026-10-09T22:02:06.818Z",
+      "agent": "openfeel-executor",
+      "action": "attempt_pass",
+      "detail": {
+        "opId": "v0.5.0-stage-11.op-002",
         "attempts": 1
       }
     }

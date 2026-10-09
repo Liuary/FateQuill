@@ -1,0 +1,47 @@
+{
+  "threshold": 0.2,
+  "note": "误报率标注样本集（≥3 章，含预埋冲突）。`cards` 为各章归档出的设定卡（`content` 必须为章节原文的逐字片段——由 misreport.test.ts 断言）；`expectedConflicts` 为人工标注真值（应检出的冲突对）。threshold 为占位默认值，待用户拍板（plan v2 待拍板项 ①）。",
+  "chapters": [
+    {
+      "file": "conflict-01.txt",
+      "title": "生死状态冲突（life-status）+ 一致对照（数值相同不报）",
+      "cards": [
+        { "id": 1, "title": "渡鸦", "content": "旧志记载：渡鸦已死于第七次潮灾。" },
+        {
+          "id": 2,
+          "title": "渡鸦",
+          "content": "峡西商队的名册却写着：渡鸦尚在人间，去年仍在雾隐峡口贩盐。"
+        },
+        { "id": 3, "title": "潮汐律", "content": "潮汐律规定：月相更替之时，海面会随之涨落3丈。" },
+        {
+          "id": 4,
+          "title": "潮汐律",
+          "content": "潮汐律补注：月相更替之时，潮水涨落3丈，与雾隐峡水位无关。"
+        }
+      ],
+      "expectedConflicts": [{ "aId": 1, "bId": 2, "type": "life-status" }]
+    },
+    {
+      "file": "conflict-02.txt",
+      "title": "时间线冲突（timeline）",
+      "cards": [
+        { "id": 1, "title": "雾隐峡", "content": "峡口石碑上的刻字：雾隐峡建峡于729年。" },
+        {
+          "id": 2,
+          "title": "雾隐峡",
+          "content": "老一辈的口述录里写着：雾隐峡建峡于803年，比石碑所示晚得多。"
+        }
+      ],
+      "expectedConflicts": [{ "aId": 1, "bId": 2, "type": "timeline" }]
+    },
+    {
+      "file": "conflict-03.txt",
+      "title": "数值冲突（numeric）",
+      "cards": [
+        { "id": 1, "title": "执灯人", "content": "执灯人名册记：现役执灯人共36人。" },
+        { "id": 2, "title": "执灯人", "content": "峡口税簿却写：现役执灯人共12人。" }
+      ],
+      "expectedConflicts": [{ "aId": 1, "bId": 2, "type": "numeric" }]
+    }
+  ]
+}

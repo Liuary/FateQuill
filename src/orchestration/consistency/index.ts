@@ -6,3 +6,6 @@ export * from "./types";
 export * from "./extract";
 export * from "./dedupe";
 export * from "./run";
+export * from "./rules";
+export * from "./judge";
+export * from "./report";
