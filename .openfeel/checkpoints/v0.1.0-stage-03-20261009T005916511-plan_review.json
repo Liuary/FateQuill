@@ -2,14 +2,14 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-09T14:31:07.111Z",
-    "revision": 98
+    "updated": "2026-10-08T16:58:49.151Z",
+    "revision": 82
   },
   "pipeline": {
     "phase": "active",
     "current": {
-      "stage": "v0.1.0-stage-03",
-      "op": "op-001"
+      "stage": "v0.1.0-stage-02",
+      "op": ""
     },
     "retry": 0
   },
@@ -316,138 +316,13 @@
     },
     "v0.1.0-stage-03": {
       "name": "v0.1.0-stage-03",
-      "phase": "scheme_passed",
+      "phase": "plan_review",
       "status": "planned",
       "deps": [
         "v0.1.0-stage-01",
         "v0.1.0-stage-02"
       ],
-      "ops": {
-        "op-001": {
-          "title": "清理 stage-02 遗留 REV-013/014（T7 chore）",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        },
-        "op-002": {
-          "title": "编排引擎类型、契约与注册表（T1）",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        },
-        "op-003": {
-          "title": "Rust 侧 SSE 中继：Channel 流式 + 取消 + 超时 + https-only（T2）",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        },
-        "op-004": {
-          "title": "openai-compatible / anthropic 协议适配器与 SSE 夹具（T3）",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        },
-        "op-005": {
-          "title": "模型配置持久化（迁移 v2）、密钥链与设置页（T4）",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        },
-        "op-006": {
-          "title": "最小 Pipeline「单 Agent 生成」（T5）",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        },
-        "op-007": {
-          "title": "流式消费工具：纯 TS 订阅 + 节流（T6）",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        }
-      },
-      "stats": {
-        "start_time": "2026-10-08T16:59:16.526Z",
-        "end_time": "",
-        "duration_ms": 0
-      }
+      "ops": {}
     },
     "v0.1.0-stage-04": {
       "name": "v0.1.0-stage-04",
@@ -1350,159 +1225,6 @@
         "stageName": "v0.1.0-stage-02",
         "from": "archiving",
         "to": "done"
-      }
-    },
-    {
-      "time": "2026-10-08T16:59:16.526Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.1.0-stage-03",
-        "from": "plan_pending",
-        "to": "plan_review"
-      }
-    },
-    {
-      "time": "2026-10-09T14:07:08.313Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.1.0-stage-03",
-        "from": "plan_review",
-        "to": "plan_pending"
-      }
-    },
-    {
-      "time": "2026-10-09T14:08:00.718Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.1.0-stage-03",
-        "from": "plan_pending",
-        "to": "plan_review"
-      }
-    },
-    {
-      "time": "2026-10-09T14:12:37.878Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.1.0-stage-03",
-        "from": "plan_review",
-        "to": "plan_passed"
-      }
-    },
-    {
-      "time": "2026-10-09T14:12:38.276Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.1.0-stage-03",
-        "from": "plan_passed",
-        "to": "scheme_pending"
-      }
-    },
-    {
-      "time": "2026-10-09T14:15:31.331Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.1.0-stage-03",
-        "opId": "op-001"
-      }
-    },
-    {
-      "time": "2026-10-09T14:15:31.650Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.1.0-stage-03",
-        "opId": "op-002"
-      }
-    },
-    {
-      "time": "2026-10-09T14:15:32.039Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.1.0-stage-03",
-        "opId": "op-003"
-      }
-    },
-    {
-      "time": "2026-10-09T14:15:32.353Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.1.0-stage-03",
-        "opId": "op-004"
-      }
-    },
-    {
-      "time": "2026-10-09T14:15:32.660Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.1.0-stage-03",
-        "opId": "op-005"
-      }
-    },
-    {
-      "time": "2026-10-09T14:15:32.967Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.1.0-stage-03",
-        "opId": "op-006"
-      }
-    },
-    {
-      "time": "2026-10-09T14:15:33.284Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.1.0-stage-03",
-        "opId": "op-007"
-      }
-    },
-    {
-      "time": "2026-10-09T14:17:56.588Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.1.0-stage-03",
-        "from": "scheme_pending",
-        "to": "scheme_review"
-      }
-    },
-    {
-      "time": "2026-10-09T14:25:00.455Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.1.0-stage-03",
-        "from": "scheme_review",
-        "to": "scheme_pending"
-      }
-    },
-    {
-      "time": "2026-10-09T14:28:05.762Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.1.0-stage-03",
-        "from": "scheme_pending",
-        "to": "scheme_review"
-      }
-    },
-    {
-      "time": "2026-10-09T14:31:07.111Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.1.0-stage-03",
-        "from": "scheme_review",
-        "to": "scheme_passed"
       }
     }
   ]

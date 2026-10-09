@@ -6,6 +6,8 @@ pub mod codes {
     pub const VALIDATION: &str = "VALIDATION";
     pub const UNIQUE_VIOLATION: &str = "UNIQUE_VIOLATION";
     pub const FK_VIOLATION: &str = "FK_VIOLATION";
+    // 预留：迁移失败错误码（迁移在 tauri-plugin-sql preload 阶段执行，暂无 IPC 消费点）
+    #[allow(dead_code)]
     pub const MIGRATION_FAILED: &str = "MIGRATION_FAILED";
     pub const DB_LOCKED: &str = "DB_LOCKED";
     pub const INTERNAL: &str = "INTERNAL";

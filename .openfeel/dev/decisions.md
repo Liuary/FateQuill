@@ -11,3 +11,13 @@
 - **状态**：proposed / accepted / superseded / deprecated
 - **决策**：{一句话描述采纳的决策内容}
 - **理由**：{为什么这样决策，含备选方案及取舍分析}
+
+---
+
+### ADR-001：AI 调用层 = Rust 侧 provider 无关 SSE 中继 + 前端自研协议适配器（v0.1 不引入 Vercel AI SDK）
+- **日期**：2026-10-09
+- **状态**：accepted
+- **背景**：大计划 §2 原定稿「AI 层 = Vercel AI SDK」，但其为 JS/TS 库，在 Tauri 中只能运行于前端 WebView，provider 默认以 `fetch` 直连云端——引入即违反 C-04（前端不直连外网）；且明文 API Key 必须下发前端才能发起请求，违反 C-05。与 T2/T3 既定的「Rust SSE 中继 + TS 适配器」设计存在未裁决的架构矛盾。
+- **决策**：v0.1 **移除 Vercel AI SDK**（`ai` 包降级为「后续可评估」，不引入）。数据面定为 **Rust 侧 provider 无关 SSE 中继**（`reqwest` + Tauri `Channel`，仅透明转发「URL+headers+body → 分块事件」，不含 provider 语义）+ **前端自研协议适配器**（解析 openai-compatible `data:`/`[DONE]` 与 anthropic SSE 事件类型）。API Key 仅 Rust 侧从系统密钥链（`keyring` crate）读取并拼装请求头，**永不下发前端**。
+- **备选**：① 前端直连 —— 否决（CORS + 密钥下发，违反 C-04/C-05）；② 保留 AI SDK + 自定义 fetch 桥 —— 否决（IPC 事件流伪装成 `Response` 的胶水复杂度、中断/背压透传风险大于 v0.1 收益；AI SDK 多 provider 抽象与自建 `ModelProvider` 接口重复，违反 C-08）。
+- **后果**：需自写 provider 的 SSE 解析（openai-compatible 一实现即覆盖多数兼容 API，解析量小可控）；换取干净的数据面、密钥零下发、可取消的流式通道（Channel + requestId + AbortHandle）。AI SDK 的流式 UI hooks 与自建 `generationStore`（stage-05）重复，不再需要。多模型交叉判断场景（stage-06/07）如需可再评估（fetch 桥 / Node sidecar）。

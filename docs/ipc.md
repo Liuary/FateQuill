@@ -80,7 +80,7 @@
 
 ## 8. 数据访问命令与错误结构
 
-### 8.1 命令清单（25 个）
+### 8.1 命令清单（28 个）
 
 5 实体 × [list / get / create / update / delete]，命令名 snake_case：
 
@@ -94,6 +94,16 @@
 
 - 参数：Rust 侧 snake_case（如 `novel_id`、`content_format`），前端 `invoke(cmd, { novelId, contentFormat })` 自动映射。
 - 返回：实体行对象（snake_case 列名，如 `novel_id`/`content_format`/`order_index`/`word_count`）；`delete_*` 返回空。
+
+顺序维护命令（ordering，共 3 个）：
+
+| 类别     | 命令               | 参数（前端 camelCase）               | 语义                                                                   |
+| -------- | ------------------ | ------------------------------------ | ---------------------------------------------------------------------- |
+| Ordering | `reorder_volumes`  | `{ novelId, orderedIds: number[] }`  | 按给定顺序重写该作品下卷的 `order_index`（0..n-1），两阶段重排，事务内 |
+| Ordering | `reorder_chapters` | `{ volumeId, orderedIds: number[] }` | 同上（卷下章）                                                         |
+| Ordering | `move_chapter`     | `{ chapterId, toVolumeId, toIndex }` | 跨卷移动章，源卷/目标卷均紧凑化（`toIndex` 越界 clamp），事务内        |
+
+> 后续 op 新增命令须同步本清单（stage-03 将新增 `http_stream` / `abort_stream` 与模型配置命令）。
 
 ### 8.2 错误结构与错误码表
 

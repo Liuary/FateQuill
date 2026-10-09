@@ -66,11 +66,11 @@
 | 前端 | **React + Vite + TypeScript** | 严格模式；组件与逻辑分离 |
 | 样式 | **TailwindCSS + shadcn/ui** | shadcn/ui 为**代码复制型**组件（源码入库、可改），非黑盒依赖 |
 | 编辑器 | **Tiptap** | 按**章节分文档**，禁止整本单一巨文档 |
-| AI 层 | **Vercel AI SDK** | 多 provider；用户配置云端 API Key |
+| AI 层 | **Rust 侧 provider 无关 SSE 中继 + 前端自研协议适配器** | `reqwest` + Tauri `Channel` 透明转发「URL+headers+body → SSE 事件」；TS 自研 openai-compatible / anthropic SSE 解析适配器；**Vercel AI SDK 降级为「后续可评估」，v0.1 不引入 `ai` 包**（见 §3.4 ADR-001）；**API Key 仅 Rust 侧从密钥链读取，永不下发前端** |
 | 状态管理 | **Zustand** | 轻量；编辑器态与生成态**分离** |
 | 国际化 | **i18next + react-i18next** | 中英双语界面；见 §1.5；语言资源按命名空间组织 |
 | 本地存储 | **SQLite**（Tauri SQL 插件） | schema 由迁移脚本管理 |
-| 密钥存储 | **系统密钥链**（`keyring` / `tauri-plugin-stronghold`） | 不入库、不入 Git（C-05） |
+| 密钥存储 | **系统密钥链 `keyring` crate** | 条目命名 `fatequill/{provider}/{label}`；不入库、不入 Git、不入前端（C-05） |
 | 测试 | 前端 Vitest + Testing Library；Rust `cargo test`；端到端 WebDriver/Tauri 集成 | 见各阶段验收标准 |
 
 ---
@@ -120,6 +120,16 @@
 | 设定分级归档 + 一致性引擎 | 主线/暗线/短线/临时分级、旧设定一致性 | stage-11 |
 | 大六壬 + 全自动创作 + 发布打磨 | 进阶术数、无人值守创作、开源发布 | stage-12 |
 
+### 3.4 架构决策记录（ADR 摘要）
+
+> 完整 ADR 见 `.openfeel/dev/decisions.md`。
+
+#### ADR-001：AI 调用层 = Rust 侧 provider 无关 SSE 中继 + 前端自研协议适配器（v0.1 不引入 Vercel AI SDK）
+- **背景**：Vercel AI SDK 是 JS/TS 库，在 Tauri 中只能运行于前端 WebView；其 provider 默认用 `fetch` 直连云端——引入即违反 C-04（前端不直连外网），且 API Key 必须下发前端才能发起请求（违反 C-05）。原 §2 定稿「AI 层 = Vercel AI SDK」与 T2/T3「Rust SSE 中继 + TS 适配器」存在未裁决的架构矛盾。
+- **决策**：v0.1 **移除 Vercel AI SDK**（`ai` 包降级为「后续可评估」，不引入）。数据面 = **Rust 侧 provider 无关 SSE 中继**（`reqwest` + Tauri `Channel`，仅做「URL+headers+body → 分块事件」透明转发，不含 provider 语义）+ **前端自研协议适配器**（解析 openai-compatible 的 `data:`/`[DONE]`、anthropic 的 SSE 事件类型）。API Key 仅 Rust 侧从系统密钥链（`keyring`）读取并拼装请求头，**永不下发前端**（前端只见 provider/模型名等元数据）。
+- **备选**：① 前端直连（否决：CORS + 密钥下发，违反 C-04/C-05）；② 保留 AI SDK + 自定义 fetch 桥（否决：把 IPC 事件流伪装成 `Response` 的胶水复杂度/中断/背压透传风险 > v0.1 收益，且 AI SDK 的多 provider 抽象与自建 `ModelProvider` 接口重复，违反 C-08）。
+- **后果**：需自写 provider 的 SSE 解析（openai-compatible 一个实现即覆盖多数国产/兼容 API，量小可控）；换取干净的数据面、密钥零下发与可取消的流式通道。AI SDK 的流式 UI hooks（`useCompletion` 等）亦与自建 `generationStore`（stage-05）重复，不再需要。后续多模型交叉判断场景（stage-06/07）如需再评估，可在 fetch 桥或 Node sidecar 方案间重新决策。
+
 ---
 
 ## 4. 核心里程碑
@@ -142,8 +152,8 @@
 | C-01 | 长文渲染：按章节分文档，禁止整本单文档 | 性能（硬） | 单章 5000 字编辑区输入延迟 < 16ms |
 | C-02 | 流式渲染：AI 输出增量追加 + 节流重渲染 | 性能（硬） | 流式期间重渲染频率受节流控制（如 ≥ 50ms 合并） |
 | C-03 | 状态隔离：生成时编辑器零重渲染 | 性能（硬） | 生成过程中 editorStore 快照不变；可测的重渲染计数为 0 |
-| C-04 | 网络走 Rust 侧，前端不经 WebView 直连外网 | 架构（硬） | 代码审查：前端无外部 HTTP 调用 |
-| C-05 | 密钥仅存本地，不入库、不入 Git | 安全（硬） | `.gitignore` 覆盖；代码审查 |
+| C-04 | 网络数据面全在 Rust 侧（HTTP/SSE），前端不经 WebView 直连外网 | 架构（硬） | 代码审查：前端无外部 HTTP/SSE 直连（无 `fetch`/`EventSource`/`ai` 包直连） |
+| C-05 | 密钥仅存本地系统密钥链（`keyring`），不入库、不入 Git，**且不出现在前端错误与日志** | 安全（硬） | `.gitignore` 覆盖；SQLite 文件无 Key 字符串；错误/日志/事件 payload 不含 Key（单测断言）；roundtrip 测试 |
 | C-06 | 组件优先采用 shadcn/ui 源码入库方式 | 架构 | 审查：无不可改的黑盒 UI 依赖 |
 | C-07 | 任务粒度适配 AI 执行，验收标准可判定 | 流程（硬） | 阶段计划任务表逐条具备「验证标准」列 |
 | C-08 | 无复用价值的抽象/依赖/扩展点须先确认 | 设计 | 用户/审查确认 |
