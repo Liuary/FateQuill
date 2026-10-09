@@ -3,43 +3,39 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/ui/LanguageSwitcher";
 import { SettingsPage } from "@/features/settings/SettingsPage";
+import { WorkspaceLayout } from "@/features/editor/WorkspaceLayout";
 import { BenchPanel } from "@/features/editor/perf/BenchPanel";
-import { ping } from "@/ipc/ping";
 
 function App() {
   const { t } = useTranslation();
-  const [result, setResult] = useState("");
-  const [view, setView] = useState<"home" | "settings">("home");
+  const [view, setView] = useState<"workspace" | "settings">("workspace");
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-4 p-6">
-      <h1 className="text-2xl font-semibold">{t("appName")}</h1>
-      <LanguageSwitcher />
-      <div className="flex gap-2">
-        <Button
-          variant={view === "home" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setView("home")}
-        >
-          {t("settings:home")}
-        </Button>
-        <Button
-          variant={view === "settings" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setView("settings")}
-        >
-          {t("settings:title")}
-        </Button>
+    <div className="flex h-screen flex-col">
+      <header className="border-border flex items-center justify-between gap-2 border-b px-4 py-2">
+        <h1 className="text-lg font-semibold">{t("appName")}</h1>
+        <div className="flex items-center gap-2">
+          <Button
+            variant={view === "workspace" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setView("workspace")}
+          >
+            {t("editor:workspace")}
+          </Button>
+          <Button
+            variant={view === "settings" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setView("settings")}
+          >
+            {t("settings:title")}
+          </Button>
+          <LanguageSwitcher />
+        </div>
+      </header>
+      <div className="min-h-0 flex-1">
+        {view === "workspace" ? <WorkspaceLayout /> : <SettingsPage />}
       </div>
-      {view === "home" ? (
-        <>
-          <Button onClick={async () => setResult(await ping())}>{t("ping")}</Button>
-          <p>{result}</p>
-        </>
-      ) : (
-        <SettingsPage />
-      )}
       {import.meta.env.DEV && <BenchPanel />}
-    </main>
+    </div>
   );
 }
 

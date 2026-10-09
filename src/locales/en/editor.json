@@ -12,5 +12,10 @@
   "drag": "Drag to sort",
   "outlineEmpty": "No chapters",
   "newVolume": "New volume",
-  "newChapter": "New chapter"
+  "newChapter": "New chapter",
+  "workspace": "Workspace",
+  "newNovel": "New novel",
+  "novelTitle": "Title",
+  "create": "Create",
+  "emptyNovels": "No novel yet — create one to start"
 }

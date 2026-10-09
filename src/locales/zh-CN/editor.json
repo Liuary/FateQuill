@@ -12,5 +12,10 @@
   "drag": "拖拽排序",
   "outlineEmpty": "暂无章节",
   "newVolume": "新卷",
-  "newChapter": "新章"
+  "newChapter": "新章",
+  "workspace": "工作区",
+  "newNovel": "新建作品",
+  "novelTitle": "作品名",
+  "create": "创建",
+  "emptyNovels": "还没有作品，先创建一部吧"
 }
