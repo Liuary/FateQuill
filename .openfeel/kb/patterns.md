@@ -52,3 +52,27 @@ resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } }
 - **落点**：`word_count` 由 **Rust 侧写入时统一计算回填**（前端不做双份逻辑），按 `content_format` 分支：`html` → 去标签 + 常用实体解码；`tiptap-json` → 遍历 `text` 节点；`plaintext` → 直接计数。
 - **单位**：**非空白字符数**（面向中文「字数」；DoD 的「3000 字」即 3000 个非空白字符）。
 - **为近似值（显式声明局限）**：`html` 分支为简易状态机去标签 + 常用实体解码（`&nbsp;`→0 字），未处理属性值内 `>`、`<script>/<style>` 文本与未知实体。stage-04/05 **不得把 `word_count` 当精确指标消费**；需精确字数时引入 HTML 解析器，或以 `tiptap-json` 文本节点遍历为准。
+
+## [+] EventSink trait：中继逻辑与传输解耦的可测试性模式 (2026-10-09)
+
+- **做法**：Rust 中继核心 `relay<S: EventSink>(..., sink: S)` 仅依赖自定义 `trait EventSink { fn send(&self, event: StreamEvent) -> bool; }`；生产实现 = `impl EventSink for Channel<StreamEvent>`，测试实现 = 内存 `MemSink`（`Mutex<Vec<StreamEvent>>`）。
+- **收益**：`cargo test` 无需 Tauri runtime 即可断言分块/终止/取消/超时/脱敏；`send` 返回 `bool` 让「通道已关闭」（`false`）短路中继循环，避免向已关闭通道继续推送。
+- **推广**：把「外部副作用接口」抽象为可注入 trait/函数（TS 侧同理——适配器工厂接受可注入 `transport` 回放夹具），是跨语言通用的可测试性模式。
+
+## [+] SSE 事件块切分：跨块 CR 状态机归一化 + 末块冲刷 (2026-10-09)
+
+- **问题**：SSE 规范行结束符可为 `\n`/`\r\n`/`\r`；若仅按 `\n\n` 双字节窗口检测边界，对 `\r\n\r\n` 分隔的 provider 永远切不出块，数据滞留缓冲直到连接结束而**静默丢失**。
+- **模式**：字节级 `carry_cr` 状态机——遇 `\r` 置位不发，下一字节到达时补 `\n`（`\r\n`/`\r` 统一归一为 `\n`），兼容 `\n\n`/`\r\n\r\n`/`\r\r`；连接结束（`Ok(None)`）时若 `carry_cr` 补 `\n`，且**冲刷无空行终止的末块**后再发 `Done`。
+- **守护**：mock server 分别以 `\n\n` 与 `\r\n\r\n` 发送，断言分块不丢失；另测末块冲刷。
+
+## [+] 适配器传输契约真实类型对齐（禁「双重 as」强转） (2026-10-09)
+
+- **问题**：适配器用 `as unknown as StreamTransport` 掩盖签名差异，会使真实路径缺参数（如 `requestId`）直到 `invoke` 反序列化才失败；而回放测试因注入自定义 transport 而**全绿掩盖缺陷**。
+- **模式**：让 `StreamTransport = (p: HttpStreamParams) => Promise<() => Promise<void>>` 与 `httpStream` **签名超集对齐**，默认 `const transport: StreamTransport = opts.transport ?? httpStream` 直接赋值，由 tsc 编译期保证契约；验证项 `rg "as unknown as" src/orchestration/providers` 无输出。
+- **原则**：跨「真实实现 ↔ 测试替身」的接口优先用类型系统对齐而非断言强转；测试替身必须与真实实现共用同一接口类型。
+
+## [+] AUTH_DENYLIST：授权头前端丢弃、Rust 侧密钥链注入 (2026-10-09)
+
+- **约定**：前端传入 header 中的授权类头 `authorization`/`x-api-key`/`proxy-authorization`/`api-key`（大小写不敏感）**一律丢弃**；授权头由 Rust 从 keyring 取 Key 后 `compose_headers` **合并/覆盖**注入。
+- **前置**：`url` 经 `ensure_https` 仅允许 `https://`（v0.1 为前缀校验，**不拦** `https://localhost`/内网段，已显式声明降级，留待后续收紧）。
+- **守护**：单测断言前端授权头被丢弃、auth 注入正确 header、非 Key 头保留；配合 `err_event` 脱敏断言（错误 payload 不含 URL/headers/body/Key）。

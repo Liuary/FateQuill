@@ -10,8 +10,12 @@
 
 - **core/** — 领域模型与本地存储（stage-02 建立）
   - [`domain-storage.md`](core/domain-storage.md)：领域模型（作品/卷/章/设定卡/角色）、SQLite schema 与插件迁移、仓储接口↔IPC 命令、错误结构与事务约定
+  - [`model-config.md`](core/model-config.md)：模型配置持久化（迁移 v2）、OS 密钥链（keyring）封装、设置页 UI（stage-03 建立）
 
-> 后续模块（`features/` 用户功能、`orchestration/` 编排引擎等）随对应阶段建立后在此登记。
+- **orchestration/** — AI 编排引擎（stage-03 建立）
+  - [`engine.md`](orchestration/engine.md)：可插拔 Provider/Agent/Pipeline 注册表、自研 SSE 协议适配器、Rust 侧流式中继与消费工具
+
+> 后续模块（`features/` 用户功能等）随对应阶段建立后在此登记。
 
 ## 维护约定
 

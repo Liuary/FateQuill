@@ -51,7 +51,7 @@
 
 ## [+] 领域层三段式分层与仓储接口/实现分离 (2026-10-09)
 
-- **三段式落点（不新建 `src/infra/`）**：`src/domain/repositories/*`（纯 TS 仓储接口）→ `src/ipc/repositories/*`（实现接口，经 `invokeCommand` 调 Rust 命令）→ `src-tauri/`（Rust `#[tauri::command]` + 插件）。组件/feature 只依赖接口，不感知命令名；`snake_case` 行 ↔ `camelCase` 领域模型的映射由 `src/ipc/` 承担。
+- **三段式落点（不新建独立 `infra` 目录）**：`src/domain/repositories/*`（纯 TS 仓储接口）→ `src/ipc/repositories/*`（实现接口，经 `invokeCommand` 调 Rust 命令）→ `src-tauri/`（Rust `#[tauri::command]` + 插件）。组件/feature 只依赖接口，不感知命令名；`snake_case` 行 ↔ `camelCase` 领域模型的映射由 `src/ipc/` 承担。
 - **领域层纯度工具化**：ESLint `no-restricted-imports` 约束 `src/domain/**` **禁止导入** `react*`、`@tauri-apps/*`、`@/ipc`、`@/components`、`@/ui`、`@/features`、`@/store`；接入 `pnpm lint` / CI，并以「注入违禁导入 → eslint 非 0 退出」作**负向判定**（规则确实生效，非仅声明）。
 - **不变量校验**：`src/domain/invariants.ts` 纯函数覆盖 5 条清单（order_index 连续唯一、外键有效、content 非空、枚举值域、删除后统计一致），Vitest 覆盖含边界。
 
@@ -62,9 +62,9 @@
 - **前端归一化**：`src/ipc/errors.ts` 将任意 reject 归一化为 `IpcError`（`code`/`detail`），`src/ipc/client.ts` 的 `invokeCommand` 统一 `try/catch → parseIpcError`；消费方按 `IpcError.code` 分支。
 - **统一事务入口**：`src-tauri/src/db/mod.rs` 的 `db::begin(pool) -> Result<Transaction<'_, Sqlite>, IpcError>` 作为所有多步写入（移动/删除后重排等）的唯一入口；出错经 `?` 提前返回（`Transaction` drop 即回滚），仅成功时 `commit()`。
 
-## [+] AI 数据面：Rust 侧 provider 无关 SSE 中继 + 前端自研适配器 (2026-10-09, ADR-001)
+## [+] AI 数据面：Rust 侧 provider 无关 SSE 中继 + 前端自研适配器 (2026-10-09)
 
-- **不引入 Vercel AI SDK**（`ai` 包）：`orchestration` 任何文件不得 `import "ai"`（DoD 1）。
+- **不引入 Vercel AI SDK**（`ai` 包）：`orchestration` 任何文件不得 `import "ai"`（DoD 1）。**ADR**：ADR-001（accepted，正式决策见 `.openfeel/dev/decisions.md`）。
 - **数据面在 Rust 侧**：命令 `http_stream(request_id, url, headers, body, auth, on_event: Channel<StreamEvent>)` 做 provider 无关的 SSE 透明中继；`abort_stream(request_id)` 经 `AbortHandle` 断流取消。`StreamEvent` = `Chunk{data}` / `Done` / `Error{code,message,statusCode?}`。
 - **授权头不入前端（REV-009）**：授权类头（`authorization`/`x-api-key`/`proxy-authorization`/`api-key`）由 Rust 从 OS 密钥链（`keyring`，service=`fatequill`）读取并合并/覆盖；前端传入的同名头一律丢弃。Key 仅在 Rust 内存，永不下发前端。
 - **https-only**：`ensure_https` 仅允许 `https://`。
@@ -79,3 +79,18 @@
 - **Key 仅经 OS 密钥链**（`crate::keyring_store`）：命令 `keyring_set`/`keyring_delete`/`keyring_exists`（**无 get**）；Key 不入库、不下发前端，仅 Rust 中继注入授权头时内部读取。
 - **config ↔ keyring 关联**：`model_config(provider,label)` ↔ `fatequill/{provider}/{label}`。
 - **设置页**：`src/features/settings/{SettingsPage,ModelConfigForm,ModelConfigList}.tsx`（i18n `settings` 命名空间，双语）；`src/app/App.tsx` 提供可达入口。
+
+## [+] 可插拔 AI 编排引擎（Provider / Agent / Pipeline 注册表） (2026-10-09)
+
+- **契约层 `src/orchestration/types.ts`**：`Chunk = { delta: string }`（provider 无关文本增量）、`ChatMessage`、`ChatOptions`（`headers` 仅承载非 Key 头，授权头由 Rust 注入）、`ModelProvider.stream(options) → AsyncIterable<Chunk>`、`Agent{id,name,systemPrompt,modelRef,temperature?,tools?}`、`PipelineStep<In,Out>` / `Pipeline`。
+- **注册表 `registry.ts`**：泛型 `Registry<T extends {id:string}>`（`register` 拒绝重复 id / `replace` 覆盖 / `resolve` 未注册抛错 / `has` / `list` / `remove`），`createRegistries()` 返回 `{providers, agents, pipelines}`。
+- **扩展点（可判定）**：新增 Provider = 新建适配器文件 + 在 `providers/register.ts` 注册一行；`types.ts`/`registry.ts`/`stream/**`/`pipeline/**` 核心文件 `git diff` 为零（DoD 第 2 条口径）。内置实现：`openai-compatible`、`anthropic`（自研 SSE 解析）。
+- **Pipeline 契约先行**：v0.1 只实现「单 Agent 生成」最小 Step（`GenerationStep = PipelineStep<GenerationInput, AsyncIterable<Chunk>>`，`runner.runSteps` 保持可组合签名）；多步组合管线于 **stage-06/08** 启用。
+- **stream 工具集（T6，纯 TS）**：`async-queue.ts`（push/close/fail 异步队列，适配器与消费端复用）、`throttle.ts`（默认 ≥50ms 合并、可注入时钟）、`subscribe.ts`（消费入口）；**不建 store**，stage-05 `generationStore` 订阅 `subscribeChunks` 输出。
+
+## [+] 流式通道：Tauri Channel + requestId + AbortHandle (2026-10-09)
+
+- **选型**：SSE 回传用 Tauri 2 **`Channel`**（命令级专属通道、请求隔离、支持高频分块）而非全局 **`emit`**（广播语义，多请求串扰、无背压、无法安全取消单条流）。
+- **命令**：`http_stream(request_id, url, headers, body, auth, on_event: Channel<StreamEvent>)`；`abort_stream(request_id)` 从 `StreamRegistry`（`HashMap<request_id, AbortHandle>`）取出并 `abort()`（drop future → 连接关闭）。
+- **事件三态**：`StreamEvent = Chunk{data}`（完整 SSE 事件块）/ `Done` / `Error{code,message,statusCode?}`；Rust `#[serde(tag="type")]` + `#[serde(rename="statusCode")]` 对齐 TS 契约 `src/ipc/stream.ts`。
+- **前端 `httpStream()`**：内部 `requestId ?? crypto.randomUUID()` 缺省生成，返回 `abort` 函数；适配器无需关心 requestId（消除 op-004 真实路径缺参隐患）。

@@ -53,3 +53,28 @@
 - **现象**：`cargo check` 报 `constant MIGRATION_FAILED is never used`（`error.rs`）。迁移失败由插件 `preload` 阶段在应用启动时处理，**不走 IPC 命令路径**，该错误码当前无消费点。
 - **处理**：作为错误码**公共契约完整性**的一部分**保留**，在 `codes` 模块或该常量上加 `#[allow(dead_code)]` + 中文注释「预留：迁移失败错误码（迁移在插件 preload 阶段执行，暂无 IPC 消费点）」；stage-03 挂接启动错误上报时即可消费。
 - **取舍**：不因单个 dead_code 告警删契约项，也**不长期放任告警**——告警会稀释真实告警可见性，须显式 `allow` 并注明原因。
+
+## [+] reqwest 用 native-tls 规避 aws-lc-rs 的构建负担（Windows） (2026-10-09)
+
+- **背景**：reqwest 0.13 默认启用 rustls（依赖 aws-lc-rs），在 Windows 上需 CMake/NASM 工具链，构建负担重且易在 CI 失败。
+- **处理**：`reqwest = { version = "0.13", default-features = false, features = ["native-tls"] }` → 走 Windows schannel，免 aws-lc-rs/CMake/NASM。SSE 走 http/1.1，无需 http2，关闭 default-features 正确。
+- **通用**：Windows 平台优先 native-tls（schannel）；仅需跨平台一致/去系统依赖时才评估 rustls（须先确认 aws-lc-rs 构建链就绪）。
+
+## [+] keyring 4 平台后端与 `delete_credential` API (2026-10-09)
+
+- **后端**：`keyring = "4"` 默认 `v1` feature 自动选择平台后端——Windows = 凭据管理器（Credential Manager）、macOS = Keychain、Linux = Secret Service。
+- **API**：`Entry::new(service, account)` → `set_password` / `get_password` / `delete_credential`；用 `Err(NoEntry)` 实现 `exists`（读到即 true，NoEntry 即 false，其它错误 → INTERNAL）。
+- **诊断**：平台初始化/写入失败时 `Entry::store_status()` 可诊断；统一映射为 `INTERNAL`。
+- **备选否决**：`tauri-plugin-stronghold`（加密保险库 + 口令解锁会话语义）对「存几条 API Key」过重，已否决。
+
+## [+] Tauri Channel vs emit 广播：流式取消语义差异 (2026-10-09)
+
+- **要点**：流式分块回传必须用 **`Channel`**（命令级专属、请求隔离、可配套 AbortHandle）；**`emit` 为广播**语义，多请求会串扰、无背压，且**无法安全取消单条流**。
+- **排查信号**：多请求并流时事件互相污染 / abort 后仍收到事件 / 无法定位某条流的结束 → 检查是否误用全局 `emit`。
+- **配套**：`abort_stream(request_id)` 须在连接生命周期内有效（`StreamRegistry` 注册 `AbortHandle`，relay 结束或 abort 后移除键），否则句柄泄漏、取消失效。
+
+## [+] 迁移 v2 纪律：走内置 migrations 数组、include_str 单一来源、不旁路 (2026-10-09)
+
+- **纪律**：新增能力必须走 `tauri-plugin-sql` 内置 migrations 数组追加（`include_str!` 单一来源 + `_sqlx_migrations` 幂等），**不得**旁路（如 JSON 文件存配置、手工改库）。
+- **落地**：`0002_model_config.sql` 经 `db/migrations.rs` 追加 version 2；`cargo test` 经 `sqlx::migrate!("./migrations")` 与生产**同源**消费，保证测试库/生产库 schema 一致。
+- **回归**：升级迁移后须同步更新既有断言——`migration_creates_schema` 表清单加新表、`migration_is_idempotent` 的 `_sqlx_migrations` 计数递增（v2 → `==2`），否则旧期望会误报。

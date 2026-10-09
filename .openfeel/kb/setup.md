@@ -62,3 +62,10 @@ cargo test --manifest-path src-tauri/Cargo.toml   # Rust 测试
 - Windows 后端 = **凭据管理器（Credential Manager）**；条目：`service = fatequill`、`account = {provider}/{label}`（如 `fatequill/openai-compatible/default`）。
 - 调试 / 重置：Windows「凭据管理器 → Windows 凭据」删除 `fatequill/*` 条目。
 - 前端**无 `keyring_get`**：Key 仅经 `keyring_set`/`keyring_delete`/`keyring_exists` 管理，永不回传前端。
+
+## [+] 测试凭据清理与 keyring roundtrip 卫生 (2026-10-09)
+
+- **keyring roundtrip 测试**：`set → get → delete` 用**唯一 label**（如 `test/{uuid}`），测试结束前删除条目，避免系统凭据库残留。
+- **人工核验残留**：Windows `cmdkey /list` 应无 `fatequill`/`test-provider` 命中。
+- **临时库文件**：「Key 不落库」测试使用的临时 SQLite 文件须 `remove_file` 清理（temp 目录不留 `fatequill_np_*`）。
+- **凭据重置**：Windows「凭据管理器 → Windows 凭据」删除 `fatequill/*` 条目（见上方「密钥链（keyring）」节）。
