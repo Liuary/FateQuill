@@ -3,6 +3,7 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import i18n from "@/app/i18n";
 import type { ModelConfig } from "@/domain/models/model-config";
 import { estimateCost } from "@/orchestration/exploration/cost";
+import { castLiuren } from "@/orchestration/liuren";
 import { useExplorationStore } from "@/store/explorationStore";
 import { useExploration } from "./useExploration";
 
@@ -10,6 +11,7 @@ const hoisted = vi.hoisted(() => ({
   invokeMock: vi.fn(),
   providerStream: vi.fn(),
   guideCalls: [] as string[],
+  liurenCalls: [] as string[],
 }));
 
 vi.mock("@tauri-apps/api/core", () => ({ invoke: hoisted.invokeMock }));
@@ -31,6 +33,17 @@ vi.mock("@/orchestration/iching", async (importOriginal) => {
     renderGuideText: (card: Parameters<typeof actual.renderGuideText>[0]) => {
       hoisted.guideCalls.push("renderGuideText");
       return actual.renderGuideText(card);
+    },
+  };
+});
+// 大六壬课体引导模块：记录调用（断言开关单例共享与关闭零副作用）
+vi.mock("@/orchestration/liuren", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/orchestration/liuren")>();
+  return {
+    ...actual,
+    renderLiurenText: (chart: Parameters<typeof actual.renderLiurenText>[0]) => {
+      hoisted.liurenCalls.push("renderLiurenText");
+      return actual.renderLiurenText(chart);
     },
   };
 });
@@ -97,8 +110,11 @@ beforeEach(async () => {
     collapsedIds: [],
     casting: null,
     ichingEnabled: false,
+    liurenEnabled: false,
+    liurenChart: null,
   });
   hoisted.guideCalls.length = 0;
+  hoisted.liurenCalls.length = 0;
 });
 
 describe("useExploration（并发 / 成本 / 失败处理，T5）", () => {
@@ -208,5 +224,42 @@ describe("useExploration（并发 / 成本 / 失败处理，T5）", () => {
     expect(result.current.ichingEnabled).toBe(false);
     expect(hoisted.guideCalls).toEqual([]);
     expect(localStorage.getItem("fatequill.iching.enabled")).toBe("false"); // 持久化
+  });
+
+  it("大六壬开关单例共享 + 课体引导**生产注入**（关闭零副作用；开启后 prompt system 含课体引导）", async () => {
+    const castResult = castLiuren({ monthGeneral: "亥", hourBranch: "子", dayGanzhi: "甲子" });
+    if (!castResult.ok) throw new Error("fixture cast failed");
+    useExplorationStore.setState({ liurenEnabled: false, liurenChart: castResult.chart });
+
+    const { result } = renderHook(() => useExploration({ novelId: 1, chapterId: null, config }));
+    expect(result.current.liurenEnabled).toBe(false);
+    expect(hoisted.liurenCalls).toEqual([]); // 关闭 → 大六壬模块零调用
+
+    // 运行时切换开启（与开关 UI 同源：同一 store 状态）→ 立即生效
+    act(() => {
+      useExplorationStore.getState().setLiurenEnabled(true);
+    });
+    expect(result.current.liurenEnabled).toBe(true);
+    expect(hoisted.liurenCalls).toContain("renderLiurenText");
+    expect(localStorage.getItem("fatequill.liuren.enabled")).toBe("true"); // 持久化
+
+    // **生产注入路径**：运行推演 → provider 收到的 system 段含课体引导
+    await act(async () => {
+      await result.current.run();
+    });
+    const calls = hoisted.providerStream.mock.calls;
+    const options = calls[calls.length - 1]?.[0] as {
+      messages: { role: string; content: string }[];
+    };
+    const system = options.messages.find((message) => message.role === "system")!.content;
+    expect(system).toContain("大六壬课体引导：");
+
+    // 运行时关闭 → 回到零副作用（不再调用）
+    hoisted.liurenCalls.length = 0;
+    act(() => {
+      useExplorationStore.getState().setLiurenEnabled(false);
+    });
+    expect(result.current.liurenEnabled).toBe(false);
+    expect(hoisted.liurenCalls).toEqual([]);
   });
 });

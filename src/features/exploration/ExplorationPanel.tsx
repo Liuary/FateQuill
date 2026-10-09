@@ -16,6 +16,8 @@ import { useExplorationStore } from "@/store/explorationStore";
 import { BranchCompare } from "./BranchCompare";
 import { FatePanel } from "./FatePanel";
 import { IChingPanel } from "./IChingPanel";
+import { LiurenPanel } from "./LiurenPanel";
+import { useLiurenEnabled } from "./useLiurenEnabled";
 import { TemperatureConfig } from "./TemperatureConfig";
 import { useExploration } from "./useExploration";
 import { useIChingEnabled } from "./useIChingEnabled";
@@ -31,6 +33,7 @@ export interface ExplorationPanelProps {
 export function ExplorationPanel({ novelId, chapterId, editor = null }: ExplorationPanelProps) {
   const { t } = useTranslation("exploration");
   const { t: tIChing } = useTranslation("iching");
+  const { t: tLiuren } = useTranslation("liuren");
   const { state, config } = useGenerationAvailability();
   const intent = useExplorationStore((s) => s.intent);
   const setIntent = useExplorationStore((s) => s.setIntent);
@@ -43,6 +46,8 @@ export function ExplorationPanel({ novelId, chapterId, editor = null }: Explorat
   });
   // 易经可选开关：缺省关闭 → 起卦/宿命入口**不可见**（开关 UI 于 stage-09 T5 落地）
   const { enabled: ichingEnabled, setEnabled: setIChingEnabled } = useIChingEnabled();
+  // 大六壬可选开关（store 单源）：缺省关闭 → 起课入口不可见
+  const { enabled: liurenEnabled, setEnabled: setLiurenEnabled } = useLiurenEnabled();
 
   const canRun = state === "ready" && novelId != null && intent.trim().length > 0 && !running;
 
@@ -78,6 +83,19 @@ export function ExplorationPanel({ novelId, chapterId, editor = null }: Explorat
           <FatePanel novelId={novelId} />
         </>
       )}
+
+      {/* 大六壬（stage-12 T1）：与易经**并列可选**、可叠加；缺省关闭 → 起课入口不可见（零副作用） */}
+      <label className="flex items-center gap-1 text-xs">
+        <input
+          type="checkbox"
+          data-testid="liuren-toggle"
+          checked={liurenEnabled}
+          onChange={(event) => setLiurenEnabled(event.target.checked)}
+        />
+        {tLiuren("enable")}
+      </label>
+      {liurenEnabled && <p className="text-xs opacity-70">{tLiuren("enabledHint")}</p>}
+      {liurenEnabled && <LiurenPanel />}
 
       <div className="flex flex-wrap items-center gap-2 text-xs">
         <label className="flex items-center gap-1">

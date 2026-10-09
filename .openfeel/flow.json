@@ -2,14 +2,14 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-09T22:50:03.837Z",
-    "revision": 427
+    "updated": "2026-10-09T22:53:12.643Z",
+    "revision": 428
   },
   "pipeline": {
     "phase": "active",
     "current": {
       "stage": "v0.6.0-stage-12",
-      "op": "op-001"
+      "op": "op-002"
     },
     "retry": 0
   },
@@ -1641,9 +1641,9 @@
       "ops": {
         "op-001": {
           "title": "遗留登记与总清算表 + 结构/IPC 文档回写（T7）(chore)",
-          "state": "pending",
+          "state": "done",
           "assignee": "openfeel-executor",
-          "attempts": 0,
+          "attempts": 1,
           "max_attempts": 3,
           "checkpoints": {
             "plan": "pending",
@@ -5919,6 +5919,15 @@
         "stageName": "v0.6.0-stage-12",
         "from": "scheme_passed",
         "to": "exec_running"
+      }
+    },
+    {
+      "time": "2026-10-09T22:53:12.622Z",
+      "agent": "openfeel-executor",
+      "action": "attempt_pass",
+      "detail": {
+        "opId": "v0.6.0-stage-12.op-001",
+        "attempts": 1
       }
     }
   ]

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import i18n from "@/app/i18n";
+import { castLiuren } from "@/orchestration/liuren";
 import { useExplorationStore } from "@/store/explorationStore";
 import { ExplorationPanel } from "./ExplorationPanel";
 
@@ -8,6 +9,7 @@ const hoisted = vi.hoisted(() => ({
   invokeMock: vi.fn(),
   providerStream: vi.fn(),
   guideCalls: [] as string[],
+  liurenCalls: [] as string[],
 }));
 
 vi.mock("@tauri-apps/api/core", () => ({ invoke: hoisted.invokeMock }));
@@ -30,6 +32,17 @@ vi.mock("@/orchestration/iching", async (importOriginal) => {
     renderGuideText: (card: Parameters<typeof actual.renderGuideText>[0]) => {
       hoisted.guideCalls.push("renderGuideText");
       return actual.renderGuideText(card);
+    },
+  };
+});
+// 大六壬课体引导模块：记录调用以断言「关闭零副作用」
+vi.mock("@/orchestration/liuren", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/orchestration/liuren")>();
+  return {
+    ...actual,
+    renderLiurenText: (chart: Parameters<typeof actual.renderLiurenText>[0]) => {
+      hoisted.liurenCalls.push("renderLiurenText");
+      return actual.renderLiurenText(chart);
     },
   };
 });
@@ -91,9 +104,12 @@ beforeEach(async () => {
     collapsedIds: [],
     casting: null,
     ichingEnabled: false, // 单例开关：逐个用例显式复位（缺省关闭）
+    liurenEnabled: false,
+    liurenChart: null,
   });
   hoisted.guideCalls.length = 0;
-  localStorage.clear(); // 易经开关缺省关闭
+  hoisted.liurenCalls.length = 0;
+  localStorage.clear(); // 易经 / 大六壬开关缺省关闭
 });
 
 describe("ExplorationPanel（多温度并行推演）", () => {
@@ -194,5 +210,39 @@ describe("ExplorationPanel（多温度并行推演）", () => {
     );
     expect(hoisted.guideCalls).toEqual([]);
     expect(localStorage.getItem("fatequill.iching.enabled")).toBe("false");
+  });
+
+  it("大六壬开关：缺省关闭（**起课面板不挂载**、零副作用）", async () => {
+    render(<ExplorationPanel novelId={1} chapterId={null} />);
+    await waitFor(() => expect(screen.getByText("多温度并行推演")).toBeInTheDocument());
+
+    const toggle = screen.getByTestId("liuren-toggle") as HTMLInputElement;
+    expect(toggle.checked).toBe(false);
+    expect(screen.queryByTestId("liuren-panel")).toBeNull(); // 关闭 → 生产不挂载
+    expect(hoisted.liurenCalls).toEqual([]); // 关闭 → 大六壬模块零调用
+  });
+
+  it("大六壬开关：切换开启 → **起课面板挂载**（生产可达）+ 持久化；关闭 → 复原", async () => {
+    render(<ExplorationPanel novelId={1} chapterId={null} />);
+    await waitFor(() => expect(screen.getByText("多温度并行推演")).toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId("liuren-toggle"));
+    expect(localStorage.getItem("fatequill.liuren.enabled")).toBe("true");
+    expect(screen.getByTestId("liuren-panel")).toBeInTheDocument(); // **挂载断言**（防「生产不可达」）
+    expect(screen.getByTestId("liuren-cast")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId("liuren-toggle"));
+    expect(localStorage.getItem("fatequill.liuren.enabled")).toBe("false");
+    expect(screen.queryByTestId("liuren-panel")).toBeNull();
+  });
+
+  it("大六壬：开启且已起课 → 课体引导被构建（非零调用）", async () => {
+    const castResult = castLiuren({ monthGeneral: "亥", hourBranch: "子", dayGanzhi: "甲子" });
+    if (!castResult.ok) throw new Error("fixture cast failed");
+    useExplorationStore.setState({ liurenEnabled: true, liurenChart: castResult.chart });
+
+    render(<ExplorationPanel novelId={1} chapterId={null} />);
+
+    await waitFor(() => expect(hoisted.liurenCalls).toContain("renderLiurenText"));
   });
 });

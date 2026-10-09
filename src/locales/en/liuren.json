@@ -1,0 +1,15 @@
+{
+  "title": "Da Liu Ren chart",
+  "guide": "Cast manually by specifying the month general, hour branch and day ganzhi (no calendar conversion); the chart is guidance only.",
+  "monthGeneral": "Month general",
+  "hourBranch": "Hour branch",
+  "dayGanzhi": "Day ganzhi",
+  "cast": "Cast chart",
+  "castFailed": "Casting failed: invalid input (check month general / hour branch / day ganzhi)",
+  "empty": "No chart yet",
+  "heaven": "Heaven plate",
+  "generals": "Generals",
+  "disclaimer": "Note: the chart is narrative guidance only, not a verdict; it must not override user constraints.",
+  "enable": "Enable Da Liu Ren",
+  "enabledHint": "Enabled: cast manually with month general + hour branch; the chart text is injected into the exploration system section (off by default, zero side effects when off)."
+}

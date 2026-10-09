@@ -12,9 +12,13 @@ import { create } from "zustand";
 import { DEFAULT_TEMPERATURES } from "@/orchestration/exploration/temperature";
 import type { ExplorationBranch } from "@/orchestration/exploration/types";
 import type { Casting } from "@/orchestration/iching/types";
+import type { LiurenChart } from "@/orchestration/liuren/types";
 
 /** 易经开关持久化键 */
 export const ICHING_ENABLED_STORAGE_KEY = "fatequill.iching.enabled";
+
+/** 大六壬开关持久化键 */
+export const LIUREN_ENABLED_STORAGE_KEY = "fatequill.liuren.enabled";
 
 /** 读取易经开关（缺省 / 存储不可用 / 异常 → false） */
 function readIChingEnabled(): boolean {
@@ -23,6 +27,18 @@ function readIChingEnabled(): boolean {
   }
   try {
     return localStorage.getItem(ICHING_ENABLED_STORAGE_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+/** 读取大六壬开关（缺省 / 存储不可用 / 异常 → false） */
+function readLiurenEnabled(): boolean {
+  if (typeof localStorage === "undefined") {
+    return false;
+  }
+  try {
+    return localStorage.getItem(LIUREN_ENABLED_STORAGE_KEY) === "true";
   } catch {
     return false;
   }
@@ -50,6 +66,12 @@ interface ExplorationState {
    * `ExplorationPanel`（开关 UI）与 `useExploration`（装配注入）共用同一状态。
    */
   ichingEnabled: boolean;
+  /**
+   * 大六壬开关（**单例**，缺省关闭；持久化 `localStorage`）——与易经**并列可选**、可叠加。
+   */
+  liurenEnabled: boolean;
+  /** 起课结果（**跨组件状态**）：由 `LiurenPanel` 写入，供 `useExploration` 装配 `liurenGuide` 读取 */
+  liurenChart: LiurenChart | null;
   setIntent: (intent: string) => void;
   setTemperatures: (temperatures: number[]) => void;
   setBranches: (branches: ExplorationBranch[]) => void;
@@ -65,6 +87,10 @@ interface ExplorationState {
   setCasting: (casting: Casting | null) => void;
   /** 设置易经推演开关（写 store + `localStorage`；存储不可用时仅会话内生效） */
   setIChingEnabled: (value: boolean) => void;
+  /** 设置大六壬开关（写 store + `localStorage`；异常安全） */
+  setLiurenEnabled: (value: boolean) => void;
+  /** 写入/清空大六壬起课结果（跨组件共享） */
+  setLiurenChart: (chart: LiurenChart | null) => void;
   clear: () => void;
 }
 
@@ -78,6 +104,8 @@ export const useExplorationStore = create<ExplorationState>((set) => ({
   collapsedIds: [],
   casting: null,
   ichingEnabled: readIChingEnabled(),
+  liurenEnabled: readLiurenEnabled(),
+  liurenChart: null,
   setIntent: (intent) => set({ intent }),
   setTemperatures: (temperatures) => set({ temperatures }),
   setBranches: (branches) => set({ branches }),
@@ -115,6 +143,18 @@ export const useExplorationStore = create<ExplorationState>((set) => ({
       // 存储不可用（隐私模式/配额）：仅会话内生效
     }
   },
+  setLiurenEnabled: (value) => {
+    set({ liurenEnabled: value });
+    if (typeof localStorage === "undefined") {
+      return;
+    }
+    try {
+      localStorage.setItem(LIUREN_ENABLED_STORAGE_KEY, String(value));
+    } catch {
+      // 存储不可用（隐私模式/配额）：仅会话内生效
+    }
+  },
+  setLiurenChart: (chart) => set({ liurenChart: chart }),
   // 清空分支、选中与折叠态（保留意向、温度配置、起卦结果与易经开关）
   clear: () => set({ branches: [], running: false, selectedBranchId: null, collapsedIds: [] }),
 }));

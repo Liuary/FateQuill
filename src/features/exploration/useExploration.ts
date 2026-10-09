@@ -19,6 +19,7 @@ import {
 } from "@/orchestration/exploration/runner";
 import { clampTemperature } from "@/orchestration/exploration/temperature";
 import { buildGuideCard, renderGuideText } from "@/orchestration/iching";
+import { renderLiurenText } from "@/orchestration/liuren";
 import { resolveProviderForConfig } from "@/features/generation/resolve-provider";
 import { useExplorationStore } from "@/store/explorationStore";
 import { buildExplorationOptions } from "./build-exploration-options";
@@ -51,6 +52,19 @@ export function useExploration(opts: {
     [ichingEnabled, casting],
   );
 
+  // 大六壬开关与课体（均取自 store 单例）：与易经**并列可选**、可叠加
+  const liurenEnabled = useExplorationStore((s) => s.liurenEnabled);
+  const liurenChart = useExplorationStore((s) => s.liurenChart);
+
+  /**
+   * 大六壬课体引导（可选，stage-12 T1）：**关闭或未起课 → `undefined`**（零副作用；
+   * `renderLiurenText` **不被调用**）。开启且已起课 → 并入 system 约束段（与卦象引导并列）。
+   */
+  const liurenGuide = useMemo(
+    () => (liurenEnabled && liurenChart ? { text: renderLiurenText(liurenChart) } : undefined),
+    [liurenEnabled, liurenChart],
+  );
+
   /** 装配单分支取流（设定约束并入 system；signal 透传以便中止） */
   const buildStream = useCallback(
     async (
@@ -67,6 +81,7 @@ export function useExploration(opts: {
         model: config.modelName,
         temperature: branch.effectiveTemperature,
         hexagramGuide,
+        liurenGuide,
       });
       const provider = resolveProviderForConfig(config);
       return {
@@ -74,7 +89,7 @@ export function useExploration(opts: {
         injectedSettingCardIds: built.settingCardIds,
       };
     },
-    [opts.chapterId, hexagramGuide],
+    [opts.chapterId, hexagramGuide, liurenGuide],
   );
 
   /** 运行：全部温度分支（并行 + 排队）→ 收敛 → 入 store */
@@ -196,5 +211,15 @@ export function useExploration(opts: {
     abortRef.current?.abort();
   }, []);
 
-  return { run, retryBranch, abort, concurrency, setConcurrency, cost, ichingEnabled };
+  return {
+    run,
+    retryBranch,
+    abort,
+    concurrency,
+    setConcurrency,
+    cost,
+    ichingEnabled,
+    /** 大六壬开关（store 单源；供测试/调用方断言运行时切换即时生效） */
+    liurenEnabled,
+  };
 }

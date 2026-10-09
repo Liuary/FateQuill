@@ -100,4 +100,36 @@ describe("buildChapterGenerationOptions（分级注入；暗线硬隔离）", ()
     });
     expect(userOf(off)).not.toContain("执灯人首领是叛徒");
   });
+
+  it("大六壬课体引导（stage-12 T1）：传入 `liurenGuide` → 并入 **system** 段；缺省 → 与基线逐字段一致", async () => {
+    const withGuide = await buildChapterGenerationOptions({
+      novelId: 1,
+      chapterId: 5,
+      userInstruction: "续写",
+      model: "m",
+      liurenGuide: { text: "课体：贼克课｜三传：午/申/戌" },
+    });
+    const system = withGuide.messages.find((message) => message.role === "system")!.content;
+    expect(system).toContain("大六壬课体引导：");
+    expect(system).toContain("三传：午/申/戌");
+
+    const baseline = await buildChapterGenerationOptions({
+      novelId: 1,
+      chapterId: 5,
+      userInstruction: "续写",
+      model: "m",
+    });
+    expect(baseline.messages.find((message) => message.role === "system")!.content).not.toContain(
+      "大六壬课体引导",
+    );
+
+    const blank = await buildChapterGenerationOptions({
+      novelId: 1,
+      chapterId: 5,
+      userInstruction: "续写",
+      model: "m",
+      liurenGuide: { text: "  " },
+    });
+    expect(blank).toEqual(baseline); // 空白 → 与基线逐字段一致
+  });
 });

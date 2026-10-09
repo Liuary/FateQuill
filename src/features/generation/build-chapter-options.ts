@@ -25,6 +25,8 @@ export async function buildChapterGenerationOptions(params: {
   temperature?: number;
   /** 规避 skill（stage-07 T6 回注；缺省不注入，行为不变） */
   skills?: PromptSkill[];
+  /** 可选：**大六壬**课体引导文本（stage-12 T1；缺省/空 → 与基线逐字段一致） */
+  liurenGuide?: { text: string };
   /**
    * 注入开关（默认 `true`）：`false` → **完全不注入**设定卡。
    * **无论开关取值，`dark`（暗线）/ `temp` 恒不注入**（安全优先，开关不可绕过）。
@@ -48,8 +50,14 @@ export async function buildChapterGenerationOptions(params: {
   const prev = idx > 0 ? siblings[idx - 1] : null;
   const previousChapterTail = prev ? stripHtml(prev.content) : "";
 
+  // 大六壬课体引导（stage-12 T1，**可选**）：缺省/空 → 与基线逐字段一致（镜像 hexagramGuide 范式）
+  const liurenText = params.liurenGuide?.text?.trim();
+  const systemPrompt = liurenText
+    ? `${DEFAULT_CHAPTER_AGENT_SYSTEM_PROMPT}\n\n大六壬课体引导：\n${liurenText}`
+    : DEFAULT_CHAPTER_AGENT_SYSTEM_PROMPT;
+
   return buildChapterPrompt({
-    systemPrompt: DEFAULT_CHAPTER_AGENT_SYSTEM_PROMPT,
+    systemPrompt,
     settingCards,
     previousChapterTail,
     userInstruction: params.userInstruction,

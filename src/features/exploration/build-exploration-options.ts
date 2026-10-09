@@ -35,6 +35,8 @@ export async function buildExplorationOptions(params: {
   temperature: number;
   /** 可选：卦象引导文本（开启易经时并入 **system 约束段**；缺省 → 输出与基线逐字段一致） */
   hexagramGuide?: { text: string };
+  /** 可选：**大六壬**课体引导文本（与 `hexagramGuide` **并列可选**、可叠加；缺省/空 → 逐字段一致） */
+  liurenGuide?: { text: string };
   /**
    * 注入开关（默认 `true`）：`false` → **完全不注入**设定卡（纯净基线）。
    * **无论开关取值，`dark`（暗线）/ `temp` 恒不注入**（安全优先，开关不可绕过）。
@@ -68,10 +70,13 @@ export async function buildExplorationOptions(params: {
       : "";
   // 卦象引导（stage-09 T5，**可选**）：缺省/空 → 不产生空段，输出与基线**逐字段一致**
   const guideText = params.hexagramGuide?.text?.trim();
+  // 大六壬课体引导（stage-12 T1，**可选、与卦象并列**）：缺省/空 → 不产生空段
+  const liurenText = params.liurenGuide?.text?.trim();
   const systemPrompt = [
     TURN_CARD_SYSTEM_PROMPT,
     constraints,
     guideText ? `易经卦象引导：\n${guideText}` : "",
+    liurenText ? `大六壬课体引导：\n${liurenText}` : "",
   ]
     .filter(Boolean)
     .join("\n\n");

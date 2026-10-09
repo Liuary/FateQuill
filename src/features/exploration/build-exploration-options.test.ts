@@ -126,6 +126,59 @@ describe("buildExplorationOptions（约束注入 system 段）", () => {
   });
 });
 
+describe("buildExplorationOptions（大六壬课体引导；与卦象并列可选，stage-12 T1）", () => {
+  const systemOf = (options: { messages: { role: string; content: string }[] }) =>
+    options.messages.find((message) => message.role === "system")!.content;
+
+  it("传入 `liurenGuide` → 并入 system 约束段（与 `hexagramGuide` **可叠加**）", async () => {
+    const only = await buildExplorationOptions({
+      novelId: 1,
+      chapterId: null,
+      intent: "北上",
+      model: "m",
+      temperature: 0.7,
+      liurenGuide: { text: "课体：贼克课｜三传：午/申/戌" },
+    });
+    const system = systemOf(only.options);
+    expect(system).toContain("大六壬课体引导：");
+    expect(system).toContain("三传：午/申/戌");
+
+    const both = await buildExplorationOptions({
+      novelId: 1,
+      chapterId: null,
+      intent: "北上",
+      model: "m",
+      temperature: 0.7,
+      hexagramGuide: { text: "本卦：乾" },
+      liurenGuide: { text: "课体：贼克课" },
+    });
+    const bothSystem = systemOf(both.options);
+    expect(bothSystem).toContain("易经卦象引导：");
+    expect(bothSystem).toContain("大六壬课体引导：");
+  });
+
+  it("缺省 / 空白 → 与基线**逐字段一致**（不产生空段，零副作用）", async () => {
+    const baseline = await buildExplorationOptions({
+      novelId: 1,
+      chapterId: null,
+      intent: "北上",
+      model: "m",
+      temperature: 0.7,
+    });
+    const blank = await buildExplorationOptions({
+      novelId: 1,
+      chapterId: null,
+      intent: "北上",
+      model: "m",
+      temperature: 0.7,
+      liurenGuide: { text: "   " },
+    });
+
+    expect(blank.options).toEqual(baseline.options);
+    expect(systemOf(baseline.options)).not.toContain("大六壬课体引导");
+  });
+});
+
 describe("buildExplorationOptions（分级注入；暗线硬隔离，stage-11 T5）", () => {
   const tieredRow = (id: number, title: string, content: string, tier: string) => ({
     id,

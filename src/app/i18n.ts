@@ -26,6 +26,8 @@ import zhCharacters from "@/locales/zh-CN/characters.json";
 import enCharacters from "@/locales/en/characters.json";
 import zhConsistency from "@/locales/zh-CN/consistency.json";
 import enConsistency from "@/locales/en/consistency.json";
+import zhLiuren from "@/locales/zh-CN/liuren.json";
+import enLiuren from "@/locales/en/liuren.json";
 
 export const DEFAULT_LANG = "zh-CN";
 
@@ -47,6 +49,7 @@ void i18n
         dialogue: zhDialogue,
         characters: zhCharacters,
         consistency: zhConsistency,
+        liuren: zhLiuren,
       },
       en: {
         common: enCommon,
@@ -61,6 +64,7 @@ void i18n
         dialogue: enDialogue,
         characters: enCharacters,
         consistency: enConsistency,
+        liuren: enLiuren,
       },
     },
     fallbackLng: DEFAULT_LANG, // 英文缺失回退中文
