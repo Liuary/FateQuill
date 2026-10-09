@@ -1,0 +1,14 @@
+{
+  "title": "AI generation",
+  "start": "Start",
+  "stop": "Stop",
+  "retry": "Retry",
+  "userInstruction": "Instruction",
+  "guideSettings": "No model or API key configured — please configure in Settings",
+  "progress": "{{chars}} chars generated",
+  "statusIdle": "Idle",
+  "statusStreaming": "Generating…",
+  "statusDone": "Done",
+  "statusError": "Generation failed",
+  "statusAborted": "Stopped"
+}

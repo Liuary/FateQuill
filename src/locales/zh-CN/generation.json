@@ -1,0 +1,14 @@
+{
+  "title": "AI 生成",
+  "start": "开始生成",
+  "stop": "停止",
+  "retry": "重试",
+  "userInstruction": "本章要求",
+  "guideSettings": "尚未配置可用模型或 API Key，请前往「设置」完成配置",
+  "progress": "已生成 {{chars}} 字",
+  "statusIdle": "空闲",
+  "statusStreaming": "生成中…",
+  "statusDone": "已完成",
+  "statusError": "生成失败",
+  "statusAborted": "已停止"
+}

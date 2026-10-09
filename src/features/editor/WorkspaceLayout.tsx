@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Editor } from "@tiptap/react";
 import { useEditorStore } from "@/store/editorStore";
+import { GenerationPanel } from "@/features/generation/GenerationPanel";
 import { useNovels } from "./useNovels";
 import { OutlineTree } from "./OutlineTree";
 import { ChapterEditor } from "./ChapterEditor";
@@ -11,7 +12,7 @@ export interface WorkspaceLayoutProps {
   onEditorReady?: (editor: Editor | null) => void;
 }
 
-/** 工作区：左大纲树 + 右编辑器（grid 预留第三栏，供 stage-05 生成面板） */
+/** 工作区：左大纲树 + 中编辑器 + 右生成面板（grid 三栏，第三栏 stage-05 兑现） */
 export function WorkspaceLayout({ onEditorReady }: WorkspaceLayoutProps = {}) {
   const { novels, loading, createNovel } = useNovels();
   // 分项选择器订阅（避免全量解构导致保存状态翻转时整布局重渲染；REV-012①）
@@ -20,6 +21,7 @@ export function WorkspaceLayout({ onEditorReady }: WorkspaceLayoutProps = {}) {
   const setCurrentNovel = useEditorStore((s) => s.setCurrentNovel);
   const setCurrentChapter = useEditorStore((s) => s.setCurrentChapter);
   const setSaveStatus = useEditorStore((s) => s.setSaveStatus);
+  const [editor, setEditor] = useState<Editor | null>(null);
   // 指向「当前渲染的 ChapterEditor 的 flush」，其闭包绑定当前 chapterId/editor
   const flushRef = useRef<() => Promise<boolean>>(() => Promise.resolve(true));
 
@@ -48,7 +50,7 @@ export function WorkspaceLayout({ onEditorReady }: WorkspaceLayoutProps = {}) {
   if (novels.length === 0) return <NewNovelPanel onCreate={createNovel} />;
 
   return (
-    <div className="grid h-screen grid-cols-[280px_1fr_minmax(0,0fr)]">
+    <div className="grid h-screen grid-cols-[280px_1fr_minmax(0,320fr)]">
       <aside className="border-border overflow-auto border-r">
         <OutlineTree
           novelId={currentNovelId}
@@ -60,13 +62,18 @@ export function WorkspaceLayout({ onEditorReady }: WorkspaceLayoutProps = {}) {
       <section className="overflow-auto">
         <ChapterEditor
           chapterId={currentChapterId}
-          onEditorReady={onEditorReady}
+          onEditorReady={(e) => {
+            setEditor(e);
+            onEditorReady?.(e);
+          }}
           onFlushReady={(f) => {
             flushRef.current = f;
           }}
         />
       </section>
-      {/* 第三栏预留（stage-05 生成面板） */}
+      <aside className="border-border overflow-auto border-l">
+        <GenerationPanel novelId={currentNovelId} chapterId={currentChapterId} editor={editor} />
+      </aside>
     </div>
   );
 }

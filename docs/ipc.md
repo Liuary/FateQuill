@@ -170,3 +170,5 @@ try {
 
 - 前端**不 import** `@tauri-apps/plugin-sql`；SQL 语句与 Database 实例**不出现在前端**。
 - 前端数据访问**只经** `src/ipc/*` 封装的命令；组件层不直接 `invoke`。
+
+> **生成流程（stage-05）**：复用现有 IPC——SSE 中继 `http_stream`/`abort_stream`（§6）与仓储命令（§8）；**本阶段不新增 IPC 命令**。

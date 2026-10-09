@@ -8,6 +8,8 @@ import zhEditor from "@/locales/zh-CN/editor.json";
 import enEditor from "@/locales/en/editor.json";
 import zhSettings from "@/locales/zh-CN/settings.json";
 import enSettings from "@/locales/en/settings.json";
+import zhGeneration from "@/locales/zh-CN/generation.json";
+import enGeneration from "@/locales/en/generation.json";
 
 export const DEFAULT_LANG = "zh-CN";
 
@@ -16,8 +18,13 @@ void i18n
   .use(initReactI18next)
   .init({
     resources: {
-      "zh-CN": { common: zhCommon, editor: zhEditor, settings: zhSettings },
-      en: { common: enCommon, editor: enEditor, settings: enSettings },
+      "zh-CN": {
+        common: zhCommon,
+        editor: zhEditor,
+        settings: zhSettings,
+        generation: zhGeneration,
+      },
+      en: { common: enCommon, editor: enEditor, settings: enSettings, generation: enGeneration },
     },
     fallbackLng: DEFAULT_LANG, // 英文缺失回退中文
     supportedLngs: ["zh-CN", "en"],

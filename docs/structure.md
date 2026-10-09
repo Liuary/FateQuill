@@ -120,3 +120,11 @@ plan v3 技术约束中的目录集为 `src/{app,components,features,domain,orch
   - 内存/实例：切 **20 章**后 `.ProseMirror` 实例数 **= 1**、堆增幅 **< 20%**；**IME 口径单独**。
   - 操作手册与实测记录见 `src/features/editor/perf/README.md`（真实 WebView 实测为**人工协验项**）。
 - **`editorStore` 边界（单一事实源）**：`src/store/editorStore.ts` 仅持元状态（`currentNovelId`/`currentChapterId`/`saveStatus`/`lastSavedAt`），**不含文档正文**（无 `content`/`html`/`doc` 键）；边界由 `src/store/editorStore.boundary.test.ts` 守护。文档内容唯一事实源在 Tiptap 实例（见 §4）。
+
+## 12. 生成面板与 generationStore（stage-05）
+
+- **第三栏布局**：`WorkspaceLayout` 用 `grid-cols-[280px_1fr_minmax(0,320fr)]`（第三栏 = 生成面板）兑现 stage-04 预留。
+- **落点 `src/features/generation/`**：`GenerationPanel.tsx`（**仅状态**面板，无预览）、`useGeneration.ts`（模式 A 接线）、`useGenerationAvailability.ts`（可用性/Key 引导）、`resolve-provider.ts`（由 `model_config` 构造适配器）、`build-chapter-options.ts`（装配 `ChatOptions`）。
+- **`generationStore` 边界（`src/store/generationStore.ts`）**：元状态 `status('idle'|'streaming'|'done'|'error'|'aborted')` / `chapterId` / `requestId` / `progress.chars` / `error`，**不持正文**；与 `editorStore` **各自独立 `create()`，不互相 setState**（C-03）。失败/停止收敛态统一为 `idle` 且 `requestId=null`（REV-008）。
+- **模式 A 流式直插**：`generationStore` 订阅 stage-03 `subscribeChunks` → 节流 → stage-04 `EditorController.appendChunk`；编辑器流式期间**零 React 重渲染**（C-03 Profiler 断言）。
+- 生成流程**复用**现有 IPC（`http_stream`/`abort_stream` + 仓储命令），**不新增命令**（见 `docs/ipc.md`）。
