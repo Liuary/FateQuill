@@ -1632,7 +1632,7 @@
     },
     "v0.6.0-stage-12": {
       "name": "v0.6.0-stage-12",
-      "phase": "plan_pending",
+      "phase": "plan_review",
       "status": "planned",
       "deps": [
         "v0.3.0-stage-09",

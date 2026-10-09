@@ -2,14 +2,14 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-09T22:39:55.884Z",
-    "revision": 410
+    "updated": "2026-10-09T22:40:32.168Z",
+    "revision": 412
   },
   "pipeline": {
     "phase": "active",
     "current": {
-      "stage": "v0.5.0-stage-11",
-      "op": "op-008"
+      "stage": "v0.6.0-stage-12",
+      "op": ""
     },
     "retry": 0
   },
@@ -1608,9 +1608,9 @@
         },
         "op-008": {
           "title": "修复归档面板与 tier 表单生产不可达（BUG-001）(fix)",
-          "state": "pending",
+          "state": "done",
           "assignee": "openfeel-executor",
-          "attempts": 0,
+          "attempts": 1,
           "max_attempts": 3,
           "checkpoints": {
             "plan": "pending",
@@ -1632,13 +1632,18 @@
     },
     "v0.6.0-stage-12": {
       "name": "v0.6.0-stage-12",
-      "phase": "plan_pending",
+      "phase": "plan_review",
       "status": "planned",
       "deps": [
         "v0.3.0-stage-09",
         "v0.5.0-stage-11"
       ],
-      "ops": {}
+      "ops": {},
+      "stats": {
+        "start_time": "2026-10-09T22:40:32.167Z",
+        "end_time": "",
+        "duration_ms": 0
+      }
     }
   },
   "reviews": [],
@@ -5616,6 +5621,25 @@
         "stageName": "v0.5.0-stage-11",
         "from": "archiving",
         "to": "done"
+      }
+    },
+    {
+      "time": "2026-10-09T22:40:31.810Z",
+      "agent": "openfeel-executor",
+      "action": "attempt_pass",
+      "detail": {
+        "opId": "v0.5.0-stage-11.op-008",
+        "attempts": 1
+      }
+    },
+    {
+      "time": "2026-10-09T22:40:32.167Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.6.0-stage-12",
+        "from": "plan_pending",
+        "to": "plan_review"
       }
     }
   ]
