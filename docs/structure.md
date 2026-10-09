@@ -139,5 +139,6 @@ plan v3 技术约束中的目录集为 `src/{app,components,features,domain,orch
 
 - **加权评分（纯函数）**：`src/orchestration/review/aggregate.ts` —— `weightedTotal(results, weights) = Σ(score×weight)/Σweight`（**仅计已评审且权重 > 0 的维度**，归一至 0–100；缺维 / 零权不参与）；`DEFAULT_WEIGHTS` 四维平衡；用户可调权重**改变总分与排序**。
 - **版本池（`src/store/reviewStore.ts`）**：`ReviewVersion { id, label, content, round, results, totalScore }`；`addVersion` 按当前权重算总分，`setWeights` **重算全部版本总分**，`setActive` 选中待采纳版本；非最优版本**保留在池中可回看**；`clear()` 清空版本池与选中态（保留权重/开关）。
-- **审查 UI 落点**：`src/features/review/WeightConfig.tsx`（四维权重输入 → `setWeights`；展示按加权总分的版本排序）。
+- **审查 UI 落点**：`src/features/review/` —— `ReviewPanel.tsx`（四维分数/理由 + 改判 + 触发重写 + 自动重写开关 + 人工裁决提示）、`VersionList.tsx`（版本对比：加权总分降序 + 回看 + 采纳）、`useReview.ts`（编排：`runReview`/`rejudge`/`triggerRewrite`/`adopt`）、`WeightConfig.tsx`（四维权重输入 → `setWeights`；展示按加权总分的版本排序）。
+- **第三栏 tab（stage-06 T5）**：`WorkspaceLayout` 第三栏以 **tab** 承载「生成 / 设定卡 / **审查**」（`review` tab → `ReviewPanel`）；i18n 新增 `review` 命名空间（zh-CN / en 同步）。
 - **`EditorController` 命令面**：`appendChunk(text, options?)`（增量**追加**语义不变）/ `flushPending()` / **`replaceContent(html)`**（整章替换 = **单条撤销历史**，供审查采纳落地）/ `dispose()`。**`replaceContent` 是前端 `EditorController` 命令面，非 IPC 命令**——正文替换**不新增 IPC**（见 `docs/ipc.md`）。

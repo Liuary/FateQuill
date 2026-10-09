@@ -12,6 +12,8 @@ import zhGeneration from "@/locales/zh-CN/generation.json";
 import enGeneration from "@/locales/en/generation.json";
 import zhSettingCards from "@/locales/zh-CN/settingCards.json";
 import enSettingCards from "@/locales/en/settingCards.json";
+import zhReview from "@/locales/zh-CN/review.json";
+import enReview from "@/locales/en/review.json";
 
 export const DEFAULT_LANG = "zh-CN";
 
@@ -26,6 +28,7 @@ void i18n
         settings: zhSettings,
         generation: zhGeneration,
         settingCards: zhSettingCards,
+        review: zhReview,
       },
       en: {
         common: enCommon,
@@ -33,6 +36,7 @@ void i18n
         settings: enSettings,
         generation: enGeneration,
         settingCards: enSettingCards,
+        review: enReview,
       },
     },
     fallbackLng: DEFAULT_LANG, // 英文缺失回退中文

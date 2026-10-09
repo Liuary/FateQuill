@@ -1,0 +1,21 @@
+{
+  "tab": "审查",
+  "title": "章节审查",
+  "guideSettings": "请先在「设置」配置模型并写入 API Key",
+  "run": "运行评审",
+  "score": "分数",
+  "reasons": "理由",
+  "rejudge": "改判",
+  "rewrite": "触发重写",
+  "adopt": "采纳",
+  "versions": "版本对比",
+  "totalScore": "加权总分",
+  "autoRewrite": "自动重写",
+  "needsHuman": "已达自动重写上限或需人工裁决，请人工处理",
+  "complianceManual": "合规低分仅作提示，需人工裁决（不自动重写）",
+  "noVersions": "暂无评审版本",
+  "dimPlot": "剧情",
+  "dimWorldview": "世界观",
+  "dimCompliance": "合规",
+  "dimHumanity": "真人感"
+}

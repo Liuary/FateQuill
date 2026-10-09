@@ -1,0 +1,21 @@
+{
+  "tab": "Review",
+  "title": "Chapter review",
+  "guideSettings": "Configure a model and store an API key in Settings first",
+  "run": "Run review",
+  "score": "Score",
+  "reasons": "Reasons",
+  "rejudge": "Override",
+  "rewrite": "Trigger rewrite",
+  "adopt": "Adopt",
+  "versions": "Version compare",
+  "totalScore": "Weighted total",
+  "autoRewrite": "Auto rewrite",
+  "needsHuman": "Auto-rewrite limit reached or manual decision required",
+  "complianceManual": "Low compliance is advisory only — decide manually (no auto rewrite)",
+  "noVersions": "No reviewed versions yet",
+  "dimPlot": "Plot",
+  "dimWorldview": "Worldview",
+  "dimCompliance": "Compliance",
+  "dimHumanity": "Humanity"
+}

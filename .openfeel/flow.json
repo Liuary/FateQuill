@@ -2,14 +2,14 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-09T17:37:39.097Z",
-    "revision": 204
+    "updated": "2026-10-09T17:39:10.505Z",
+    "revision": 205
   },
   "pipeline": {
     "phase": "active",
     "current": {
       "stage": "v0.2.0-stage-06",
-      "op": "op-005"
+      "op": "op-006"
     },
     "retry": 0
   },
@@ -832,9 +832,9 @@
         },
         "op-005": {
           "title": "重写回路：反馈注入 / 上限 2 / 入池不自动替换（T4）",
-          "state": "pending",
+          "state": "done",
           "assignee": "openfeel-executor",
-          "attempts": 0,
+          "attempts": 1,
           "max_attempts": 3,
           "checkpoints": {
             "plan": "pending",
@@ -2927,6 +2927,15 @@
       "action": "attempt_pass",
       "detail": {
         "opId": "v0.2.0-stage-06.op-004",
+        "attempts": 1
+      }
+    },
+    {
+      "time": "2026-10-09T17:39:10.472Z",
+      "agent": "openfeel-executor",
+      "action": "attempt_pass",
+      "detail": {
+        "opId": "v0.2.0-stage-06.op-005",
         "attempts": 1
       }
     }

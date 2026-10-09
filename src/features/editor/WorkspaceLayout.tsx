@@ -4,6 +4,7 @@ import type { Editor } from "@tiptap/react";
 import { useEditorStore } from "@/store/editorStore";
 import { GenerationPanel } from "@/features/generation/GenerationPanel";
 import { SettingCardsPanel } from "@/features/setting-cards/SettingCardsPanel";
+import { ReviewPanel } from "@/features/review/ReviewPanel";
 import { useNovels } from "./useNovels";
 import { OutlineTree } from "./OutlineTree";
 import { ChapterEditor } from "./ChapterEditor";
@@ -24,7 +25,7 @@ export function WorkspaceLayout({ onEditorReady }: WorkspaceLayoutProps = {}) {
   const setCurrentChapter = useEditorStore((s) => s.setCurrentChapter);
   const setSaveStatus = useEditorStore((s) => s.setSaveStatus);
   const [editor, setEditor] = useState<Editor | null>(null);
-  const [tab, setTab] = useState<"generation" | "settingCards">("generation");
+  const [tab, setTab] = useState<"generation" | "settingCards" | "review">("generation");
   const { t } = useTranslation();
   // 指向「当前渲染的 ChapterEditor 的 flush」，其闭包绑定当前 chapterId/editor
   const flushRef = useRef<() => Promise<boolean>>(() => Promise.resolve(true));
@@ -91,11 +92,20 @@ export function WorkspaceLayout({ onEditorReady }: WorkspaceLayoutProps = {}) {
           >
             {t("settingCards:tab")}
           </button>
+          <button
+            type="button"
+            className={tab === "review" ? "font-medium" : "opacity-70"}
+            onClick={() => setTab("review")}
+          >
+            {t("review:tab")}
+          </button>
         </div>
         {tab === "generation" ? (
           <GenerationPanel novelId={currentNovelId} chapterId={currentChapterId} editor={editor} />
-        ) : (
+        ) : tab === "settingCards" ? (
           <SettingCardsPanel novelId={currentNovelId} />
+        ) : (
+          <ReviewPanel novelId={currentNovelId} chapterId={currentChapterId} editor={editor} />
         )}
       </aside>
     </div>
