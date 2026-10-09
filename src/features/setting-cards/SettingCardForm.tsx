@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,17 +8,32 @@ import type { SettingCardInput } from "./useSettingCards";
 
 export interface SettingCardFormProps {
   initial?: SettingCard;
+  /** 冲突处置「编辑设定卡」的定位（`length === 0` → 光标置于卡首） */
+  highlight?: { index: number; length: number };
   onSubmit: (input: SettingCardInput) => Promise<void>;
   onCancel: () => void;
 }
 
-/** 设定卡新增/编辑表单（title / content / kind） */
-export function SettingCardForm({ initial, onSubmit, onCancel }: SettingCardFormProps) {
+/** 设定卡新增/编辑表单（title / content / kind；支持按 `highlight` 选中片段） */
+export function SettingCardForm({ initial, highlight, onSubmit, onCancel }: SettingCardFormProps) {
   const { t } = useTranslation("settingCards");
   const [title, setTitle] = useState(initial?.title ?? "");
   const [content, setContent] = useState(initial?.content ?? "");
   const [kind, setKind] = useState(initial?.kind ?? "general");
   const [busy, setBusy] = useState(false);
+  const contentRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    // 冲突处置跳转定位：选中 `evidence` 命中区间；未命中（length 0）→ 光标回退卡首
+    const input = contentRef.current;
+    if (!input || !highlight) {
+      return;
+    }
+    const start = Math.max(0, Math.min(highlight.index, input.value.length));
+    const end = Math.min(start + highlight.length, input.value.length);
+    input.focus();
+    input.setSelectionRange(start, end);
+  }, [highlight]);
 
   // 受控枚举选项；若既有卡的 kind 不在值域内，**追加保留选项**（不丢历史值）
   const knownKinds = SETTING_CARD_KINDS as readonly string[];
@@ -60,7 +75,12 @@ export function SettingCardForm({ initial, onSubmit, onCancel }: SettingCardForm
         </label>
         <label className="flex flex-col gap-1 text-sm">
           {t("content")}
-          <Input value={content} onChange={(e) => setContent(e.target.value)} />
+          <Input
+            ref={contentRef}
+            data-testid="setting-card-content"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+          />
         </label>
         <div className="flex gap-2">
           <Button disabled={busy} onClick={submit}>

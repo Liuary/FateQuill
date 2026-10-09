@@ -141,6 +141,48 @@ pub async fn save_extracted_settings(
     db::setting_card::create_many(&pool(&app).await?, novel_id, &items).await
 }
 
+// ---------- ConflictRecord（stage-11 T4） ----------
+#[tauri::command]
+pub async fn save_conflict_record(
+    app: AppHandle,
+    novel_id: i64,
+    a_id: i64,
+    b_id: i64,
+    // `type` 为 Rust 关键字：参数名取 `conflict_type`（前端传 `conflictType`）；DB 列名仍为 `type`
+    conflict_type: String,
+    evidence: String,
+    severity: String,
+) -> Result<db::conflict::ConflictRecordRow, IpcError> {
+    db::conflict::save(&pool(&app).await?, novel_id, a_id, b_id, &conflict_type, &evidence, &severity)
+        .await
+}
+#[tauri::command]
+pub async fn list_conflict_records(
+    app: AppHandle,
+    novel_id: i64,
+) -> Result<Vec<db::conflict::ConflictRecordRow>, IpcError> {
+    db::conflict::list(&pool(&app).await?, novel_id).await
+}
+#[tauri::command]
+pub async fn get_conflict_record(
+    app: AppHandle,
+    id: i64,
+) -> Result<db::conflict::ConflictRecordRow, IpcError> {
+    db::conflict::get(&pool(&app).await?, id).await
+}
+#[tauri::command]
+pub async fn resolve_conflict_record(
+    app: AppHandle,
+    id: i64,
+    action: String,
+) -> Result<db::conflict::ConflictRecordRow, IpcError> {
+    db::conflict::resolve(&pool(&app).await?, id, &action).await
+}
+#[tauri::command]
+pub async fn delete_conflict_record(app: AppHandle, id: i64) -> Result<(), IpcError> {
+    db::conflict::delete(&pool(&app).await?, id).await
+}
+
 // ---------- Character ----------
 #[tauri::command]
 pub async fn list_characters(app: AppHandle) -> Result<Vec<db::character::CharacterRow>, IpcError> {

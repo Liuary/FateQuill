@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import i18n from "@/app/i18n";
+import { useConsistencyFocusStore } from "@/store/consistencyStore";
 import { SettingCardsPanel } from "./SettingCardsPanel";
 
 const { invokeMock } = vi.hoisted(() => ({ invokeMock: vi.fn() }));
@@ -20,6 +21,7 @@ let rows: unknown[];
 beforeEach(async () => {
   await i18n.changeLanguage("zh-CN");
   rows = [cardRow(1, "魔法体系", "以元素为本"), cardRow(2, "地理", "大陆")];
+  useConsistencyFocusStore.setState({ focus: null });
   invokeMock.mockReset();
   invokeMock.mockImplementation((cmd: string) => {
     if (cmd === "list_setting_cards") return Promise.resolve(rows);
@@ -75,5 +77,20 @@ describe("SettingCardsPanel", () => {
     await waitFor(() =>
       expect(invokeMock.mock.calls.some((c) => c[0] === "delete_setting_card")).toBe(true),
     );
+  });
+
+  it("冲突处置「编辑设定卡」：定位请求 → 自动打开目标卡并**选中 evidence 片段**（verbatim）", async () => {
+    useConsistencyFocusStore.setState({ focus: { cardId: 1, index: 2, length: 2 } });
+    render(<SettingCardsPanel novelId={1} />);
+
+    const input = (await waitFor(() =>
+      screen.getByTestId("setting-card-content"),
+    )) as HTMLInputElement;
+    await waitFor(() => expect(input.value).toBe("以元素为本"));
+    // 命中区间被选中（index 2 / length 2 → "元素"）
+    await waitFor(() => {
+      expect(input.selectionStart).toBe(2);
+      expect(input.selectionEnd).toBe(4);
+    });
   });
 });

@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import type { SettingCard } from "@/domain/models/setting-card";
+import { useConsistencyFocusStore } from "@/store/consistencyStore";
 import { SettingCardForm } from "./SettingCardForm";
 import { useSettingCards, type SettingCardInput } from "./useSettingCards";
 
@@ -16,6 +17,17 @@ export function SettingCardsPanel({ novelId }: SettingCardsPanelProps) {
   const { cards, create, update, remove } = useSettingCards(novelId);
   const [editing, setEditing] = useState<SettingCard | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const focus = useConsistencyFocusStore((s) => s.focus);
+  const clearFocus = useConsistencyFocusStore((s) => s.clearFocus);
+
+  // 外部定位请求（冲突处置「编辑设定卡」）**优先**进入该卡编辑态：
+  // 派生而非 effect（避免 effect 内同步 setState 的级联渲染）
+  const focusedCard = focus ? cards.find((card) => card.id === focus.cardId) : undefined;
+  const activeCard = showForm ? null : (focusedCard ?? editing);
+  const highlight =
+    focus && activeCard && focus.cardId === activeCard.id
+      ? { index: focus.index, length: focus.length }
+      : undefined;
 
   async function handleCreate(input: SettingCardInput) {
     await create(input);
@@ -23,6 +35,7 @@ export function SettingCardsPanel({ novelId }: SettingCardsPanelProps) {
   }
   async function handleUpdate(id: number, input: SettingCardInput) {
     await update(id, input);
+    clearFocus();
     setEditing(null);
   }
 
@@ -32,6 +45,7 @@ export function SettingCardsPanel({ novelId }: SettingCardsPanelProps) {
       <div className="flex justify-end">
         <Button
           onClick={() => {
+            clearFocus();
             setEditing(null);
             setShowForm(true);
           }}
@@ -41,11 +55,15 @@ export function SettingCardsPanel({ novelId }: SettingCardsPanelProps) {
       </div>
 
       {showForm && <SettingCardForm onSubmit={handleCreate} onCancel={() => setShowForm(false)} />}
-      {editing && (
+      {activeCard && (
         <SettingCardForm
-          initial={editing}
-          onSubmit={(input) => handleUpdate(editing.id, input)}
-          onCancel={() => setEditing(null)}
+          initial={activeCard}
+          highlight={highlight}
+          onSubmit={(input) => handleUpdate(activeCard.id, input)}
+          onCancel={() => {
+            clearFocus();
+            setEditing(null);
+          }}
         />
       )}
 
@@ -62,7 +80,14 @@ export function SettingCardsPanel({ novelId }: SettingCardsPanelProps) {
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => setEditing(c)}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    clearFocus();
+                    setEditing(c);
+                  }}
+                >
                   {t("edit")}
                 </Button>
                 <Button variant="destructive" size="sm" onClick={() => remove(c.id)}>

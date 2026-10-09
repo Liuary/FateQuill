@@ -10,6 +10,7 @@ pub mod model_config;
 pub mod review;
 pub mod material;
 pub mod skill;
+pub mod conflict;
 #[cfg(test)]
 pub mod seed;
 #[cfg(test)]

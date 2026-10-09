@@ -86,9 +86,9 @@
 
 ## 8. 数据访问命令与错误结构
 
-### 8.1 数据访问命令清单（46 个）
+### 8.1 数据访问命令清单（51 个）
 
-> 另见 §6 流式通道命令（`http_stream` / `abort_stream`）——故全仓实际注册命令共 48 条。
+> 另见 §6 流式通道命令（`http_stream` / `abort_stream`）——故全仓实际注册命令共 53 条。
 
 5 实体 × [list / get / create / update / delete]，命令名 snake_case：
 
@@ -157,6 +157,16 @@ skill 命令（skill_entry，共 4 个；stage-07 T5）：
 | 类别        | 命令                      | 参数（前端 camelCase）                                  | 语义                                                                              |
 | ----------- | ------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------- |
 | SettingCard | `save_extracted_settings` | `{ novelId, items: [{ title, content, kind, tier? }] }` | **事务内批创建**归档候选（全成功或全回滚）；`tier` 缺省 → `'short'`；返回创建的行 |
+
+一致性冲突记录命令（conflict_record，共 5 个；stage-11 T4/op-005）：
+
+| 类别           | 命令                      | 参数（前端 camelCase）                                    | 语义                                                                                                                      |
+| -------------- | ------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| ConflictRecord | `save_conflict_record`    | `{ novelId, aId, bId, conflictType, evidence, severity }` | 落库一条冲突记录（**跨会话可查**）；`conflictType` 对应 SQL 列 `type`（Rust 侧参数避关键字）                              |
+| ConflictRecord | `list_conflict_records`   | `{ novelId }`                                             | 按作品列出（**最新在前**）                                                                                                |
+| ConflictRecord | `get_conflict_record`     | `{ id }`                                                  | 按 id 获取                                                                                                                |
+| ConflictRecord | `resolve_conflict_record` | `{ id, action }`                                          | 处置留痕：`action ∈ change_tier\|edit\|false_positive\|ignore`；前两者 → `resolved`，后两者 → `ignored`；写 `resolved_at` |
+| ConflictRecord | `delete_conflict_record`  | `{ id }`                                                  | 删除冲突记录                                                                                                              |
 
 #### 素材与存储语义（stage-07 T4）
 
@@ -233,9 +243,9 @@ try {
 
 > **多声部对话（stage-10）**：**无 IPC 增量**——复用 §8.1 既有 **`Character` 五命令**（`list_characters` / `get_character` / `create_character` / `update_character` / `delete_character`）；对话条目为**会话内存**（`dialogueStore`），**合并落章**走既有 `chapter` 命令（`update_chapter`）。
 
-> **Stage-11（设定分级与一致性）**：`setting_card` 命令**签名扩展、命令数不变**（`create_setting_card` / `update_setting_card` 增 `tier?`；`list_setting_cards` 增可选 `tier` 过滤 + 返回 `tier`），并**新增归档批量落库命令 1 条**（`save_extracted_settings`，见 §8.1，**op-003**）；**冲突记录 5 命令随 op-005**（届时续 `46→51` / `48→53`）。
+> **Stage-11（设定分级与一致性）**：`setting_card` 命令**签名扩展、命令数不变**（`create_setting_card` / `update_setting_card` 增 `tier?`；`list_setting_cards` 增可选 `tier` 过滤 + 返回 `tier`），并**新增 6 命令**——归档批量落库 1（`save_extracted_settings`，**op-003**，见 §8.1）+ 冲突记录 5（`save` / `list` / `get` / `resolve` / `delete_conflict_record`，**op-005**，见 §8.1）。
 >
 > - **口径定义（消除歧义）**：
->   - **§8.1 口径（数据访问命令子集）** = 5 实体 × 5（25）+ ordering 3 + model_config 5 + keyring 3 + review_record 2 + material 3 + skill 4 + setting_card 扩展 1 = **46**；
->   - **全仓口径（含流式 2 条）** = §8.1 + §6 流式通道 2（`http_stream` / `abort_stream`）= **48**。
-> - **本 op（op-003）与实现同提交更新计数：§8.1 `45→46`；全仓 `47→48`**（op-001 占位声明兑现）。
+>   - **§8.1 口径（数据访问命令子集）** = 5 实体 × 5（25）+ ordering 3 + model_config 5 + keyring 3 + review_record 2 + material 3 + skill 4 + setting_card 扩展 1 + conflict_record 5 = **51**；
+>   - **全仓口径（含流式 2 条）** = §8.1 + §6 流式通道 2（`http_stream` / `abort_stream`）= **53**。
+> - **计数演进（与实现同提交）**：op-003 后 `45→46` / `47→48`；**op-005 后 `46→51` / `48→53`（本段已兑现）**。

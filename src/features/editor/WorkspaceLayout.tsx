@@ -8,6 +8,8 @@ import { ReviewPanel } from "@/features/review/ReviewPanel";
 import { ExplorationPanel } from "@/features/exploration/ExplorationPanel";
 import { DialoguePanel } from "@/features/dialogue/DialoguePanel";
 import { CharactersPanel } from "@/features/characters/CharactersPanel";
+import { ConsistencyPanel } from "@/features/consistency/ConsistencyPanel";
+import { useConsistencyFocusStore } from "@/store/consistencyStore";
 import { useNovels } from "./useNovels";
 import { OutlineTree } from "./OutlineTree";
 import { ChapterEditor } from "./ChapterEditor";
@@ -29,8 +31,23 @@ export function WorkspaceLayout({ onEditorReady }: WorkspaceLayoutProps = {}) {
   const setSaveStatus = useEditorStore((s) => s.setSaveStatus);
   const [editor, setEditor] = useState<Editor | null>(null);
   const [tab, setTab] = useState<
-    "generation" | "settingCards" | "review" | "exploration" | "dialogue" | "characters"
+    | "generation"
+    | "settingCards"
+    | "review"
+    | "exploration"
+    | "dialogue"
+    | "characters"
+    | "consistency"
   >("generation");
+  const focusCard = useConsistencyFocusStore((s) => s.focus);
+  const clearFocus = useConsistencyFocusStore((s) => s.clearFocus);
+  // 冲突处置「编辑设定卡」：定位请求存在时第三栏**优先**展示设定卡面板（派生，避免 effect 内 setState）
+  const activeTab = focusCard ? "settingCards" : tab;
+  /** 用户主动切 tab：清掉定位请求，回到常规 tab 状态 */
+  const selectTab = (next: typeof tab) => {
+    clearFocus();
+    setTab(next);
+  };
   const { t } = useTranslation();
   // 指向「当前渲染的 ChapterEditor 的 flush」，其闭包绑定当前 chapterId/editor
   const flushRef = useRef<() => Promise<boolean>>(() => Promise.resolve(true));
@@ -85,59 +102,68 @@ export function WorkspaceLayout({ onEditorReady }: WorkspaceLayoutProps = {}) {
         <div className="border-border flex gap-2 border-b p-1 text-sm">
           <button
             type="button"
-            className={tab === "generation" ? "font-medium" : "opacity-70"}
-            onClick={() => setTab("generation")}
+            className={activeTab === "generation" ? "font-medium" : "opacity-70"}
+            onClick={() => selectTab("generation")}
           >
             {t("generation:tabGeneration")}
           </button>
           <button
             type="button"
-            className={tab === "settingCards" ? "font-medium" : "opacity-70"}
-            onClick={() => setTab("settingCards")}
+            className={activeTab === "settingCards" ? "font-medium" : "opacity-70"}
+            onClick={() => selectTab("settingCards")}
           >
             {t("settingCards:tab")}
           </button>
           <button
             type="button"
-            className={tab === "review" ? "font-medium" : "opacity-70"}
-            onClick={() => setTab("review")}
+            className={activeTab === "review" ? "font-medium" : "opacity-70"}
+            onClick={() => selectTab("review")}
           >
             {t("review:tab")}
           </button>
           <button
             type="button"
-            className={tab === "exploration" ? "font-medium" : "opacity-70"}
-            onClick={() => setTab("exploration")}
+            className={activeTab === "exploration" ? "font-medium" : "opacity-70"}
+            onClick={() => selectTab("exploration")}
           >
             {t("exploration:tab")}
           </button>
           <button
             type="button"
-            className={tab === "dialogue" ? "font-medium" : "opacity-70"}
-            onClick={() => setTab("dialogue")}
+            className={activeTab === "dialogue" ? "font-medium" : "opacity-70"}
+            onClick={() => selectTab("dialogue")}
           >
             {t("dialogue:tab")}
           </button>
           <button
             type="button"
-            className={tab === "characters" ? "font-medium" : "opacity-70"}
-            onClick={() => setTab("characters")}
+            className={activeTab === "characters" ? "font-medium" : "opacity-70"}
+            onClick={() => selectTab("characters")}
           >
             {t("characters:tab")}
           </button>
+          <button
+            type="button"
+            className={activeTab === "consistency" ? "font-medium" : "opacity-70"}
+            onClick={() => selectTab("consistency")}
+          >
+            {t("consistency:tab")}
+          </button>
         </div>
-        {tab === "generation" ? (
+        {activeTab === "generation" ? (
           <GenerationPanel novelId={currentNovelId} chapterId={currentChapterId} editor={editor} />
-        ) : tab === "settingCards" ? (
+        ) : activeTab === "settingCards" ? (
           <SettingCardsPanel novelId={currentNovelId} />
-        ) : tab === "review" ? (
+        ) : activeTab === "review" ? (
           <ReviewPanel novelId={currentNovelId} chapterId={currentChapterId} editor={editor} />
-        ) : tab === "exploration" ? (
+        ) : activeTab === "exploration" ? (
           <ExplorationPanel novelId={currentNovelId} chapterId={currentChapterId} editor={editor} />
-        ) : tab === "dialogue" ? (
+        ) : activeTab === "dialogue" ? (
           <DialoguePanel novelId={currentNovelId} chapterId={currentChapterId} editor={editor} />
-        ) : (
+        ) : activeTab === "characters" ? (
           <CharactersPanel novelId={currentNovelId} />
+        ) : (
+          <ConsistencyPanel novelId={currentNovelId} />
         )}
       </aside>
     </div>
