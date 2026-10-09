@@ -185,3 +185,34 @@
 - **生成路径（对照 stage-05）**：`subscribeChunks` → 节流 → `EditorController.appendChunk`（模式 A 流式直插正文），触发自动保存；受装配预算（总 ≤8000）与裁剪序约束；生成可挂 skill 注入。
 - **对比要点**：同为 `provider.stream` 消费，但采样**只读产出到内存候选**、生成**直插正文并落库**；采样无预算、无审查、无保存；生成有预算、审查可选、自动保存。
 - **成本**：多模型创作 = N×生成 Token（N = 勾选模型数）；交叉判断 = 每候选 × 每模型 1 次评审 Token（≈2× 评审基线）；成本 ∝ 勾选模型数，用户可控。
+
+## [+] 多温度并行推演编排（同模型多温度 + per-provider clamp + 乱序归位 + 会话内存分支） (2026-10-10)
+
+- **定位**：兑现 M3「多温度并行推演产出可对比分支」——把「接下来怎么发展」从单点生成升级为可选分支，辅助创作者决策（stage-08）。
+- **分层落点**：契约与算法 `src/orchestration/exploration/`（provider 无关）；会话态 `src/store/explorationStore.ts`（独立 `create`）；UI `src/features/exploration/`；**无新增 IPC**（复用 stage-03 `http_stream`，各分支**非流式收口**聚合为走向卡后回传）。
+- **同模型多温度**：默认温度集 `{0.3, 0.7, 1.1}`（UI 可增删/调值；`localStorage['fatequill.exploration.temperatures']` 持久化）；**首版不对模型**（跨模型留待后续，兑现大计划「多模型并行」时可扩展）。
+- **per-provider 温度归一**：`PROVIDER_TEMPERATURE_RANGE`（openai-compatible `[0,2]` / anthropic `[0,1]` / 未知回退 `[0,2]`）；`clampTemperature` 返回 `{effective, clamped}`，**被 clamp 分支 UI 显式标注**（避免跨 provider 语义漂移；敏感度差异由用户裁决兜底）。
+- **编排**：`runExploration` 每分支经可注入 `streamFor` 取流并 `for await` 聚合全文 → `parseTurnCard`；结果槽位**按输入顺序预置**，与完成顺序无关（**乱序归位**）；单分支失败置 `error` 不抛穿；`concurrency` 默认 3（工作池 + 排队 + abort 全停）。
+- **输入装配复用 stage-05** `buildChapterPrompt`（预算/裁剪），**用户「走向意向」为 user 段**；输出 = 结构化**「走向卡」`{ summary, keyTurns, settingCardIds }`**（摘要式，非正文片段）。
+- **持久化方案 A（最小）**：分支 = **会话内存**，**不落库、不新增迁移 v5**（关闭即弃）；复看需求出现时再按 stage-02 迁移纪律补 v5。
+
+## [+] 克制收敛两层机制（生成期约束注入 + 产出期覆盖检查降权标注，终选权归用户） (2026-10-10)
+
+- **定位**：兑现 M3「推演分支须收敛到用户设定」，是 stage-08 核心机制（REV-001 high 定稿）——「克制」= 工具不替用户做主。
+- **① 生成期约束注入**：设定卡/关键约束经 stage-05 装配链并入 **system 段**（`build-exploration-options` 把设定卡 `title:content` 拼入 system prompt 的「用户设定约束：」块；`intent` 为 **user 段**）；复用 `PROMPT_BUDGET.system`（≤1000 字），**不新增预算维度**。
+- **② 产出期偏离标注（可判定判据）**：`converge`（纯函数）以**设定卡覆盖检查**为主判据——`coverage = |有效引用 ∩ 注入集| / |注入集|`（**无注入集时 coverage=1**：无约束可偏离）；含**存在性校验**（过滤幻觉引用，见 `kb/patterns.md`）。
+- **「削弱」= 排序降权 + UI 显式标注**：`weight = flagged ? coverage × 0.5 : coverage`；**不过滤、不删除**（保持可对比）；`BranchCard` 对偏离分支加 `opacity-60` 视觉弱化 + `flagged` 徽标 + 覆盖率/缺失/无效引用明细。
+- **「克制」语义**：发散度由**温度集**决定；收敛器**不强制改写**走向，仅降权/标注。
+- **终选权 = 用户裁决**：`converge` 仅写 `deviation`/`weight`，**不回写正文、不删分支**；`BranchCompare` 按 `weight` 降序展示（**仅辅助排序**），全链路无自动采纳/替换调用。
+- **可选贴合度**：`fitScores`（stage-06 评审管线**软依赖**，缺省不启用；提供且 `< threshold` 计入 `flagged`）。
+- **边界（REV-008③）**：`flagged && coverage=1 → 0.5` 与 `!flagged && coverage=0.5 → 0.5` 可能并列，v0.3 **接受**（偏离通常另有 invalid/fitScore 触发；并列按温度序稳定排序），不额外引入权重维度。
+- **已知局限（诚实声明）**：覆盖检查为**近似判据**（基于 `settingCardIds` 引用），不保证剧情级贴合；v0.3 以「辅助排序 + 人工裁决」为限，不追求自动终判。
+
+## [+] 采纳双路径安全网（主：新建下一章草稿无损；次：替换当前章 + 强制快照 + 单撤销） (2026-10-10)
+
+- **背景（REV-007 high）**：原「整章替换当前章（`replaceContent`）+ 版本池登记**仅可选**（默认不启用）」叠加 stage-04 `useAutoSave` **自动保存** → 误触采纳致当前章正文被覆盖并**持久化到 DB**，即便 `Ctrl+Z` 恢复编辑器，原正文在 DB 层**永久丢失**（undo 栈随文档销毁）。
+- **主路径「新建下一章草稿」（推荐、无损）**：`repositories.chapter.create`（`orderIndex = 卷内 max+1`，追加当前卷末），内容 = `renderTurnCardToHtml(card)`；**不改当前章 DB 行** → 自动保存不可能覆盖原正文；**不适用 `Ctrl+Z`**。与推演语义（「接下来怎么发展」）最贴合，且无新增迁移前提下**根除 DB 级丢失**。
+- **次路径「替换当前章」（危险）**：`EditorController.replaceContent(html)`（**单条撤销**，`Ctrl+Z` 语义归此）；执行前**强制** `reviewStore.addVersion({ label: "adopt-safety", content: 替换前正文 })`（把原「可选登记」改**必做**，使会话内始终有回滚点）+ `finally dispose()`。
+- **确认门**：两路径均经**内联二次确认**（`ConfirmInline`，明示后果）；未确认（取消）→ **零副作用**（无 create / 无 replace / 无入池）。
+- **丢弃**：`removeBranch`（会话容器移除；同步清 `collapsedIds` / `selectedBranchId`），**无残留** = 该分支不出现在 `explorationStore` 快照、无悬挂引用。
+- **残余窗口（REV-009 medium，非阻塞登记）**：次路径快照落在 `reviewStore.versions`（**会话内存级，无持久化**）——关闭应用后原正文快照不可恢复（与 stage-06 版本池既有同级设计）；已登记持久化路线（迁移 v5 `chapter_snapshot` 或 localStorage 兜底），不阻塞 stage-08。

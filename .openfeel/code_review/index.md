@@ -1,7 +1,19 @@
 # 代码审查索引（公共域）
 
 > 存放各阶段审查关闭后的核心结论摘要。详细审查过程与逐提交点内容见私域 `.openfeel/users/{username}/code_review/REV-{stage}.md`。
-> 状态统计：**pending 2 ｜ fixing 0 ｜ resolved 11 ｜ closed 89**（pending 2 = stage-04 REV-014 + stage-05 REV-009 人工协验 BLOCKED）
+> 状态统计：**pending 4 ｜ fixing 0 ｜ resolved 12 ｜ closed 96**（pending 4 = stage-04 REV-014 + stage-05 REV-009 人工协验 BLOCKED + stage-08 REV-009 快照会话内存级 / REV-010 abort 语义·新章落卷末）
+
+## v0.3.0-stage-08（多温度并行推演引擎，v0.3 首阶段）
+
+- **结论**：代码审查**通过**（2026-10-10 04:38），stage 已 test_passed → archiving。**0 Bug**。
+- **心得总结**：[`v0.3.0-stage-08.md`](v0.3.0-stage-08.md)
+- **审查对象**：
+  1. 阶段计划 `plan.md` v1（03:33 → 复审 v2 03:44 通过）：REV-001~006 **closed**（6 条，含克制收敛 / 推演契约 / 持久化方案 A / 并行工程四大定稿）。
+  2. 操作方案 `ops/op-001~006.md`（03:58 → 复审 04:12 通过）：REV-007（high, blocking，采纳数据安全网）**closed**；REV-008（low 杂项）**resolved**。
+  3. 执行产出代码审查（04:38）：REV-007/008 **代码级闭环**；登记 REV-009（medium）/ REV-010（low）**pending**（非阻塞）。
+- **closed 合计 7 条**（含 REV-007 high）；**resolved 1**（REV-008）；**pending 2**（REV-009/010 非阻塞登记）。
+- **关键**：多温度并行推演（同模型多温度 + per-provider clamp + 乱序归位 + 会话内存分支）；**克制收敛两层**（生成期约束注入 system + 产出期覆盖检查降权标注，终选权归用户）；**采纳双路径安全网**（主：新建下一章草稿无损 / 次：替换加强制快照 + 单撤销，REV-007）；走向卡存在性校验（防幻觉引用）；manualChunks 分包（入口 −60.8% raw / −61.0% gzip，REV-015 兑现）；「功能无入口」防范复验。实测 `cargo test` **52/52**、Vitest **353/353**（77 文件）、lint 0 errors、build 无 `>500kB` 警告；DoD **10/10**、门禁 **6/6**。
+- **遗留（非阻塞）**：REV-009（medium）次路径快照会话内存级；REV-010（low）abort 分支 `error="aborted"` / 主路径新章固定追加卷末；人工协验 3 项 **BLOCKED**（真实 Key 端到端 / 真机 WebView 推演 / v0.2 遗留 4 项）。建议随 stage-09 或人工协验批处理。
 
 ## v0.2.0-stage-07（去 AI 味研究子系统 v1，v0.2 收官）
 

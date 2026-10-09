@@ -208,3 +208,33 @@ resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } }
   预期命中**生产组件**（如 `MaterialLibrary.tsx` / `useMaterialLibrary.ts`），而非仅定义文件或测试。同理验证编排 hook 生产接线（`rg "runCrossJudge" ResearchWorkbench.tsx`）。
 - **关键认知**：**测试通过 ≠ 功能可用**——单测覆盖纯函数/契约时，若生产无调用方，缺陷会被全绿测试掩盖。凡「契约先行、UI 后接」的交付，收口须做**端到端可达性**核验（rg 生产调用 + 真实链路测试）。
 - **推广**：`--glob "!*.test.*"` 排除测试夹具，避免「仅测试引用」被误判为已接线（呼应「rg 验证口径区分逻辑/数据夹具」）。
+
+## [+] 温度 clamp + 并行乱序归位（索引槽位 + 取任务前查中止） (2026-10-10)
+
+- **per-provider clamp**：`PROVIDER_TEMPERATURE_RANGE: Record<string,[number,number]>` + `clampTemperature(t, providerId) → { effective, clamped }`（`clamped = effective !== temperature`；未知 provider 回退 `[0,2]`）；越界分支保留并 UI 显式标注 `effectiveTemperature`/`clamped`（**不隐藏、不丢弃**——温度语义差异由用户裁决兜底）。温度集持久化 `loadTemperatures`/`saveTemperatures`（缺失/损坏/非有限数 → 默认集；存储不可用静默忽略）。
+- **乱序归位**：并行任务**先按输入顺序预置结果槽位**（`results = branches.map(...)`），worker 以**索引**写回 `results[index]` → 输出顺序与完成顺序解耦（测试断言「完成顺序 b1,b2,b0 → 结果仍按输入 b0,b1,b2」）。
+- **工作池**：`workerCount = min(concurrency, N)`（默认 3）；worker **取下一分支前**检查 `signal.aborted` → 排队分支不再启动（未启动保持 `pending`）；`runBranch` 内流循环亦检查 aborted。
+- **通用**：并行聚合优先「**索引槽位归位**」而非依赖 `Promise.all` 的完成顺序；并发上限与中止信号须在**取任务之前**检查（否则排队项仍会启动）。
+
+## [+] 走向卡存在性校验（过滤 LLM 幻觉引用） (2026-10-10)
+
+- **场景**：走向卡 `settingCardIds` 由 LLM 产出，存在**幻觉引用风险**（引用不存在的设定卡 id）。
+- **模式**：`converge` 以 `existingSettingCardIds: Set<number>`（该作品全部设定卡 id）为基准做**存在性校验**——`validRefs = referenced.filter(existing.has)`；无效 id 记入 `deviation.invalidSettingCardIds` 且**触发 `flagged`**；分支的 `card.settingCardIds` 替换为**过滤后**列表。覆盖率仅计**有效引用** ∩ 注入集；另记 `missingSettingCardIds`（存在于作品集但**未注入本次生成**，**仅记录不单独 flagged**）。
+- **测试**：引用 `[1,99]`（99 不存在）→ 过滤 99 + `invalid=[99]` + `flagged`。
+- **通用**：LLM 产出的**外键/id 引用**须以「**实际存在集合**」校验，幻觉 id 视作**偏离信号**（而非直接信任）；过滤 + 记录 + 降权三件套，不静默吞掉。
+
+## [+] diff 精确集合差（跨分支差异标注，不做模糊对齐） (2026-10-10)
+
+- **场景**：多温度分支对比视图需标注「各分支**独有**的关键转折」。
+- **模式**：`diffBranches(branches)` 纯函数——先建 `Map<keyTurn, Set<branchId>>`（同分支内 `keyTurns` 以 `Set` **去重**，重复只计一次），再对每分支分类：`uniqueKeyTurns`（owners.size===1）/ `sharedKeyTurns`（size>1）。
+- **精确集合差、不做模糊对齐**（与 stage-07「引文精确交集」同一哲学）；无 `card`（pending/error）分支视其 `keyTurns` 为空（返回空数组，**不抛错**）。
+- **并排顺序**：`weight` 降序、并列（含未收敛无权重）→ **温度升序**（op-002 无权重场景即温度序）。
+- **通用**：跨集合的「独有/共现」聚合用**精确集合差**；模糊对齐（大小写/空白归一）会引入无声偏差，除非有明确需求否则不引入。
+
+## [+] manualChunks 分包（Vite 8 / rolldown，入口 −60%） (2026-10-10)
+
+- **场景**：生产入口 chunk 因 Tiptap/ProseMirror 体积固有持续膨胀（v0.2 实测 ~850KB / gzip ~268KB），Vite 报「chunk > 500KB」警告（REV-015 承诺 v0.3 评估）。
+- **模式**：`vite.config.ts` `build.rollupOptions.output.manualChunks: (id: string) => ...` 按模块 id 分组——`node_modules/@tiptap` | `node_modules/prosemirror` → `editor`；`src/orchestration` → `orchestration`；`src/features/research` → `research`；其余 `undefined`。
+- **兼容性**：**Vite 8（rolldown）兼容 `build.rollupOptions.output.manualChunks`**（实测生效，产出 3 个独立 chunk）；strict TS 下回调参数须显式标注 `(id: string)`。
+- **实测收益**：入口 **909.94 → 356.57 kB raw（−60.8%）**、gzip **285.97 → 111.45 kB（−61.0%）**，JS 总增量 ≈0（+0.02 kB），`>500 kB` 警告消除 → **判定采纳**（保留配置）。残余 `editor` chunk 466 kB 为后续可选优化（StarterKit → 精选扩展裁剪）。
+- **报告落点**：`docs/build-size-report.md`（基线 / 分包后 / 收益判定 / BLOCKED 跟踪）。

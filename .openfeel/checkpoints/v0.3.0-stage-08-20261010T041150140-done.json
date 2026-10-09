@@ -1059,7 +1059,7 @@
     },
     "v0.3.0-stage-08": {
       "name": "v0.3.0-stage-08",
-      "phase": "archiving",
+      "phase": "done",
       "status": "archiving",
       "deps": [
         "v0.1.0-stage-03",

@@ -2,8 +2,8 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-09T20:10:06.838Z",
-    "revision": 292
+    "updated": "2026-10-09T20:09:05.889Z",
+    "revision": 290
   },
   "pipeline": {
     "phase": "active",
@@ -1060,7 +1060,7 @@
     "v0.3.0-stage-08": {
       "name": "v0.3.0-stage-08",
       "phase": "archiving",
-      "status": "archiving",
+      "status": "testing",
       "deps": [
         "v0.1.0-stage-03",
         "v0.1.0-stage-05"
@@ -4028,28 +4028,6 @@
         "stageName": "v0.3.0-stage-08",
         "from": "test_pending",
         "to": "test_passed"
-      }
-    },
-    {
-      "time": "2026-10-09T20:09:06.228Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.3.0-stage-08",
-        "from": "test_passed",
-        "to": "archiving"
-      }
-    },
-    {
-      "time": "2026-10-09T20:10:06.838Z",
-      "agent": "openfeel-archiver",
-      "action": "archive_stage",
-      "detail": {
-        "stageName": "v0.3.0-stage-08",
-        "opsCount": 6,
-        "reviewsCount": 0,
-        "knowledgeCount": 0,
-        "archivePath": "C:\\Users\\Liuary\\Dev\\Mine\\AI\\Novel\\NovelCreate\\.openfeel\\log\\archive-v0.3.0-stage-08.md"
       }
     }
   ]

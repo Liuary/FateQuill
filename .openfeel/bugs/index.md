@@ -47,3 +47,9 @@
 - **1 个 medium Bug，已闭环**（修复 commit `9ad8693`，验收人 openfeel-feel-tester）；验收结论 **DoD 10/10 通过**（第 2 条经 BUG-001 修复转正；第 9 条工程交付达标、真机数据待回填）；门禁 `pnpm test` **64 文件 295/295**、lint/build、`cargo test` **52/52** 全绿。
 - [`research.md`](research.md)：**BUG-001** — 素材库缺读取侧 UI（浏览/检索/导出/删除），`export.ts` 三函数与 `material.remove` 生产零调用，DoD「可检索、可导出」界面不可达（与 REV-018 同类「功能无入口」根因）→ 新增 `MaterialLibrary` + `useMaterialLibrary`（复用既有纯函数/仓储，**不改 Rust/迁移/IPC**）+ i18n；feel-tester 独立复验转正。
 - 验收报告：`.openfeel/tmp/stage-07-acceptance.md`
+
+### v0.3.0-stage-08（多温度并行推演引擎）@openfeel-feel-tester
+
+- **无 Bug**。完整验收（6/6 门禁 + 10/10 DoD + 专项 3.1~3.6）未发现功能性缺陷或回归。实测门禁 `pnpm test` **353/353**（77 文件）、lint 0 errors、build 无 `>500kB` 警告、`cargo test` **52/52**、format:check 通过。
+- 非阻塞遗留（审查阶段已登记，**非本次新发现**，见 `.openfeel/users/Liuary/code_review/REV-v0.3.0-stage-08.md`）：REV-009（medium，次路径快照会话内存级）、REV-010（low，abort 语义 / 新章落卷末）。
+- 验收报告：`.openfeel/tmp/stage-08-acceptance.md`
