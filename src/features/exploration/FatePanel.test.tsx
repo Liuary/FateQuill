@@ -3,7 +3,6 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import i18n from "@/app/i18n";
 import { useExplorationStore } from "@/store/explorationStore";
 import { ExplorationPanel } from "./ExplorationPanel";
-import { ICHING_ENABLED_STORAGE_KEY } from "./useIChingEnabled";
 
 const { invokeMock } = vi.hoisted(() => ({ invokeMock: vi.fn() }));
 vi.mock("@tauri-apps/api/core", () => ({ invoke: invokeMock }));
@@ -29,8 +28,8 @@ const cfgRow = {
   updated_at: "u",
 };
 
-const setEnabled = (value: boolean) =>
-  localStorage.setItem(ICHING_ENABLED_STORAGE_KEY, String(value));
+/** 单例开关：经 store 动作（与开关 UI 同源；BUG-001 修复后不再依赖挂载前 localStorage） */
+const setEnabled = (value: boolean) => useExplorationStore.getState().setIChingEnabled(value);
 
 const writeArgs = () =>
   invokeMock.mock.calls.find((call) => call[0] === "create_setting_card")?.[1] as
@@ -56,6 +55,7 @@ beforeEach(async () => {
     selectedBranchId: null,
     collapsedIds: [],
     casting: null,
+    ichingEnabled: false, // 单例开关：逐个用例复位（缺省关闭）
   });
 });
 

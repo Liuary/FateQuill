@@ -27,8 +27,10 @@
 | op-004 | 角色宿命映射与写入设定卡 | T4 | op-003 |
 | op-005 | 接入推演引擎：hexagramGuide 可选注入与开关 | T5 | op-003、op-004 |
 | op-006 | 遗留登记与文档回写 | T6 | op-005 |
+| op-007 | 修复易经开关独立 hook 状态导致运行时切换不生效（BUG-001）(fix) | T4/T5（补） | op-005 |
 
 > 说明：`useIChingEnabled`（localStorage，缺省关闭）随 T4（op-004）引入（供 T4/T5 共用），op-005 补开关 UI 与装配注入；任务计划中 T1~T6 全覆盖（T6 为遗留登记 + 文档回写）。
+> **op-007 为测试修复闭环**（BUG-001 medium：开关独立 hook 状态 → 运行时切换不生效），`ichingEnabled` 提升为 `explorationStore` 单例（复用 store，零新增依赖），仅改 op-004/005 产出文件，修复后经 openfeel-feel-tester 复验。
 
 ### 定稿要点（摘要）
 - **数据**：`src/data/iching/`（TS 常量 + zod 校验），**公有领域经文**、**无新迁移**；校验规则 64/384/唯一/8×8/King Wen 1~64/二进制映射。

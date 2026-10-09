@@ -2,14 +2,14 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-09T20:32:13.743Z",
-    "revision": 311
+    "updated": "2026-10-09T20:45:08.357Z",
+    "revision": 321
   },
   "pipeline": {
     "phase": "active",
     "current": {
       "stage": "v0.3.0-stage-09",
-      "op": "op-005"
+      "op": "op-007"
     },
     "retry": 0
   },
@@ -1177,8 +1177,8 @@
     },
     "v0.3.0-stage-09": {
       "name": "v0.3.0-stage-09",
-      "phase": "exec_running",
-      "status": "planned",
+      "phase": "scheme_passed",
+      "status": "review_passed",
       "deps": [
         "v0.3.0-stage-08"
       ],
@@ -1253,9 +1253,9 @@
         },
         "op-005": {
           "title": "接入推演引擎：hexagramGuide 可选注入与开关（T5）",
-          "state": "pending",
+          "state": "done",
           "assignee": "openfeel-executor",
-          "attempts": 0,
+          "attempts": 1,
           "max_attempts": 3,
           "checkpoints": {
             "plan": "pending",
@@ -1270,6 +1270,23 @@
         },
         "op-006": {
           "title": "遗留登记与文档回写（T6）",
+          "state": "done",
+          "assignee": "openfeel-executor",
+          "attempts": 1,
+          "max_attempts": 3,
+          "checkpoints": {
+            "plan": "pending",
+            "scheme": "pending",
+            "exec": {
+              "attempts": 0,
+              "self": "pending"
+            },
+            "review": "pending",
+            "test": "pending"
+          }
+        },
+        "op-007": {
+          "title": "修复易经开关独立 hook 状态导致运行时切换不生效（BUG-001）(fix)",
           "state": "pending",
           "assignee": "openfeel-executor",
           "attempts": 0,
@@ -4338,6 +4355,103 @@
       "detail": {
         "opId": "v0.3.0-stage-09.op-004",
         "attempts": 1
+      }
+    },
+    {
+      "time": "2026-10-09T20:34:46.448Z",
+      "agent": "openfeel-executor",
+      "action": "attempt_pass",
+      "detail": {
+        "opId": "v0.3.0-stage-09.op-005",
+        "attempts": 1
+      }
+    },
+    {
+      "time": "2026-10-09T20:36:41.020Z",
+      "agent": "openfeel-executor",
+      "action": "attempt_pass",
+      "detail": {
+        "opId": "v0.3.0-stage-09.op-006",
+        "attempts": 1
+      }
+    },
+    {
+      "time": "2026-10-09T20:36:41.390Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.3.0-stage-09",
+        "from": "exec_running",
+        "to": "review_pending"
+      }
+    },
+    {
+      "time": "2026-10-09T20:40:27.719Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.3.0-stage-09",
+        "from": "review_pending",
+        "to": "review_passed"
+      }
+    },
+    {
+      "time": "2026-10-09T20:40:28.041Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.3.0-stage-09",
+        "from": "review_passed",
+        "to": "test_pending"
+      }
+    },
+    {
+      "time": "2026-10-09T20:43:42.070Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.3.0-stage-09",
+        "from": "test_pending",
+        "to": "test_failed"
+      }
+    },
+    {
+      "time": "2026-10-09T20:43:42.392Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.3.0-stage-09",
+        "from": "test_failed",
+        "to": "scheme_pending"
+      }
+    },
+    {
+      "time": "2026-10-09T20:43:56.275Z",
+      "agent": "cli",
+      "action": "register_op",
+      "detail": {
+        "stageName": "v0.3.0-stage-09",
+        "opId": "op-007"
+      }
+    },
+    {
+      "time": "2026-10-09T20:44:40.478Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.3.0-stage-09",
+        "from": "scheme_pending",
+        "to": "scheme_review"
+      }
+    },
+    {
+      "time": "2026-10-09T20:45:08.357Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.3.0-stage-09",
+        "from": "scheme_review",
+        "to": "scheme_passed"
       }
     }
   ]

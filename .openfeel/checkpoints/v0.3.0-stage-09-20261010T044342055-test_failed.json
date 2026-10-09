@@ -2,14 +2,14 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-09T20:45:08.690Z",
-    "revision": 322
+    "updated": "2026-10-09T20:40:28.041Z",
+    "revision": 316
   },
   "pipeline": {
     "phase": "active",
     "current": {
       "stage": "v0.3.0-stage-09",
-      "op": "op-007"
+      "op": ""
     },
     "retry": 0
   },
@@ -1177,7 +1177,7 @@
     },
     "v0.3.0-stage-09": {
       "name": "v0.3.0-stage-09",
-      "phase": "exec_running",
+      "phase": "test_failed",
       "status": "review_passed",
       "deps": [
         "v0.3.0-stage-08"
@@ -1273,23 +1273,6 @@
           "state": "done",
           "assignee": "openfeel-executor",
           "attempts": 1,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        },
-        "op-007": {
-          "title": "修复易经开关独立 hook 状态导致运行时切换不生效（BUG-001）(fix)",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
           "max_attempts": 3,
           "checkpoints": {
             "plan": "pending",
@@ -4403,65 +4386,6 @@
         "stageName": "v0.3.0-stage-09",
         "from": "review_passed",
         "to": "test_pending"
-      }
-    },
-    {
-      "time": "2026-10-09T20:43:42.070Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.3.0-stage-09",
-        "from": "test_pending",
-        "to": "test_failed"
-      }
-    },
-    {
-      "time": "2026-10-09T20:43:42.392Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.3.0-stage-09",
-        "from": "test_failed",
-        "to": "scheme_pending"
-      }
-    },
-    {
-      "time": "2026-10-09T20:43:56.275Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.3.0-stage-09",
-        "opId": "op-007"
-      }
-    },
-    {
-      "time": "2026-10-09T20:44:40.478Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.3.0-stage-09",
-        "from": "scheme_pending",
-        "to": "scheme_review"
-      }
-    },
-    {
-      "time": "2026-10-09T20:45:08.357Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.3.0-stage-09",
-        "from": "scheme_review",
-        "to": "scheme_passed"
-      }
-    },
-    {
-      "time": "2026-10-09T20:45:08.690Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.3.0-stage-09",
-        "from": "scheme_passed",
-        "to": "exec_running"
       }
     }
   ]

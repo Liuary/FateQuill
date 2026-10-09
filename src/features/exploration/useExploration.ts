@@ -22,7 +22,6 @@ import { buildGuideCard, renderGuideText } from "@/orchestration/iching";
 import { resolveProviderForConfig } from "@/features/generation/resolve-provider";
 import { useExplorationStore } from "@/store/explorationStore";
 import { buildExplorationOptions } from "./build-exploration-options";
-import { useIChingEnabled } from "./useIChingEnabled";
 
 /** 推演编排 */
 export function useExploration(opts: {
@@ -38,7 +37,8 @@ export function useExploration(opts: {
   /** 启动前显示的成本预估（分支数 ×（输出上限 + 输入估算）） */
   const cost = useMemo(() => estimateCost(temperatures.length), [temperatures.length]);
 
-  const { enabled: ichingEnabled } = useIChingEnabled();
+  // 易经开关：取自 **store 单例**（与开关 UI 同源）→ 运行时切换即时生效（BUG-001）
+  const ichingEnabled = useExplorationStore((s) => s.ichingEnabled);
   const casting = useExplorationStore((s) => s.casting);
 
   /**
@@ -196,5 +196,5 @@ export function useExploration(opts: {
     abortRef.current?.abort();
   }, []);
 
-  return { run, retryBranch, abort, concurrency, setConcurrency, cost };
+  return { run, retryBranch, abort, concurrency, setConcurrency, cost, ichingEnabled };
 }

@@ -34,6 +34,29 @@ vi.mock("@/orchestration/iching", async (importOriginal) => {
   };
 });
 
+const SAMPLE_CASTING = {
+  benGua: {
+    kingWen: 1,
+    name: "乾",
+    binary: "111111",
+    upper: "乾",
+    lower: "乾",
+    judgment: "元亨利贞。",
+    lines: ["初九：潜龙勿用。", "b", "c", "d", "e", "f"],
+  },
+  zhiGua: {
+    kingWen: 2,
+    name: "坤",
+    binary: "000000",
+    upper: "坤",
+    lower: "坤",
+    judgment: "元亨。",
+    lines: ["a", "b", "c", "d", "e", "f"],
+  },
+  changingLines: [0],
+  reading: { changingCount: 1, source: "ben" as const, lineIndices: [0] },
+};
+
 const cfgRow = {
   id: 1,
   provider: "anthropic",
@@ -67,6 +90,7 @@ beforeEach(async () => {
     selectedBranchId: null,
     collapsedIds: [],
     casting: null,
+    ichingEnabled: false, // 单例开关：逐个用例显式复位（缺省关闭）
   });
   hoisted.guideCalls.length = 0;
   localStorage.clear(); // 易经开关缺省关闭
@@ -141,33 +165,34 @@ describe("ExplorationPanel（多温度并行推演）", () => {
 
   it("开启 + 已起卦 → 卦象引导被构建（非零调用）", async () => {
     useExplorationStore.setState({
-      casting: {
-        benGua: {
-          kingWen: 1,
-          name: "乾",
-          binary: "111111",
-          upper: "乾",
-          lower: "乾",
-          judgment: "元亨利贞。",
-          lines: ["初九：潜龙勿用。", "b", "c", "d", "e", "f"],
-        },
-        zhiGua: {
-          kingWen: 2,
-          name: "坤",
-          binary: "000000",
-          upper: "坤",
-          lower: "坤",
-          judgment: "元亨。",
-          lines: ["a", "b", "c", "d", "e", "f"],
-        },
-        changingLines: [0],
-        reading: { changingCount: 1, source: "ben", lineIndices: [0] },
-      },
+      ichingEnabled: true, // 单例开关：经 store 动作（运行时语义）
+      casting: SAMPLE_CASTING,
     });
-    localStorage.setItem("fatequill.iching.enabled", "true");
     render(<ExplorationPanel novelId={1} chapterId={null} />);
 
     await waitFor(() => expect(hoisted.guideCalls).toContain("buildGuideCard"));
     expect(hoisted.guideCalls).toContain("renderGuideText");
+  });
+
+  it("运行时切换开关即时生效（BUG-001）：开启非零调用 / 关闭零调用", async () => {
+    useExplorationStore.setState({ casting: SAMPLE_CASTING }); // 已起卦，开关仍关闭
+    render(<ExplorationPanel novelId={1} chapterId={null} />);
+    await waitFor(() => expect(screen.getByText("多温度并行推演")).toBeInTheDocument());
+    expect(hoisted.guideCalls).toEqual([]); // 关闭 → 零调用
+
+    // 运行时点击开启（无需重挂载）→ 引导被构建
+    fireEvent.click(screen.getByTestId("iching-toggle"));
+    await waitFor(() => expect(hoisted.guideCalls).toContain("buildGuideCard"));
+    expect(hoisted.guideCalls).toContain("renderGuideText");
+    expect(localStorage.getItem("fatequill.iching.enabled")).toBe("true"); // 持久化
+
+    // 运行时点击关闭 → 零调用
+    hoisted.guideCalls.length = 0;
+    fireEvent.click(screen.getByTestId("iching-toggle"));
+    await waitFor(() =>
+      expect((screen.getByTestId("iching-toggle") as HTMLInputElement).checked).toBe(false),
+    );
+    expect(hoisted.guideCalls).toEqual([]);
+    expect(localStorage.getItem("fatequill.iching.enabled")).toBe("false");
   });
 });
