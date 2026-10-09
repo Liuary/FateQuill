@@ -9,6 +9,7 @@ import { ExplorationPanel } from "@/features/exploration/ExplorationPanel";
 import { DialoguePanel } from "@/features/dialogue/DialoguePanel";
 import { CharactersPanel } from "@/features/characters/CharactersPanel";
 import { ConsistencyPanel } from "@/features/consistency/ConsistencyPanel";
+import { ArchivePanel } from "@/features/consistency/ArchivePanel";
 import { useConsistencyFocusStore } from "@/store/consistencyStore";
 import { useNovels } from "./useNovels";
 import { OutlineTree } from "./OutlineTree";
@@ -163,7 +164,11 @@ export function WorkspaceLayout({ onEditorReady }: WorkspaceLayoutProps = {}) {
         ) : activeTab === "characters" ? (
           <CharactersPanel novelId={currentNovelId} />
         ) : (
-          <ConsistencyPanel novelId={currentNovelId} />
+          // 「一致性」tab **双区**：归档区（上）+ 冲突区（下）——两面板均生产可达（BUG-001 修复）
+          <div data-testid="consistency-tab" className="flex flex-col">
+            <ArchivePanel novelId={currentNovelId} chapterId={currentChapterId} />
+            <ConsistencyPanel novelId={currentNovelId} />
+          </div>
         )}
       </aside>
     </div>

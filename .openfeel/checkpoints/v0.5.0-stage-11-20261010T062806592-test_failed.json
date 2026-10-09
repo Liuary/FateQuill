@@ -2,14 +2,14 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-09T22:29:16.740Z",
-    "revision": 402
+    "updated": "2026-10-09T22:24:02.151Z",
+    "revision": 397
   },
   "pipeline": {
     "phase": "active",
     "current": {
       "stage": "v0.5.0-stage-11",
-      "op": "op-008"
+      "op": ""
     },
     "retry": 0
   },
@@ -1480,7 +1480,7 @@
     },
     "v0.5.0-stage-11": {
       "name": "v0.5.0-stage-11",
-      "phase": "scheme_passed",
+      "phase": "test_failed",
       "status": "review_passed",
       "deps": [
         "v0.1.0-stage-05",
@@ -1594,23 +1594,6 @@
           "state": "done",
           "assignee": "openfeel-executor",
           "attempts": 1,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        },
-        "op-008": {
-          "title": "修复归档面板与 tier 表单生产不可达（BUG-001）(fix)",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
           "max_attempts": 3,
           "checkpoints": {
             "plan": "pending",
@@ -5485,55 +5468,6 @@
         "stageName": "v0.5.0-stage-11",
         "from": "review_passed",
         "to": "test_pending"
-      }
-    },
-    {
-      "time": "2026-10-09T22:28:06.608Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.5.0-stage-11",
-        "from": "test_pending",
-        "to": "test_failed"
-      }
-    },
-    {
-      "time": "2026-10-09T22:28:06.935Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.5.0-stage-11",
-        "from": "test_failed",
-        "to": "scheme_pending"
-      }
-    },
-    {
-      "time": "2026-10-09T22:28:25.516Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.5.0-stage-11",
-        "opId": "op-008"
-      }
-    },
-    {
-      "time": "2026-10-09T22:28:48.127Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.5.0-stage-11",
-        "from": "scheme_pending",
-        "to": "scheme_review"
-      }
-    },
-    {
-      "time": "2026-10-09T22:29:16.740Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.5.0-stage-11",
-        "from": "scheme_review",
-        "to": "scheme_passed"
       }
     }
   ]

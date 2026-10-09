@@ -31,6 +31,7 @@
 | op-005 | 冲突面板与处置 + conflict_record 落库 | T4 | op-004 |
 | op-006 | 设定注入生成与暗线保密 | T5 | op-004 |
 | op-007 | 遗留登记收尾与 manual 文档 | T6（收尾） | op-002~op-006 |
+| op-008 | 修复归档面板与 tier 表单生产不可达（BUG-001）(fix) | T1/T2（补） | op-003、op-005 |
 
 > T1~T6 全覆盖（`plan.md` 任务表为 T1~T6）：T6 拆为**首 op（chore，op-001）** + **末 op（文档终稿，op-007）**（模块建立后方可写详文，遵「未建立模块不提前占位」）。
 
@@ -55,3 +56,4 @@ op 拆分（首 op 含遗留登记，标 `(chore)`）；迁移 v5 设计；IPC �
 - **文档回写**：`docs/structure.md` §18、`docs/ipc.md`（声明+计数+明细）、`docs/review-rubric.md` §4.2（一致性 vs 世界观边界）、`manual/index.md` + `manual/features/consistency.md` + `manual/orchestration/engine.md`。
 - **边界纪律**：零新增依赖、**v5 不含**版本池快照持久化（REV-009 独立跟踪）、stage-10 契约仅可选扩展（不回改）；`\|` 自检已排除（统一 `rg -n -e A -e B`）。
 - **待拍板落点**：误报率阈值 X（op-004 以 `MISREPORT_THRESHOLD=0.2` 占位）；注入开关语义（op-006 安全优先决策：生产恒排 `dark`）。
+- **修复闭环（op-008）**：BUG-001（**high**）——`ArchivePanel` 未接入 UI（`runExtraction`/`save_extracted_settings` 生产零调用）+ `SettingCardForm` 无 `tier`；修复=`WorkspaceLayout` consistency tab 双区挂载 `ArchivePanel`+`ConsistencyPanel`，`SettingCardForm`/`useSettingCards` 增 `tier` 四级下拉并贯通，补「生产挂载/落库非零 + 归档端到端 + 表单 tier」断言，由 feel-tester 回归复验（high 级）。

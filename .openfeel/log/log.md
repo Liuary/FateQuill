@@ -2,6 +2,8 @@
 
 | 文件 | 用户 | 描述 |
 |------|------|------|
+| [2026-10-10-Liuary-067.md](2026/10/10/2026-10-10-Liuary-067.md) | openfeel-feel-tester | v0.5.0-stage-11 测试验收：提交 BUG-001（consistency，high，归档面板未接入 UI，DoD 1 不满足），阶段结论不通过 |
+| [2026-10-10-Liuary-066.md](2026/10/10/2026-10-10-Liuary-066.md) | Liuary | v0.5.0-stage-11.op-007 执行通过 |
 | [2026-10-10-Liuary-065.md](2026/10/10/2026-10-10-Liuary-065.md) | Liuary | v0.5.0-stage-11.op-006 执行通过 |
 | [2026-10-10-Liuary-064.md](2026/10/10/2026-10-10-Liuary-064.md) | Liuary | v0.5.0-stage-11.op-005 执行通过 |
 | [2026-10-10-Liuary-063.md](2026/10/10/2026-10-10-Liuary-063.md) | Liuary | v0.5.0-stage-11.op-004 执行通过 |
@@ -30,5 +32,3 @@
 | [2026-10-10-Liuary-040.md](2026/10/10/2026-10-10-Liuary-040.md) | Liuary | 阶段 v0.3.0-stage-08 完成 |
 | [2026-10-10-Liuary-039.md](2026/10/10/2026-10-10-Liuary-039.md) | openfeel-archiver | v0.3.0-stage-08 归档完成（知识库/模块手册/公共索引/Bug 索引） |
 | [2026-10-10-Liuary-038.md](2026/10/10/2026-10-10-Liuary-038.md) | Liuary | v0.3.0-stage-08.op-006 执行通过 |
-| [2026-10-10-Liuary-037.md](2026/10/10/2026-10-10-Liuary-037.md) | Liuary | v0.3.0-stage-08.op-005 执行通过 |
-| [2026-10-10-Liuary-036.md](2026/10/10/2026-10-10-Liuary-036.md) | Liuary | v0.3.0-stage-08.op-004 执行通过 |

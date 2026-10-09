@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
-import type { SettingCard } from "@/domain/models/setting-card";
+import type { SettingCard, SettingCardTier } from "@/domain/models/setting-card";
 import { repositories } from "@/ipc/repositories";
 
 export interface SettingCardInput {
   title: string;
   content: string;
   kind: string;
+  /** 叙事分级（四级；与 `kind` 正交）——创建/编辑均贯通传递 */
+  tier: SettingCardTier;
 }
 
 async function loadCards(novelId: number | null): Promise<SettingCard[]> {

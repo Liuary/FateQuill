@@ -3,7 +3,13 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { SETTING_CARD_KINDS, type SettingCard } from "@/domain/models/setting-card";
+import {
+  DEFAULT_SETTING_CARD_TIER,
+  SETTING_CARD_KINDS,
+  SETTING_CARD_TIERS,
+  type SettingCard,
+  type SettingCardTier,
+} from "@/domain/models/setting-card";
 import type { SettingCardInput } from "./useSettingCards";
 
 export interface SettingCardFormProps {
@@ -14,12 +20,14 @@ export interface SettingCardFormProps {
   onCancel: () => void;
 }
 
-/** 设定卡新增/编辑表单（title / content / kind；支持按 `highlight` 选中片段） */
+/** 设定卡新增/编辑表单（title / kind / tier / content；支持按 `highlight` 选中片段） */
 export function SettingCardForm({ initial, highlight, onSubmit, onCancel }: SettingCardFormProps) {
   const { t } = useTranslation("settingCards");
   const [title, setTitle] = useState(initial?.title ?? "");
   const [content, setContent] = useState(initial?.content ?? "");
   const [kind, setKind] = useState(initial?.kind ?? "general");
+  // 分级（四级，与 `kind` 正交）：新增 → 缺省 conservative `short`；编辑 → 既有值
+  const [tier, setTier] = useState<SettingCardTier>(initial?.tier ?? DEFAULT_SETTING_CARD_TIER);
   const [busy, setBusy] = useState(false);
   const contentRef = useRef<HTMLInputElement>(null);
 
@@ -46,7 +54,7 @@ export function SettingCardForm({ initial, highlight, onSubmit, onCancel }: Sett
     if (!title.trim()) return;
     setBusy(true);
     try {
-      await onSubmit({ title, content, kind });
+      await onSubmit({ title, content, kind, tier });
     } finally {
       setBusy(false);
     }
@@ -69,6 +77,21 @@ export function SettingCardForm({ initial, highlight, onSubmit, onCancel }: Sett
             {kindOptions.map((value) => (
               <option key={value} value={value}>
                 {kindLabel(value)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="flex flex-col gap-1 text-sm">
+          {t("tier")}
+          <select
+            data-testid="setting-card-tier"
+            className="border-input rounded border p-1 text-sm"
+            value={tier}
+            onChange={(e) => setTier(e.target.value as SettingCardTier)}
+          >
+            {SETTING_CARD_TIERS.map((value) => (
+              <option key={value} value={value}>
+                {t(`tiers.${value}`)}
               </option>
             ))}
           </select>

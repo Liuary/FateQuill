@@ -70,6 +70,48 @@ describe("SettingCardsPanel", () => {
     );
   });
 
+  it("新增时选分级 → `create_setting_card` **含 `tier`**（四级贯通，BUG-001 修复）", async () => {
+    render(<SettingCardsPanel novelId={1} />);
+    await waitFor(() => expect(screen.getByText("魔法体系")).toBeInTheDocument());
+
+    // 列表展示分级标签（缺省 `short`）
+    expect(screen.getAllByText(/近期（近章有效）/).length).toBeGreaterThan(0);
+
+    fireEvent.click(screen.getByText("新增设定卡"));
+    const inputs = screen.getAllByRole("textbox");
+    fireEvent.change(inputs[0], { target: { value: "暗线身份" } });
+    fireEvent.change(screen.getByTestId("setting-card-tier"), { target: { value: "dark" } });
+    fireEvent.click(screen.getByText("保存"));
+
+    await waitFor(() =>
+      expect(invokeMock.mock.calls.some((c) => c[0] === "create_setting_card")).toBe(true),
+    );
+    const args = invokeMock.mock.calls.find((c) => c[0] === "create_setting_card")?.[1] as Record<
+      string,
+      unknown
+    >;
+    expect(args.tier).toBe("dark");
+  });
+
+  it("编辑时改分级 → `update_setting_card` **含 `tier`**", async () => {
+    render(<SettingCardsPanel novelId={1} />);
+    await waitFor(() => expect(screen.getByText("魔法体系")).toBeInTheDocument());
+
+    fireEvent.click(screen.getAllByText("编辑")[0]);
+    await waitFor(() => expect(screen.getByText("保存")).toBeInTheDocument());
+    fireEvent.change(screen.getByTestId("setting-card-tier"), { target: { value: "main" } });
+    fireEvent.click(screen.getByText("保存"));
+
+    await waitFor(() =>
+      expect(invokeMock.mock.calls.some((c) => c[0] === "update_setting_card")).toBe(true),
+    );
+    const args = invokeMock.mock.calls.find((c) => c[0] === "update_setting_card")?.[1] as Record<
+      string,
+      unknown
+    >;
+    expect(args.tier).toBe("main");
+  });
+
   it("删除 → delete_setting_card", async () => {
     render(<SettingCardsPanel novelId={1} />);
     await waitFor(() => expect(screen.getByText("魔法体系")).toBeInTheDocument());

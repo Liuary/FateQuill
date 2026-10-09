@@ -76,7 +76,7 @@ export function SettingCardsPanel({ novelId }: SettingCardsPanelProps) {
               <div>
                 <div className="font-medium">{c.title}</div>
                 <div className="text-muted-foreground">
-                  {c.kind} · {c.content}
+                  {c.kind} · {t(`tiers.${c.tier}`)} · {c.content}
                 </div>
               </div>
               <div className="flex gap-2">

@@ -44,6 +44,28 @@ describe("WorkspaceLayout", () => {
     await waitFor(() => expect(document.querySelector(".ProseMirror")).toBeTruthy());
   });
 
+  it("「一致性」tab **双区挂载**：归档面板 + 冲突面板（BUG-001 防复发）", async () => {
+    invokeMock.mockImplementation((cmd: string) => {
+      if (cmd === "list_novels") return Promise.resolve(novels);
+      if (cmd === "list_volumes") return Promise.resolve([]);
+      if (cmd === "list_chapters") return Promise.resolve([]);
+      if (cmd === "list_model_configs") return Promise.resolve([]);
+      if (cmd === "list_setting_cards") return Promise.resolve([]);
+      if (cmd === "list_conflict_records") return Promise.resolve([]);
+      return Promise.resolve(undefined);
+    });
+    render(<WorkspaceLayout />);
+    await waitFor(() => expect(useEditorStore.getState().currentNovelId).toBe(1));
+
+    fireEvent.click(screen.getByText("一致性"));
+
+    await waitFor(() => expect(screen.getByTestId("consistency-tab")).toBeInTheDocument());
+    // 归档区（ArchivePanel）与冲突区（ConsistencyPanel）**同时挂载**（生产可达）
+    expect(screen.getByTestId("archive-panel")).toBeInTheDocument();
+    expect(screen.getByTestId("consistency-panel")).toBeInTheDocument();
+    expect(screen.getByTestId("archive-button")).toBeInTheDocument();
+  });
+
   it("空态渲染新建入口，创建调用 create_novel 并 reload", async () => {
     novels = [];
     render(<WorkspaceLayout />);

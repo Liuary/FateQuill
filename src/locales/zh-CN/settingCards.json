@@ -9,11 +9,18 @@
   "kind": "类型",
   "name": "名称",
   "content": "内容",
+  "tier": "分级",
   "empty": "暂无设定卡",
   "kinds": {
     "general": "通用",
     "fate": "宿命",
     "character": "角色",
     "settingCard": "设定卡"
+  },
+  "tiers": {
+    "main": "主线（贯穿全书）",
+    "dark": "暗线（隐藏，不注入）",
+    "short": "近期（近章有效）",
+    "temp": "临时（一次性）"
   }
 }

@@ -9,11 +9,18 @@
   "kind": "Kind",
   "name": "Name",
   "content": "Content",
+  "tier": "Tier",
   "empty": "No setting cards",
   "kinds": {
     "general": "General",
     "fate": "Fate",
     "character": "Character",
     "settingCard": "Setting card"
+  },
+  "tiers": {
+    "main": "Mainline (book-wide)",
+    "dark": "Hidden (not injected)",
+    "short": "Recent (near chapters)",
+    "temp": "Temporary (one-off)"
   }
 }
