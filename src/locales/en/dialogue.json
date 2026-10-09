@@ -1,0 +1,22 @@
+{
+  "tab": "Dialogue",
+  "title": "Multi-voice dialogue",
+  "narration": "Narration",
+  "dialogue": "Dialogue",
+  "generateNarration": "Generate narration",
+  "generateLine": "Generate line",
+  "speaker": "Speaker",
+  "selectSpeaker": "Select a character",
+  "noCharacters": "No character profiles",
+  "stop": "Stop",
+  "moveUp": "Move up",
+  "moveDown": "Move down",
+  "insertBefore": "Insert above",
+  "delete": "Delete",
+  "entryContent": "Entry content",
+  "empty": "No entries yet",
+  "unknownSpeaker": "Unknown speaker",
+  "history": "Shared history",
+  "guideSettings": "Configure a model and store an API key in Settings first",
+  "generateFailed": "Generation failed, please retry"
+}

@@ -1,0 +1,22 @@
+{
+  "tab": "对话",
+  "title": "多声部对话",
+  "narration": "旁白",
+  "dialogue": "对话",
+  "generateNarration": "生成旁白",
+  "generateLine": "生成台词",
+  "speaker": "说话角色",
+  "selectSpeaker": "请选择角色",
+  "noCharacters": "暂无角色档案",
+  "stop": "停止生成",
+  "moveUp": "上移",
+  "moveDown": "下移",
+  "insertBefore": "上方插入",
+  "delete": "删除",
+  "entryContent": "条目内容",
+  "empty": "暂无条目",
+  "unknownSpeaker": "未知角色",
+  "history": "公共历史",
+  "guideSettings": "请先在「设置」配置模型并写入 API Key",
+  "generateFailed": "生成失败，请重试"
+}

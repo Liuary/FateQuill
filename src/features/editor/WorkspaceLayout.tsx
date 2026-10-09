@@ -6,6 +6,7 @@ import { GenerationPanel } from "@/features/generation/GenerationPanel";
 import { SettingCardsPanel } from "@/features/setting-cards/SettingCardsPanel";
 import { ReviewPanel } from "@/features/review/ReviewPanel";
 import { ExplorationPanel } from "@/features/exploration/ExplorationPanel";
+import { DialoguePanel } from "@/features/dialogue/DialoguePanel";
 import { useNovels } from "./useNovels";
 import { OutlineTree } from "./OutlineTree";
 import { ChapterEditor } from "./ChapterEditor";
@@ -26,9 +27,9 @@ export function WorkspaceLayout({ onEditorReady }: WorkspaceLayoutProps = {}) {
   const setCurrentChapter = useEditorStore((s) => s.setCurrentChapter);
   const setSaveStatus = useEditorStore((s) => s.setSaveStatus);
   const [editor, setEditor] = useState<Editor | null>(null);
-  const [tab, setTab] = useState<"generation" | "settingCards" | "review" | "exploration">(
-    "generation",
-  );
+  const [tab, setTab] = useState<
+    "generation" | "settingCards" | "review" | "exploration" | "dialogue"
+  >("generation");
   const { t } = useTranslation();
   // 指向「当前渲染的 ChapterEditor 的 flush」，其闭包绑定当前 chapterId/editor
   const flushRef = useRef<() => Promise<boolean>>(() => Promise.resolve(true));
@@ -109,6 +110,13 @@ export function WorkspaceLayout({ onEditorReady }: WorkspaceLayoutProps = {}) {
           >
             {t("exploration:tab")}
           </button>
+          <button
+            type="button"
+            className={tab === "dialogue" ? "font-medium" : "opacity-70"}
+            onClick={() => setTab("dialogue")}
+          >
+            {t("dialogue:tab")}
+          </button>
         </div>
         {tab === "generation" ? (
           <GenerationPanel novelId={currentNovelId} chapterId={currentChapterId} editor={editor} />
@@ -116,8 +124,10 @@ export function WorkspaceLayout({ onEditorReady }: WorkspaceLayoutProps = {}) {
           <SettingCardsPanel novelId={currentNovelId} />
         ) : tab === "review" ? (
           <ReviewPanel novelId={currentNovelId} chapterId={currentChapterId} editor={editor} />
-        ) : (
+        ) : tab === "exploration" ? (
           <ExplorationPanel novelId={currentNovelId} chapterId={currentChapterId} editor={editor} />
+        ) : (
+          <DialoguePanel novelId={currentNovelId} />
         )}
       </aside>
     </div>

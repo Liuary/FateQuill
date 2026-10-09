@@ -46,3 +46,24 @@ export interface DialogueAgentInput {
   publicContext: string;
   modelRef: ModelRef;
 }
+
+/** 条目类型：角色台词 / 旁白叙述 */
+export type DialogueEntryKind = "dialogue" | "narration";
+
+/** 条目类型常量（UI 与测试共用） */
+export const DIALOGUE_ENTRY_KINDS: DialogueEntryKind[] = ["dialogue", "narration"];
+
+/**
+ * 对话 / 旁白条目（**会话内存**，不落库）。
+ * `orderIndex` 由 `dialogueStore` 维护为**连续 0..n-1**。
+ */
+export interface DialogueEntry {
+  id: string;
+  kind: DialogueEntryKind;
+  /** 说话角色 id（`kind="narration"` 时缺省） */
+  speakerId?: number;
+  /** 说话角色名（`kind="narration"` 时缺省） */
+  speakerName?: string;
+  content: string;
+  orderIndex: number;
+}
