@@ -2,14 +2,14 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-09T22:06:48.188Z",
-    "revision": 390
+    "updated": "2026-10-09T22:09:50.001Z",
+    "revision": 391
   },
   "pipeline": {
     "phase": "active",
     "current": {
       "stage": "v0.5.0-stage-11",
-      "op": "op-004"
+      "op": "op-005"
     },
     "retry": 0
   },
@@ -1540,9 +1540,9 @@
         },
         "op-004": {
           "title": "一致性校验器（L1 规则 + L2 语义）（T3）",
-          "state": "pending",
+          "state": "done",
           "assignee": "openfeel-executor",
-          "attempts": 0,
+          "attempts": 1,
           "max_attempts": 3,
           "checkpoints": {
             "plan": "pending",
@@ -5401,6 +5401,15 @@
       "action": "attempt_pass",
       "detail": {
         "opId": "v0.5.0-stage-11.op-003",
+        "attempts": 1
+      }
+    },
+    {
+      "time": "2026-10-09T22:09:49.968Z",
+      "agent": "openfeel-executor",
+      "action": "attempt_pass",
+      "detail": {
+        "opId": "v0.5.0-stage-11.op-004",
         "attempts": 1
       }
     }

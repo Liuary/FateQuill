@@ -12,6 +12,7 @@
 import { useEffect, useState } from "react";
 import { repositories } from "@/ipc/repositories";
 import type { PublicContextInput } from "@/orchestration/dialogue/context";
+import { selectInjectableCards } from "@/orchestration/consistency/inject";
 import { PROMPT_BUDGET } from "@/orchestration/prompts/chapter-generation";
 
 /** 场景上下文输入（`PublicContextInput` 的**场景三块子集**，此处**必填**——由 `useSceneContext` 保证；
@@ -39,10 +40,15 @@ function tail(text: string, limit: number = PREVIOUS_TAIL_LIMIT): string {
   return text.length <= limit ? text : text.slice(text.length - limit);
 }
 
-/** 装载设定卡（失败 → 空数组，不阻断生成） */
-async function loadSettingCards(novelId: number): Promise<SceneSettingCard[]> {
+/** 装载设定卡（**分级注入**：仅 `{main,short}`；`injectSettings=false` → 不注入；失败 → 空数组，不阻断生成） */
+async function loadSettingCards(
+  novelId: number,
+  injectSettings: boolean,
+): Promise<SceneSettingCard[]> {
   const cards = await repositories.settingCard.listByNovel(novelId);
-  return cards.map((card) => ({ title: card.title, content: card.content }));
+  // 暗线 `dark`（与 `temp`）**恒不进入**角色/旁白 Agent 的 prompt
+  const injectable = injectSettings ? selectInjectableCards(cards) : [];
+  return injectable.map((card) => ({ title: card.title, content: card.content }));
 }
 
 /**
@@ -71,19 +77,21 @@ export interface SceneContext extends SceneContextInput {
 export function useSceneContext(input: {
   novelId: number | null;
   chapterId?: number | null;
+  /** 注入开关（默认 `true`）：`false` → 不装载设定卡；**`dark` 恒不注入**（见 `inject.ts`） */
+  injectSettings?: boolean;
 }): SceneContext {
-  const { novelId, chapterId = null } = input;
+  const { novelId, chapterId = null, injectSettings = true } = input;
   const [settingCards, setSettingCards] = useState<SceneSettingCard[]>([]);
   const [previousChapterTail, setPreviousChapterTail] = useState("");
   const [sceneInstruction, setSceneInstruction] = useState("");
 
-  // 设定卡（随作品变化重载；失败 → 空数组）
+  // 设定卡（随作品 / 注入开关变化重载；失败 → 空数组）
   useEffect(() => {
     let alive = true;
     if (novelId == null) {
       return;
     }
-    void loadSettingCards(novelId).then(
+    void loadSettingCards(novelId, injectSettings).then(
       (cards) => {
         if (alive) {
           setSettingCards(cards);
@@ -99,7 +107,7 @@ export function useSceneContext(input: {
     return () => {
       alive = false;
     };
-  }, [novelId]);
+  }, [novelId, injectSettings]);
 
   // 前章末尾（随当前章变化重载；无前章 → 空串）
   useEffect(() => {

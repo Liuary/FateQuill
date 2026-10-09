@@ -13,6 +13,7 @@ import {
   type ChapterSettingCard,
 } from "@/orchestration/prompts/chapter-generation";
 import { TURN_CARD_SYSTEM_PROMPT } from "@/orchestration/exploration/parse";
+import { selectInjectableCards } from "@/orchestration/consistency/inject";
 import { repositories } from "@/ipc/repositories";
 
 /** 去 HTML 标签（前章末尾按可见文本入 prompt，与 stage-05 生成口径一致） */
@@ -34,10 +35,20 @@ export async function buildExplorationOptions(params: {
   temperature: number;
   /** 可选：卦象引导文本（开启易经时并入 **system 约束段**；缺省 → 输出与基线逐字段一致） */
   hexagramGuide?: { text: string };
+  /**
+   * 注入开关（默认 `true`）：`false` → **完全不注入**设定卡（纯净基线）。
+   * **无论开关取值，`dark`（暗线）/ `temp` 恒不注入**（安全优先，开关不可绕过）。
+   */
+  injectSettings?: boolean;
 }): Promise<{ options: ChatOptions; settingCardIds: number[] }> {
-  const settingCards: ChapterSettingCard[] = (
-    await repositories.settingCard.listByNovel(params.novelId)
-  ).map((card) => ({ id: card.id, title: card.title, content: card.content }));
+  // 分级注入：仅白名单 `{main,short}` 进入 prompt（**生产恒排 dark**）
+  const loadedCards = await repositories.settingCard.listByNovel(params.novelId);
+  const injectable = params.injectSettings === false ? [] : selectInjectableCards(loadedCards);
+  const settingCards: ChapterSettingCard[] = injectable.map((card) => ({
+    id: card.id,
+    title: card.title,
+    content: card.content,
+  }));
 
   let previousChapterTail = "";
   if (params.chapterId !== null) {

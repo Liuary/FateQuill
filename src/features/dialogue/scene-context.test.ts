@@ -110,3 +110,44 @@ describe("useSceneContext（场景上下文装载，BUG-001）", () => {
     expect(result.current.previousChapterTail).toBe("");
   });
 });
+
+describe("useSceneContext（分级注入；暗线不进角色/旁白 Agent，stage-11 T5）", () => {
+  const tieredRow = (id: number, title: string, content: string, tier: string) => ({
+    id,
+    novel_id: 1,
+    title,
+    content,
+    kind: "general",
+    tier,
+    created_at: "c",
+  });
+
+  const tieredCards = [
+    tieredRow(1, "主线规则", "月相更替潮汐涨落", "main"),
+    tieredRow(2, "近期设定", "本卷只在雾隐峡", "short"),
+    tieredRow(3, "幕后身份", "执灯人首领是叛徒", "dark"),
+    tieredRow(4, "一次性细节", "破庙角落有把断刃", "temp"),
+  ];
+
+  beforeEach(() => {
+    invokeMock.mockImplementation((cmd: string) => {
+      if (cmd === "list_setting_cards") return Promise.resolve(tieredCards);
+      return Promise.resolve(undefined);
+    });
+  });
+
+  it("默认：仅装载 `main`/`short`（**暗线 `dark` 与 `temp` 恒不注入**）", async () => {
+    const { result } = renderHook(() => useSceneContext({ novelId: 1, chapterId: null }));
+    await waitFor(() => expect(result.current.settingCards).toHaveLength(2));
+    expect(result.current.settingCards.map((card) => card.title)).toEqual(["主线规则", "近期设定"]);
+    expect(result.current.settingCards.some((card) => card.content.includes("叛徒"))).toBe(false);
+  });
+
+  it("`injectSettings=false` → 不装载任何设定卡（纯净基线）", async () => {
+    const { result } = renderHook(() =>
+      useSceneContext({ novelId: 1, chapterId: null, injectSettings: false }),
+    );
+    await waitFor(() => expect(calls("list_setting_cards")).toBeGreaterThan(0));
+    expect(result.current.settingCards).toEqual([]);
+  });
+});

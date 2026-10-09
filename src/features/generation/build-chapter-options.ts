@@ -1,4 +1,5 @@
 import type { ChatOptions } from "@/orchestration/types";
+import { selectInjectableCards } from "@/orchestration/consistency/inject";
 import { repositories } from "@/ipc/repositories";
 import {
   buildChapterPrompt,
@@ -24,10 +25,20 @@ export async function buildChapterGenerationOptions(params: {
   temperature?: number;
   /** 规避 skill（stage-07 T6 回注；缺省不注入，行为不变） */
   skills?: PromptSkill[];
+  /**
+   * 注入开关（默认 `true`）：`false` → **完全不注入**设定卡。
+   * **无论开关取值，`dark`（暗线）/ `temp` 恒不注入**（安全优先，开关不可绕过）。
+   */
+  injectSettings?: boolean;
 }): Promise<ChatOptions> {
-  const settingCards: ChapterSettingCard[] = (
-    await repositories.settingCard.listByNovel(params.novelId)
-  ).map((s) => ({ id: s.id, title: s.title, content: s.content }));
+  // 分级注入：仅白名单 `{main,short}` 进入 prompt（**生产恒排 dark**）
+  const loadedCards = await repositories.settingCard.listByNovel(params.novelId);
+  const injectable = params.injectSettings === false ? [] : selectInjectableCards(loadedCards);
+  const settingCards: ChapterSettingCard[] = injectable.map((card) => ({
+    id: card.id,
+    title: card.title,
+    content: card.content,
+  }));
 
   const chapter = await repositories.chapter.get(params.chapterId);
   const siblings = (await repositories.chapter.listByVolume(chapter.volumeId)).sort(

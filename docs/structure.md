@@ -204,6 +204,7 @@ plan v3 技术约束中的目录集为 `src/{app,components,features,domain,orch
 - **分级模型**：四级 `main` / `dark` / `short` / `temp`（**与 `kind` 正交**，不扩 `kind`）；迁移 **v5** 增 `setting_card.tier`（`DEFAULT 'short'`）+ `conflict_record` 表（op-002 落地；**v5 不含**版本池快照持久化——stage-08 REV-009 **独立跟踪**）。
 - **持久化边界**：候选与抽取结果**仅会话内存**（待确认队列）；**冲突记录 `conflict_record` 落库**。
 - **i18n**：新增 `consistency` 命名空间。
+- **迁移影响（v0.5 起，可感知行为变更；REV-008①）**：设定卡**按 `tier` 注入**——`main`/`short` 注入正文生成 / 推演 / 多声部对话 prompt；**`dark`（暗线）与 `temp` 从上述 prompt 中移出**（暗线泄露 = 剧透事故，属**硬隔离**，无开关可绕过）。**存量卡**因迁移 v5 默认 `tier='short'` **仍照常注入**；但用户标为 `dark` 的暗线卡**不再进入 prompt**（安全上正确，属可感知变更）。同一句见模块手册 `manual/features/consistency.md`（op-007 补）。
 - **IPC**：`setting_card` 命令**签名扩展、命令数不变**；**计划新增 6 命令**（归档批落库 1 + 冲突记录 5）——**计数与明细由 op-003 / op-005 与实现同提交更新**（见 `docs/ipc.md` §8.4）。
 - **与评审的边界**：一致性引擎 = **设定库内冲突（设定 vs 设定）**；四维评审「世界观」= **正文 vs 设定（文本质量）**——职责切分，见 `docs/review-rubric.md` §4.2。
 - **详文**：模块手册 `manual/features/consistency.md`（stage-11 建立，**详文于 op-007 收尾**）。

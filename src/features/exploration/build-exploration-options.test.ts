@@ -125,3 +125,74 @@ describe("buildExplorationOptions（约束注入 system 段）", () => {
     expect(blank.options).toEqual(baseline.options);
   });
 });
+
+describe("buildExplorationOptions（分级注入；暗线硬隔离，stage-11 T5）", () => {
+  const tieredRow = (id: number, title: string, content: string, tier: string) => ({
+    id,
+    novel_id: 1,
+    title,
+    content,
+    kind: "general",
+    tier,
+    created_at: "c",
+  });
+
+  const tieredCards = [
+    tieredRow(1, "主线规则", "月相更替潮汐涨落", "main"),
+    tieredRow(2, "近期设定", "本卷只在雾隐峡", "short"),
+    tieredRow(3, "幕后身份", "执灯人首领是叛徒", "dark"),
+    tieredRow(4, "一次性细节", "破庙角落有把断刃", "temp"),
+  ];
+
+  const mockCards = (rows: unknown[]) => {
+    invokeMock.mockImplementation((cmd: string) =>
+      cmd === "list_setting_cards" ? Promise.resolve(rows) : Promise.resolve(undefined),
+    );
+  };
+
+  const systemOf = (options: { messages: { role: string; content: string }[] }) =>
+    options.messages.find((message) => message.role === "system")!.content;
+
+  it("默认：system 约束段**含 main/short**、**不含 dark/temp**；`settingCardIds` 仅含可注入卡", async () => {
+    mockCards(tieredCards);
+    const { options, settingCardIds } = await buildExplorationOptions({
+      novelId: 1,
+      chapterId: null,
+      intent: "北上",
+      model: "m",
+      temperature: 0.7,
+    });
+
+    const system = systemOf(options);
+    expect(system).toContain("月相更替潮汐涨落");
+    expect(system).toContain("本卷只在雾隐峡");
+    expect(system).not.toContain("执灯人首领是叛徒"); // dark
+    expect(system).not.toContain("破庙角落有把断刃"); // temp
+    expect(settingCardIds).toEqual([1, 2]); // 覆盖判据也不含暗线
+  });
+
+  it("`injectSettings=false` → 与「无设定卡」基线**逐字段一致**（不注入任何分级）", async () => {
+    mockCards(tieredCards);
+    const off = await buildExplorationOptions({
+      novelId: 1,
+      chapterId: null,
+      intent: "北上",
+      model: "m",
+      temperature: 0.7,
+      injectSettings: false,
+    });
+
+    mockCards([]);
+    const baseline = await buildExplorationOptions({
+      novelId: 1,
+      chapterId: null,
+      intent: "北上",
+      model: "m",
+      temperature: 0.7,
+    });
+
+    expect(off.options).toEqual(baseline.options);
+    expect(off.settingCardIds).toEqual([]);
+    expect(systemOf(off.options)).not.toContain("用户设定约束");
+  });
+});

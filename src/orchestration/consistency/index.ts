@@ -9,3 +9,4 @@ export * from "./run";
 export * from "./rules";
 export * from "./judge";
 export * from "./report";
+export * from "./inject";

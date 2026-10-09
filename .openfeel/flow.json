@@ -2,14 +2,14 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-09T22:09:50.001Z",
-    "revision": 391
+    "updated": "2026-10-09T22:15:45.353Z",
+    "revision": 392
   },
   "pipeline": {
     "phase": "active",
     "current": {
       "stage": "v0.5.0-stage-11",
-      "op": "op-005"
+      "op": "op-006"
     },
     "retry": 0
   },
@@ -1557,9 +1557,9 @@
         },
         "op-005": {
           "title": "冲突面板与处置 + conflict_record 落库（T4）",
-          "state": "pending",
+          "state": "done",
           "assignee": "openfeel-executor",
-          "attempts": 0,
+          "attempts": 1,
           "max_attempts": 3,
           "checkpoints": {
             "plan": "pending",
@@ -5410,6 +5410,15 @@
       "action": "attempt_pass",
       "detail": {
         "opId": "v0.5.0-stage-11.op-004",
+        "attempts": 1
+      }
+    },
+    {
+      "time": "2026-10-09T22:15:45.321Z",
+      "agent": "openfeel-executor",
+      "action": "attempt_pass",
+      "detail": {
+        "opId": "v0.5.0-stage-11.op-005",
         "attempts": 1
       }
     }
