@@ -6,6 +6,8 @@
   "userInstruction": "本章要求",
   "guideSettings": "尚未配置可用模型或 API Key，请前往「设置」完成配置",
   "progress": "已生成 {{chars}} 字",
+  "stoppedHint": "生成已停止，已保留内容，可按 Ctrl+Z 撤销",
+  "errorLabel": "错误",
   "statusIdle": "空闲",
   "statusStreaming": "生成中…",
   "statusDone": "已完成",

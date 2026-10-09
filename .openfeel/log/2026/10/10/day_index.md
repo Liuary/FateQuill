@@ -10,3 +10,4 @@
 | [2026-10-10-Liuary-005.md](2026-10-10-Liuary-005.md) | Liuary | 阶段 v0.1.0-stage-04 完成 |
 | [2026-10-10-Liuary-006.md](2026-10-10-Liuary-006.md) | Liuary | v0.1.0-stage-05.op-001 执行通过 |
 | [2026-10-10-Liuary-007.md](2026-10-10-Liuary-007.md) | Liuary | v0.1.0-stage-05.op-002 执行通过 |
+| [2026-10-10-Liuary-008.md](2026-10-10-Liuary-008.md) | Liuary | v0.1.0-stage-05.op-003 执行通过 |

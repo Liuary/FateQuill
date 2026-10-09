@@ -45,25 +45,26 @@ export function useGeneration(editor: Editor | null) {
           chars += chunk.delta.length;
           g.advance(chars);
         }
-        controller.flushPending();
-        // 停止（aborted）与正常完成均收敛 generationStore，不留半态（REV-008）
-        if (abort.signal.aborted) g.reset();
-        else g.finish();
+        controller.flushPending(); // 应用队列残留（保留草稿）
+        // 停止（aborted）与正常完成均收敛 generationStore，不留半态（REV-006/008）
+        if (abort.signal.aborted)
+          g.reset(); // 停止 → status=idle + requestId=null
+        else g.finish(); // 正常 → done
       } catch (e) {
-        controller.flushPending();
-        g.fail(parseIpcError(e));
+        controller.flushPending(); // 失败亦保留已插入草稿
+        g.fail(parseIpcError(e)); // 失败 → status=idle + error（无悬挂 requestId）
       } finally {
         controller.dispose();
-        abortRef.current = null;
+        abortRef.current = null; // 无悬挂 abort 句柄
       }
     },
     [editor],
   );
 
+  /** 用户停止：仅触发 abort（→ provider/transport 中断）；状态收敛由 start 收口 */
   const stop = useCallback(() => {
     abortRef.current?.abort();
-    useGenerationStore.getState().reset(); // 立即收敛（status=idle、requestId=null）
   }, []);
 
-  return { start, stop };
+  return { start, stop, abortRef };
 }

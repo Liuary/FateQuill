@@ -6,6 +6,8 @@
   "userInstruction": "Instruction",
   "guideSettings": "No model or API key configured — please configure in Settings",
   "progress": "{{chars}} chars generated",
+  "stoppedHint": "Generation stopped — content kept; press Ctrl+Z to undo",
+  "errorLabel": "Error",
   "statusIdle": "Idle",
   "statusStreaming": "Generating…",
   "statusDone": "Done",
