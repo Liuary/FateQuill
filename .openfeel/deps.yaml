@@ -49,8 +49,8 @@ stages:
     title: 编辑器基础（Tiptap 章节文档 + 大纲树）
     version: v0.1
     hard: ["v0.1.0-stage-01", "v0.1.0-stage-02"]
-    soft: []
-    rationale: 编辑器独立于 AI 层，依赖存储层持久化章节。
+    soft: ["v0.1.0-stage-03"]
+    rationale: 编辑器独立于 AI 层，依赖存储层持久化章节；软依赖 stage-03 以复用 subscribeChunks/throttleChunks 实现「AI 增量插入接口」（T8）。
 
   "v0.1.0-stage-05":
     title: 单 Agent 章节生成 + 设定卡

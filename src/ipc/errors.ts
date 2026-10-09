@@ -5,6 +5,7 @@ export const IpcErrorCode = {
   FkViolation: "FK_VIOLATION",
   MigrationFailed: "MIGRATION_FAILED",
   DbLocked: "DB_LOCKED",
+  Timeout: "TIMEOUT", // 与 Rust codes::TIMEOUT 对齐（REV-015）
   Internal: "INTERNAL",
 } as const;
 export type IpcErrorCode = (typeof IpcErrorCode)[keyof typeof IpcErrorCode];

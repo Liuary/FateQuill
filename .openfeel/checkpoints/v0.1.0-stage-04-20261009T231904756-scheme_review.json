@@ -2,14 +2,14 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-09T15:32:52.719Z",
-    "revision": 131
+    "updated": "2026-10-09T15:16:34.603Z",
+    "revision": 127
   },
   "pipeline": {
     "phase": "active",
     "current": {
       "stage": "v0.1.0-stage-04",
-      "op": "op-001"
+      "op": ""
     },
     "retry": 0
   },
@@ -451,7 +451,7 @@
     },
     "v0.1.0-stage-04": {
       "name": "v0.1.0-stage-04",
-      "phase": "scheme_passed",
+      "phase": "scheme_review",
       "status": "planned",
       "deps": [
         "v0.1.0-stage-01",
@@ -1938,46 +1938,6 @@
       "detail": {
         "stageName": "v0.1.0-stage-04",
         "opId": "op-009"
-      }
-    },
-    {
-      "time": "2026-10-09T15:19:04.762Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.1.0-stage-04",
-        "from": "scheme_pending",
-        "to": "scheme_review"
-      }
-    },
-    {
-      "time": "2026-10-09T15:27:45.637Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.1.0-stage-04",
-        "from": "scheme_review",
-        "to": "scheme_pending"
-      }
-    },
-    {
-      "time": "2026-10-09T15:29:48.970Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.1.0-stage-04",
-        "from": "scheme_pending",
-        "to": "scheme_review"
-      }
-    },
-    {
-      "time": "2026-10-09T15:32:52.719Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.1.0-stage-04",
-        "from": "scheme_review",
-        "to": "scheme_passed"
       }
     }
   ]

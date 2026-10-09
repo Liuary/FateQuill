@@ -2,14 +2,14 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-09T15:32:52.719Z",
-    "revision": 131
+    "updated": "2026-10-09T15:09:04.924Z",
+    "revision": 116
   },
   "pipeline": {
     "phase": "active",
     "current": {
       "stage": "v0.1.0-stage-04",
-      "op": "op-001"
+      "op": ""
     },
     "retry": 0
   },
@@ -451,167 +451,13 @@
     },
     "v0.1.0-stage-04": {
       "name": "v0.1.0-stage-04",
-      "phase": "scheme_passed",
+      "phase": "plan_passed",
       "status": "planned",
       "deps": [
         "v0.1.0-stage-01",
         "v0.1.0-stage-02"
       ],
-      "ops": {
-        "op-001": {
-          "title": "清理 stage-03 遗留 REV-015/016（T9 chore）",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        },
-        "op-002": {
-          "title": "集成 Tiptap 基础编辑器与依赖版本表（T1）",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        },
-        "op-003": {
-          "title": "章节文档模型与切换 + editorStore（T2）",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        },
-        "op-004": {
-          "title": "Markdown 输入/导入导出与往返测试（T3）",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        },
-        "op-005": {
-          "title": "卷→章 大纲树与 dnd-kit 排序（T4）",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        },
-        "op-006": {
-          "title": "自动保存与状态提示：防抖/flush/重试（T5）",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        },
-        "op-007": {
-          "title": "长文性能基准与 editorStore 单一事实源（T6）",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        },
-        "op-008": {
-          "title": "应用外壳与选书上下文（T7）",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        },
-        "op-009": {
-          "title": "AI 增量插入接口 EditorController（T8）",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        }
-      },
+      "ops": {},
       "stats": {
         "start_time": "2026-10-09T15:02:21.422Z",
         "end_time": "",
@@ -1837,147 +1683,6 @@
         "stageName": "v0.1.0-stage-04",
         "from": "plan_pending",
         "to": "plan_review"
-      }
-    },
-    {
-      "time": "2026-10-09T15:14:22.326Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.1.0-stage-04",
-        "from": "plan_review",
-        "to": "plan_passed"
-      }
-    },
-    {
-      "time": "2026-10-09T15:14:22.661Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.1.0-stage-04",
-        "from": "plan_passed",
-        "to": "scheme_pending"
-      }
-    },
-    {
-      "time": "2026-10-09T15:16:32.006Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.1.0-stage-04",
-        "opId": "op-001"
-      }
-    },
-    {
-      "time": "2026-10-09T15:16:32.330Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.1.0-stage-04",
-        "opId": "op-002"
-      }
-    },
-    {
-      "time": "2026-10-09T15:16:32.656Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.1.0-stage-04",
-        "opId": "op-003"
-      }
-    },
-    {
-      "time": "2026-10-09T15:16:32.970Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.1.0-stage-04",
-        "opId": "op-004"
-      }
-    },
-    {
-      "time": "2026-10-09T15:16:33.289Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.1.0-stage-04",
-        "opId": "op-005"
-      }
-    },
-    {
-      "time": "2026-10-09T15:16:33.608Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.1.0-stage-04",
-        "opId": "op-006"
-      }
-    },
-    {
-      "time": "2026-10-09T15:16:33.930Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.1.0-stage-04",
-        "opId": "op-007"
-      }
-    },
-    {
-      "time": "2026-10-09T15:16:34.284Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.1.0-stage-04",
-        "opId": "op-008"
-      }
-    },
-    {
-      "time": "2026-10-09T15:16:34.603Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.1.0-stage-04",
-        "opId": "op-009"
-      }
-    },
-    {
-      "time": "2026-10-09T15:19:04.762Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.1.0-stage-04",
-        "from": "scheme_pending",
-        "to": "scheme_review"
-      }
-    },
-    {
-      "time": "2026-10-09T15:27:45.637Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.1.0-stage-04",
-        "from": "scheme_review",
-        "to": "scheme_pending"
-      }
-    },
-    {
-      "time": "2026-10-09T15:29:48.970Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.1.0-stage-04",
-        "from": "scheme_pending",
-        "to": "scheme_review"
-      }
-    },
-    {
-      "time": "2026-10-09T15:32:52.719Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.1.0-stage-04",
-        "from": "scheme_review",
-        "to": "scheme_passed"
       }
     }
   ]

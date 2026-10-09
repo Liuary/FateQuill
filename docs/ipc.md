@@ -85,7 +85,9 @@
 
 ## 8. 数据访问命令与错误结构
 
-### 8.1 命令清单（36 个）
+### 8.1 数据访问命令清单（36 个）
+
+> 另见 §6 流式通道命令（`http_stream` / `abort_stream`）——故全仓实际注册命令共 38 条。
 
 5 实体 × [list / get / create / update / delete]，命令名 snake_case：
 
