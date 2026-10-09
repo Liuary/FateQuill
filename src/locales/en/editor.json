@@ -17,5 +17,6 @@
   "newNovel": "New novel",
   "novelTitle": "Title",
   "create": "Create",
-  "emptyNovels": "No novel yet — create one to start"
+  "emptyNovels": "No novel yet — create one to start",
+  "switchBlockedBySaveError": "Save failed — chapter switch blocked; please retry saving"
 }

@@ -2,14 +2,14 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-09T16:08:51.215Z",
-    "revision": 150
+    "updated": "2026-10-09T15:53:16.509Z",
+    "revision": 141
   },
   "pipeline": {
     "phase": "active",
     "current": {
       "stage": "v0.1.0-stage-04",
-      "op": "op-010"
+      "op": ""
     },
     "retry": 0
   },
@@ -451,8 +451,8 @@
     },
     "v0.1.0-stage-04": {
       "name": "v0.1.0-stage-04",
-      "phase": "exec_running",
-      "status": "review_passed",
+      "phase": "review_pending",
+      "status": "planned",
       "deps": [
         "v0.1.0-stage-01",
         "v0.1.0-stage-02"
@@ -599,23 +599,6 @@
           "state": "done",
           "assignee": "openfeel-executor",
           "attempts": 1,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        },
-        "op-010": {
-          "title": "修复切章未 flush 导致的数据丢失（BUG-001）(fix)",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
           "max_attempts": 3,
           "checkpoints": {
             "plan": "pending",
@@ -2086,95 +2069,6 @@
       "detail": {
         "opId": "v0.1.0-stage-04.op-009",
         "attempts": 1
-      }
-    },
-    {
-      "time": "2026-10-09T15:53:16.835Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.1.0-stage-04",
-        "from": "exec_running",
-        "to": "review_pending"
-      }
-    },
-    {
-      "time": "2026-10-09T16:02:06.656Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.1.0-stage-04",
-        "from": "review_pending",
-        "to": "review_passed"
-      }
-    },
-    {
-      "time": "2026-10-09T16:02:06.992Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.1.0-stage-04",
-        "from": "review_passed",
-        "to": "test_pending"
-      }
-    },
-    {
-      "time": "2026-10-09T16:05:47.910Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.1.0-stage-04",
-        "from": "test_pending",
-        "to": "test_failed"
-      }
-    },
-    {
-      "time": "2026-10-09T16:05:48.231Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.1.0-stage-04",
-        "from": "test_failed",
-        "to": "scheme_pending"
-      }
-    },
-    {
-      "time": "2026-10-09T16:06:29.846Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.1.0-stage-04",
-        "opId": "op-010"
-      }
-    },
-    {
-      "time": "2026-10-09T16:07:07.321Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.1.0-stage-04",
-        "from": "scheme_pending",
-        "to": "scheme_review"
-      }
-    },
-    {
-      "time": "2026-10-09T16:08:50.906Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.1.0-stage-04",
-        "from": "scheme_review",
-        "to": "scheme_passed"
-      }
-    },
-    {
-      "time": "2026-10-09T16:08:51.214Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.1.0-stage-04",
-        "from": "scheme_passed",
-        "to": "exec_running"
       }
     }
   ]

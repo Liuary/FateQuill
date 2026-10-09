@@ -115,7 +115,7 @@ describe("useAutoSave", () => {
     act(() => {
       editor.commands.setContent("<p>旧</p>");
     });
-    let first!: Promise<void>;
+    let first!: Promise<boolean>;
     await act(async () => {
       first = hook.result.current.flush();
     });

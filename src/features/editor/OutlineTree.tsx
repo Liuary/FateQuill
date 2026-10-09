@@ -11,20 +11,27 @@ import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import type { Chapter } from "@/domain/models/chapter";
 import type { Volume } from "@/domain/models/volume";
 import { repositories } from "@/ipc/repositories";
-import { useEditorStore } from "@/store/editorStore";
 import { OutlineVolumeNode } from "./OutlineVolumeNode";
 import { computeDropAction, useOutline } from "./useOutline";
 
 export interface OutlineTreeProps {
   novelId: number | null;
   selectedChapterId?: number | null;
+  /** 切章入口：由父层注入的守卫式切章（先 flush 旧章、成功才切；BUG-001） */
+  onSelectChapter: (id: number) => void;
+  /** 落库前 flush 旧章（供重命名/删除等破坏性操作复用） */
+  flush?: () => Promise<boolean>;
 }
 
 /** 卷 → 章 大纲树：增删改 + 拖拽排序（落库经 reorder_* 与 move_chapter 命令） */
-export function OutlineTree({ novelId, selectedChapterId = null }: OutlineTreeProps) {
+export function OutlineTree({
+  novelId,
+  selectedChapterId = null,
+  onSelectChapter,
+  flush,
+}: OutlineTreeProps) {
   const { t } = useTranslation("editor");
   const { volumes, chaptersByVolume, reload } = useOutline(novelId);
-  const setCurrentChapter = useEditorStore((s) => s.setCurrentChapter);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
 
   async function handleDragEnd(event: DragEndEvent) {
@@ -78,28 +85,31 @@ export function OutlineTree({ novelId, selectedChapterId = null }: OutlineTreePr
   async function renameChapter(chapter: Chapter) {
     const next = window.prompt(t("rename"), chapter.title);
     if (next == null) return;
+    // 先 flush 当前章，再取最新内容，避免以 outline 中的陈旧 content 覆盖未保存编辑（BUG-001 同类）
+    await flush?.();
+    const fresh = await repositories.chapter.get(chapter.id);
     await repositories.chapter.update(chapter.id, {
       title: next,
-      content: chapter.content,
-      contentFormat: chapter.contentFormat,
-      status: chapter.status,
-      orderIndex: chapter.orderIndex,
+      content: fresh.content,
+      contentFormat: fresh.contentFormat,
+      status: fresh.status,
+      orderIndex: fresh.orderIndex,
     });
     await reload();
   }
 
   async function removeVolume(id: number) {
+    // 删除卷（可能含当前章）：先 flush 防丢失
+    await flush?.();
     await repositories.volume.remove(id);
     await reload();
   }
 
   async function removeChapter(id: number) {
+    // 删除当前章：先 flush 防丢失
+    await flush?.();
     await repositories.chapter.remove(id);
     await reload();
-  }
-
-  function selectChapter(id: number) {
-    setCurrentChapter(id);
   }
 
   return (
@@ -121,7 +131,7 @@ export function OutlineTree({ novelId, selectedChapterId = null }: OutlineTreePr
               volume={v}
               chapters={chaptersByVolume[v.id] ?? []}
               selectedChapterId={selectedChapterId}
-              onSelectChapter={selectChapter}
+              onSelectChapter={onSelectChapter}
               onAddChapter={addChapter}
               onRenameVolume={renameVolume}
               onDeleteVolume={removeVolume}

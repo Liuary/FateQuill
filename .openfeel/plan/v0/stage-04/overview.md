@@ -27,8 +27,10 @@
 | op-007 | 长文性能基准与 editorStore 单一事实源 | T6 | op-006 |
 | op-008 | 应用外壳与选书上下文 | T7 | op-005 |
 | op-009 | AI 增量插入接口 EditorController | T8 | op-003 |
+| op-010 | 修复切章未 flush 导致的数据丢失（BUG-001）(fix) | T5（补） | op-003/005/006/008 |
 
 > 说明：`editorStore`（Zustand 首次接入）随 T2（op-003）引入（供 T2/T5/T6 共用）；T6（op-007）承担其**单一事实源边界验证**与性能基准。
+> op-010 为 **test_failed 修复闭环**：接线切章前 flush（BUG-001 high），仅改 op-003/005/006/008 的产出文件，修复后经 openfeel-feel-tester 复验。
 
 ### 定稿要点（摘要）
 - **存储格式**：**v0.1 沿用 `content_format='html'`**（`getHTML()`/`setContent` 原生往返），**零迁移**，word_count html 分支复用；tiptap-json 留待需要。

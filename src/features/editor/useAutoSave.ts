@@ -15,7 +15,7 @@ export interface AutoSaveMeta {
 }
 
 /** 模块级「当前编辑器 flush」句柄，供窗口关闭时调用 */
-let globalFlush: (() => Promise<void>) | null = null;
+let globalFlush: (() => Promise<boolean>) | null = null;
 
 /** 自动保存：防抖 800ms；失败置脏并 5s 重试（线性退避/上限）；保存串行化（REV-011）；暴露 flush() */
 export function useAutoSave(editor: Editor | null, chapterId: number | null, meta: AutoSaveMeta) {
@@ -25,6 +25,11 @@ export function useAutoSave(editor: Editor | null, chapterId: number | null, met
   const dirtyRef = useRef(false);
   const chainRef = useRef<Promise<void>>(Promise.resolve()); // 保存串行化链（REV-011）
   const enqueueRef = useRef<() => Promise<void>>(async () => {}); // 自引用（重试）间接调用
+  const chapterIdRef = useRef(chapterId); // 章号守卫：旧实例闭包不回写当前章
+
+  useEffect(() => {
+    chapterIdRef.current = chapterId;
+  }, [chapterId]);
 
   /**
    * 串行化保存（REV-011）：所有保存串到同一条 promise 链 → 后写必然在前写完成后执行，
@@ -34,6 +39,8 @@ export function useAutoSave(editor: Editor | null, chapterId: number | null, met
   const enqueueSave = useCallback((): Promise<void> => {
     chainRef.current = chainRef.current.then(async () => {
       if (editor == null || chapterId == null || !dirtyRef.current) return;
+      // 章号守卫：若当前活动章已变，旧实例闭包跳过，避免误写当前章（BUG-001 加固）
+      if (chapterIdRef.current !== chapterId) return;
       setSaveStatus("saving");
       dirtyRef.current = false; // 先清脏标（保存期间的新编辑会重新置真）
       try {
@@ -71,13 +78,14 @@ export function useAutoSave(editor: Editor | null, chapterId: number | null, met
     enqueueRef.current = enqueueSave;
   }, [enqueueSave]);
 
-  /** 立即保存（取消防抖并等待链尾完成） */
-  const flush = useCallback(async () => {
+  /** 立即保存并返回成功态：无脏→true；保存成功→true；保存失败→false（仍置脏 + 重试，不静默丢弃） */
+  const flush = useCallback(async (): Promise<boolean> => {
     if (timer.current) {
       clearTimeout(timer.current);
       timer.current = null;
     }
     await enqueueSave();
+    return !dirtyRef.current;
   }, [enqueueSave]);
 
   /** 文档变更：置脏 + 重置防抖计时 */

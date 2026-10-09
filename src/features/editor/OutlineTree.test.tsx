@@ -104,7 +104,7 @@ describe("computeDropAction", () => {
 
 describe("OutlineTree", () => {
   it("按 orderIndex 渲染卷与章", async () => {
-    render(<OutlineTree novelId={1} />);
+    render(<OutlineTree novelId={1} onSelectChapter={() => {}} />);
     await waitFor(() => expect(screen.getByText("第一章")).toBeInTheDocument());
     expect(screen.getByText("卷1")).toBeInTheDocument();
     expect(screen.getByText("卷2")).toBeInTheDocument();
@@ -112,7 +112,7 @@ describe("OutlineTree", () => {
   });
 
   it("点击「新增章」→ create_chapter 且 reload（再次 list_chapters）", async () => {
-    render(<OutlineTree novelId={1} />);
+    render(<OutlineTree novelId={1} onSelectChapter={() => {}} />);
     await waitFor(() => expect(screen.getByText("第一章")).toBeInTheDocument());
 
     const before = invokeMock.mock.calls.filter((c) => c[0] === "list_chapters").length;
@@ -128,7 +128,7 @@ describe("OutlineTree", () => {
   });
 
   it("点击「新增卷」→ create_volume", async () => {
-    render(<OutlineTree novelId={1} />);
+    render(<OutlineTree novelId={1} onSelectChapter={() => {}} />);
     await waitFor(() => expect(screen.getByText("第一章")).toBeInTheDocument());
     fireEvent.click(screen.getByText("新增卷"));
     await waitFor(() => {

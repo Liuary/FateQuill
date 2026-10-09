@@ -30,6 +30,7 @@ src/features/editor/
 - **`EditorController`（T8）**：`appendChunk(text, options?)` / `flushPending()` / `dispose()`；`options.addToHistory` 为**预留**（当前恒入历史）。
 - **撤销会话合并（REV-009）**：流式插入**恒入历史**，由 prosemirror-history `newGroupDelay=5000`（`editor-extensions.ts`）把生成期间相邻插入合并为单条 → **一次 `Ctrl+Z` 撤销整段生成**；用户编辑自然断组。
 - **IME 排队（REV-010）**：监听 `editor.view.dom` 的 `compositionstart/end`，组合期间入队、`compositionend` 后 flush；`dispose()` 移除监听。
+- **切章前 flush（BUG-001 修复，stage-04 op-010）**：唯一合法切章入口 = `WorkspaceLayout.requestSelectChapter` —— 先 `await flushRef.current()`（保存**旧**章）**成功才** `setCurrentChapter`；失败置 `saveStatus='error'` 并**阻断切章**（不丢数据）。`OutlineTree` **不直连** store 切章，改用注入的 `onSelectChapter`；`useAutoSave.flush()` 返回 `Promise<boolean>` 且带 `chapterIdRef` 章号守卫（旧实例闭包不回写当前章）；重命名/删除当前章卷前亦先 flush。
 - **`editorStore` 边界**：`src/store/editorStore.ts` 仅元状态（`currentNovelId`/`currentChapterId`/`saveStatus`/`lastSavedAt`），**不含文档正文**（内容在 Tiptap 实例）。
 - **消费侧**：stage-05 `generationStore` 订阅 stage-03 `subscribeChunks` 输出 → `appendChunk`（不直接操作编辑器内部）。
 

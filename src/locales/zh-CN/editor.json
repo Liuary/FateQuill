@@ -17,5 +17,6 @@
   "newNovel": "新建作品",
   "novelTitle": "作品名",
   "create": "创建",
-  "emptyNovels": "还没有作品，先创建一部吧"
+  "emptyNovels": "还没有作品，先创建一部吧",
+  "switchBlockedBySaveError": "保存失败，已阻止切换章节；请重试保存"
 }

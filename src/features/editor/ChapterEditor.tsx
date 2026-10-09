@@ -10,8 +10,8 @@ export interface ChapterEditorProps {
   chapterId: number | null;
   editable?: boolean;
   onEditorReady?: (editor: Editor | null) => void; // 供 T5/T8 接线
-  /** 暴露 flush：父层在切换 chapterId 前须 `await flush()`（保证切章前存盘） */
-  onFlushReady?: (flush: () => Promise<void>) => void;
+  /** 暴露 flush：父层在切换 chapterId 前须 `await flush()`（返回成功态，失败应阻断切章） */
+  onFlushReady?: (flush: () => Promise<boolean>) => void;
 }
 
 /** 章节编辑器：按 chapterId 重挂载 Tiptap 实例（key），保证「一章一实例、无串档」；接入自动保存 */
