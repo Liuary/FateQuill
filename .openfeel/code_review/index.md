@@ -1,7 +1,20 @@
 # 代码审查索引（公共域）
 
 > 存放各阶段审查关闭后的核心结论摘要。详细审查过程与逐提交点内容见私域 `.openfeel/users/{username}/code_review/REV-{stage}.md`。
-> 状态统计：**pending 4 ｜ fixing 0 ｜ resolved 12 ｜ closed 96**（pending 4 = stage-04 REV-014 + stage-05 REV-009 人工协验 BLOCKED + stage-08 REV-009 快照会话内存级 / REV-010 abort 语义·新章落卷末）
+> 状态统计：**pending 5 ｜ fixing 0 ｜ resolved 17 ｜ closed 99**（pending 5 = stage-04 REV-014 + stage-05 REV-009 人工协验 BLOCKED + stage-08 REV-009 快照会话内存级 / REV-010 abort 语义·新章落卷末 + stage-09 REV-009 组合用例/kind 治理）
+
+## v0.3.0-stage-09（易经卦象系统，v0.3 收官 / 里程碑 M3）
+
+- **结论**：代码审查**通过**（2026-10-10 04:40 计划 v2 复审 + 04:49 执行复审），stage 已 test_passed → archiving。**修复闭环**：1 个 medium Bug（exploration BUG-001）经 op-007 修复，独立回归复验通过并关闭。
+- **心得总结**：[`v0.3.0-stage-09.md`](v0.3.0-stage-09.md)
+- **审查对象**：
+  1. 阶段计划 `plan.md` v1 → 复审 v2（05:02 → 05:18 通过）：REV-001~005 **resolved**（数据来源/算法流派/引导契约/宿命/范式五大定稿）；衍生 REV-006（数据校验选型 zod → 改手写守卫）**closed**。
+  2. 操作方案 `ops/op-001~006.md`（05:46）：REV-007（medium，`Casting` 跨组件状态传递缺口）**closed**；REV-008（low 杂项）**closed**。
+  3. 执行产出代码审查 + BUG-001 修复（op-007）：REV-006/007/008 **代码级闭环**；登记 REV-009（low）**pending**（非阻塞）。
+- **closed 合计 3 条**（REV-006/007/008）；**resolved 5 条**（计划层）；**pending 1**（REV-009 非阻塞登记）。
+- **关键**：六十四卦/384 爻数据 + 手写校验（**无第三方校验库**，REV-006）；**朱熹变爻七情形**纯函数 `deriveHexagram`；起卦（随机可注入种子 / 手动）+ 时间起卦推迟；**引导卡经 `buildExplorationOptions.hexagramGuide?` 注入 system 段（向后兼容）**；角色宿命写入设定卡（零迁移）；**可选可关（缺省关闭，运行时即时生效）**；**大六壬显式排除**（留 stage-12）；遗留登记（stage-08 REV-009 持久化路线 / REV-010 归属）。实测 `cargo test` **52/52**、Vitest **415/415**（84 文件）、lint 0 errors、build 通过；DoD **10/10**、门禁 **6/6**。
+- **BUG-001（medium, closed）**：运行时「启用易经推演」开关不生效——开关（`ExplorationPanel`）与推演引擎（`useExploration`）各持独立 `useIChingEnabled()` hook 的 `useState`，两份状态互不相通 → 卦象引导未注入 system 段（真实 UI 主路径 DoD 第 4 条失败，契约层单测因挂载前预置 `localStorage` 掩盖）→ `ichingEnabled` 提升为 `explorationStore` 单例 + store 薄封装（API 不变、**零新增依赖**）；修复 commit `48ce6e8`，独立回归探针复现原失败路径并验证消除。
+- **遗留（非阻塞）**：REV-009（low）起卦→注入组合用例 + `SettingCardForm.kind` 枚举治理；**人工协验 3 项 BLOCKED**（真机 WebView 卦象面板 / 真实 Key 端到端 / v0.2·v0.3 遗留跟踪）。
 
 ## v0.3.0-stage-08（多温度并行推演引擎，v0.3 首阶段）
 

@@ -216,3 +216,20 @@
 - **确认门**：两路径均经**内联二次确认**（`ConfirmInline`，明示后果）；未确认（取消）→ **零副作用**（无 create / 无 replace / 无入池）。
 - **丢弃**：`removeBranch`（会话容器移除；同步清 `collapsedIds` / `selectedBranchId`），**无残留** = 该分支不出现在 `explorationStore` 快照、无悬挂引用。
 - **残余窗口（REV-009 medium，非阻塞登记）**：次路径快照落在 `reviewStore.versions`（**会话内存级，无持久化**）——关闭应用后原正文快照不可恢复（与 stage-06 版本池既有同级设计）；已登记持久化路线（迁移 v5 `chapter_snapshot` 或 localStorage 兜底），不阻塞 stage-08。
+
+## [+] 易经卦象系统（六十四卦数据 + 朱熹变爻 + 引导卡 + 角色宿命） (2026-10-10)
+
+- **定位**：兑现 M3「易经卦象可映射到剧情走向」——把六十四卦/爻变建模为**可选的剧情引导系统**，为多温度推演提供方向性输入，并把卦象映射为角色宿命（写入设定卡）。**大六壬显式排除**（留 stage-12）。建立于 **v0.3.0-stage-09**。
+- **数据层**（`src/data/iching/`，**只读静态资源、无新迁移、无新 IPC**）：**公有领域《周易》经文白文**（卦辞 + 384 爻辞，**不含**乾用九/坤用六，**不含**需授权的今人译注）；`ICHING_DATA_VERSION` 版本化；来源/许可/校对口径登记 `docs/iching-data.md`。TS 结构化常量（`types.ts`/`trigrams.ts`/`hexagrams.ts`，binary 6 位**自下而上**）+ **手写类型守卫校验**（`validate.ts` 六条规则，**无第三方校验库**，见 `patterns.md`）。
+- **算法层**（`src/orchestration/iching/`，**纯函数、无 IO**）：`deriveHexagram(lines) → { benGua, zhiGua, changingLines }`（本卦/之卦/变爻）；**朱熹《易学启蒙》变爻七情形**（`zhuXiReading`：0 本卦卦辞 / 1 本卦变爻辞 / 2 本卦两变爻以**上爻**为主 / 3 本卦与之卦卦辞 / 4 之卦两不变爻以**下爻**为主 / 5 之卦不变爻辞 / 6 之卦卦辞）；起卦两法（**随机=可注入随机源 + `createSeededRng`(mulberry32) 种子复现**；**手动=指定卦 + 可选变爻**）；**时间起卦（农历/干支）v0.3 推迟**（不引入历法依赖 C-08，入口不呈现）。
+- **引导契约（stage-08 衔接，REV-003）**：引导卡 `{ hexagramName, judgmentDigest, changingLineReadings, plotHints, fateHints }`（**确定性**；经文原样不译；`judgmentDigest` 40 字上限 + `…`）；`renderGuideText` 产出结构化文本，经 stage-08 `buildExplorationOptions` 的**可选参数 `hexagramGuide?`** 并入 **system 约束段**（缺省完全不影响，与 stage-05 `skills?` 同范式）。**卦象不进入 `converge` 的设定卡覆盖判据**（设定卡约束仍最高优先；`settingCardIds` 不变），偏离仍按 stage-08 规则标注。
+- **角色宿命线（REV-004）**：v0.3 = **会话内存 + 用户写入 `setting_card`**（`kind="fate"`，复用既有编辑链路，**零迁移**；仅**新建**单一路径——REV-008 收敛）；**一次性提示卡**（不做跨章自动持续约束，避免角色命运漂移治理）；入卡后**自然进入**下一轮注入与覆盖判据（复用 stage-08 机制，零新增逻辑）。
+- **落点/边界**：数据 `src/data/iching/`；纯函数 `src/orchestration/iching/`；UI 与开关 `src/features/exploration/`（复用推演 tab）。i18n `iching` 命名空间（**UI 文案双语，经文不译**）。
+
+## [+] 术数引导「可选可关」设计（缺省关闭 + 运行时即时生效 + 关闭零副作用） (2026-10-10)
+
+- **原则来源**：roadmap 备注「术数系统（易经/大六壬）应保持**可选、可关闭**，不得成为创作流程的强制前置」。
+- **落地（stage-09）**：开关置于**推演面板内**（`src/features/exploration/`，`data-testid="iching-toggle"`），**缺省关闭**；持久化 `localStorage['fatequill.iching.enabled']`；不做任何流程的强制前置——关闭即**完全旁路**（起卦/宿命入口不可见）。
+- **状态源单一（BUG-001 修复后定稿）**：`ichingEnabled` 落在 **`explorationStore` 单例**（`setIChingEnabled` 写 store + `localStorage`），`useIChingEnabled` 为 **store 薄封装**（API 不变、无本地 `useState`），开关 UI（`ExplorationPanel`）与消费侧（`useExploration`）**同源** → **运行时切换即时生效**（无需重启，见 `troubleshooting.md`）。**复用既有 store，零新增依赖**。
+- **关闭零副作用（可判定验收）**：关闭时 `buildExplorationOptions` 输出与**基线逐字段一致**（空白 guide 视为未传、无空段残留），且 `buildGuideCard`/`renderGuideText` **零调用**；开启且已起卦 → system 段含卦象引导文本。
+- **通用**：可插拔/可选能力应「**状态单例共享 + 缺省旁路 + 关闭零副作用可判定**」三件套；开关状态勿用多份独立 `useState`（会致跨组件不同步）。

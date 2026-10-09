@@ -4,7 +4,7 @@
 
 ## 状态统计
 
-- **open 0 ｜ fixing 0 ｜ resolved 0 ｜ closed 7**
+- **open 0 ｜ fixing 0 ｜ resolved 0 ｜ closed 8**
 
 ## 按模块
 
@@ -53,3 +53,9 @@
 - **无 Bug**。完整验收（6/6 门禁 + 10/10 DoD + 专项 3.1~3.6）未发现功能性缺陷或回归。实测门禁 `pnpm test` **353/353**（77 文件）、lint 0 errors、build 无 `>500kB` 警告、`cargo test` **52/52**、format:check 通过。
 - 非阻塞遗留（审查阶段已登记，**非本次新发现**，见 `.openfeel/users/Liuary/code_review/REV-v0.3.0-stage-08.md`）：REV-009（medium，次路径快照会话内存级）、REV-010（low，abort 语义 / 新章落卷末）。
 - 验收报告：`.openfeel/tmp/stage-08-acceptance.md`
+
+### v0.3.0-stage-09（易经卦象系统，v0.3 收官）@openfeel-feel-tester
+
+- **1 个 medium Bug，已闭环**（修复 commit `48ce6e8`，验收人 openfeel-feel-tester）；验收结论 **DoD 10/10 通过**（第 4/9 条在 BUG-001 修复后真实 UI 路径恢复满足）；门禁 `pnpm test` **84 文件 415/415**、lint/build、`cargo test` **52/52** 全绿。
+- [`exploration.md`](exploration.md)：**BUG-001** — 运行时「启用易经推演」开关不生效：开关（`ExplorationPanel`）与推演引擎（`useExploration`）各持独立 `useIChingEnabled()` hook 的 `useState`，两份状态互不相通（写 `localStorage` 后另一实例不重读）→ `hexagramGuide` 恒 `undefined`、引导未注入 system 段（反向：挂载时开、运行关仍注入）→ `ichingEnabled` 提升为 `explorationStore` 单例 + store 薄封装（API 不变、**零新增依赖**），运行时切换即时生效；独立回归探针复现原失败路径并验证消除。
+- 验收报告：`.openfeel/tmp/stage-09-acceptance.md`

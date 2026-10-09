@@ -49,3 +49,5 @@
 | [2026-10-10-Liuary-044.md](2026-10-10-Liuary-044.md) | Liuary | v0.3.0-stage-09.op-004 执行通过 |
 | [2026-10-10-Liuary-045.md](2026-10-10-Liuary-045.md) | Liuary | v0.3.0-stage-09.op-005 执行通过 |
 | [2026-10-10-Liuary-046.md](2026-10-10-Liuary-046.md) | Liuary | v0.3.0-stage-09.op-006 执行通过 |
+| [2026-10-10-Liuary-047.md](2026-10-10-Liuary-047.md) | openfeel-archiver | v0.3.0-stage-09 归档完成 & v0.3 里程碑收口（知识库/模块手册/公共索引/Bug 索引/v0.3 总结） |
+| [2026-10-10-Liuary-048.md](2026-10-10-Liuary-048.md) | Liuary | 阶段 v0.3.0-stage-09 完成 |

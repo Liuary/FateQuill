@@ -2,8 +2,8 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-09T20:53:48.800Z",
-    "revision": 328
+    "updated": "2026-10-09T20:48:13.362Z",
+    "revision": 323
   },
   "pipeline": {
     "phase": "active",
@@ -1177,8 +1177,8 @@
     },
     "v0.3.0-stage-09": {
       "name": "v0.3.0-stage-09",
-      "phase": "archiving",
-      "status": "archiving",
+      "phase": "review_passed",
+      "status": "review_passed",
       "deps": [
         "v0.3.0-stage-08"
       ],
@@ -4472,58 +4472,6 @@
         "stageName": "v0.3.0-stage-09",
         "from": "exec_running",
         "to": "review_pending"
-      }
-    },
-    {
-      "time": "2026-10-09T20:49:49.633Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.3.0-stage-09",
-        "from": "review_pending",
-        "to": "review_passed"
-      }
-    },
-    {
-      "time": "2026-10-09T20:49:49.960Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.3.0-stage-09",
-        "from": "review_passed",
-        "to": "test_pending"
-      }
-    },
-    {
-      "time": "2026-10-09T20:51:16.819Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.3.0-stage-09",
-        "from": "test_pending",
-        "to": "test_passed"
-      }
-    },
-    {
-      "time": "2026-10-09T20:51:17.136Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.3.0-stage-09",
-        "from": "test_passed",
-        "to": "archiving"
-      }
-    },
-    {
-      "time": "2026-10-09T20:53:48.800Z",
-      "agent": "openfeel-archiver",
-      "action": "archive_stage",
-      "detail": {
-        "stageName": "v0.3.0-stage-09",
-        "opsCount": 7,
-        "reviewsCount": 0,
-        "knowledgeCount": 0,
-        "archivePath": "C:\\Users\\Liuary\\Dev\\Mine\\AI\\Novel\\NovelCreate\\.openfeel\\log\\archive-v0.3.0-stage-09.md"
       }
     }
   ]

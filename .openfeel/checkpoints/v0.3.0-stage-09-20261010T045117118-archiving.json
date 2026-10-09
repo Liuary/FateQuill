@@ -2,14 +2,14 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-09T20:12:15.619Z",
-    "revision": 294
+    "updated": "2026-10-09T20:51:16.819Z",
+    "revision": 326
   },
   "pipeline": {
     "phase": "active",
     "current": {
       "stage": "v0.3.0-stage-09",
-      "op": ""
+      "op": "op-007"
     },
     "retry": 0
   },
@@ -1177,12 +1177,132 @@
     },
     "v0.3.0-stage-09": {
       "name": "v0.3.0-stage-09",
-      "phase": "plan_pending",
-      "status": "planned",
+      "phase": "archiving",
+      "status": "testing",
       "deps": [
         "v0.3.0-stage-08"
       ],
-      "ops": {},
+      "ops": {
+        "op-001": {
+          "title": "六十四卦数据建模与手写校验（T1）",
+          "state": "done",
+          "assignee": "openfeel-executor",
+          "attempts": 1,
+          "max_attempts": 3,
+          "checkpoints": {
+            "plan": "pending",
+            "scheme": "pending",
+            "exec": {
+              "attempts": 0,
+              "self": "pending"
+            },
+            "review": "pending",
+            "test": "pending"
+          }
+        },
+        "op-002": {
+          "title": "起卦与朱熹变爻推导（T2）",
+          "state": "done",
+          "assignee": "openfeel-executor",
+          "attempts": 1,
+          "max_attempts": 3,
+          "checkpoints": {
+            "plan": "pending",
+            "scheme": "pending",
+            "exec": {
+              "attempts": 0,
+              "self": "pending"
+            },
+            "review": "pending",
+            "test": "pending"
+          }
+        },
+        "op-003": {
+          "title": "卦象引导卡：剧情映射（T3）",
+          "state": "done",
+          "assignee": "openfeel-executor",
+          "attempts": 1,
+          "max_attempts": 3,
+          "checkpoints": {
+            "plan": "pending",
+            "scheme": "pending",
+            "exec": {
+              "attempts": 0,
+              "self": "pending"
+            },
+            "review": "pending",
+            "test": "pending"
+          }
+        },
+        "op-004": {
+          "title": "角色宿命映射与写入设定卡（T4）",
+          "state": "done",
+          "assignee": "openfeel-executor",
+          "attempts": 1,
+          "max_attempts": 3,
+          "checkpoints": {
+            "plan": "pending",
+            "scheme": "pending",
+            "exec": {
+              "attempts": 0,
+              "self": "pending"
+            },
+            "review": "pending",
+            "test": "pending"
+          }
+        },
+        "op-005": {
+          "title": "接入推演引擎：hexagramGuide 可选注入与开关（T5）",
+          "state": "done",
+          "assignee": "openfeel-executor",
+          "attempts": 1,
+          "max_attempts": 3,
+          "checkpoints": {
+            "plan": "pending",
+            "scheme": "pending",
+            "exec": {
+              "attempts": 0,
+              "self": "pending"
+            },
+            "review": "pending",
+            "test": "pending"
+          }
+        },
+        "op-006": {
+          "title": "遗留登记与文档回写（T6）",
+          "state": "done",
+          "assignee": "openfeel-executor",
+          "attempts": 1,
+          "max_attempts": 3,
+          "checkpoints": {
+            "plan": "pending",
+            "scheme": "pending",
+            "exec": {
+              "attempts": 0,
+              "self": "pending"
+            },
+            "review": "pending",
+            "test": "pending"
+          }
+        },
+        "op-007": {
+          "title": "修复易经开关独立 hook 状态导致运行时切换不生效（BUG-001）(fix)",
+          "state": "pending",
+          "assignee": "openfeel-executor",
+          "attempts": 0,
+          "max_attempts": 3,
+          "checkpoints": {
+            "plan": "pending",
+            "scheme": "pending",
+            "exec": {
+              "attempts": 0,
+              "self": "pending"
+            },
+            "review": "pending",
+            "test": "pending"
+          }
+        }
+      },
       "stats": {
         "start_time": "2026-10-09T20:12:15.618Z",
         "end_time": "",
@@ -4075,6 +4195,313 @@
         "stageName": "v0.3.0-stage-09",
         "from": "plan_pending",
         "to": "plan_review"
+      }
+    },
+    {
+      "time": "2026-10-09T20:14:28.386Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.3.0-stage-09",
+        "from": "plan_review",
+        "to": "plan_pending"
+      }
+    },
+    {
+      "time": "2026-10-09T20:15:12.552Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.3.0-stage-09",
+        "from": "plan_pending",
+        "to": "plan_review"
+      }
+    },
+    {
+      "time": "2026-10-09T20:18:37.573Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.3.0-stage-09",
+        "from": "plan_review",
+        "to": "plan_passed"
+      }
+    },
+    {
+      "time": "2026-10-09T20:18:37.894Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.3.0-stage-09",
+        "from": "plan_passed",
+        "to": "scheme_pending"
+      }
+    },
+    {
+      "time": "2026-10-09T20:19:06.559Z",
+      "agent": "cli",
+      "action": "register_op",
+      "detail": {
+        "stageName": "v0.3.0-stage-09",
+        "opId": "op-001"
+      }
+    },
+    {
+      "time": "2026-10-09T20:19:06.881Z",
+      "agent": "cli",
+      "action": "register_op",
+      "detail": {
+        "stageName": "v0.3.0-stage-09",
+        "opId": "op-002"
+      }
+    },
+    {
+      "time": "2026-10-09T20:19:07.209Z",
+      "agent": "cli",
+      "action": "register_op",
+      "detail": {
+        "stageName": "v0.3.0-stage-09",
+        "opId": "op-003"
+      }
+    },
+    {
+      "time": "2026-10-09T20:19:07.543Z",
+      "agent": "cli",
+      "action": "register_op",
+      "detail": {
+        "stageName": "v0.3.0-stage-09",
+        "opId": "op-004"
+      }
+    },
+    {
+      "time": "2026-10-09T20:19:07.860Z",
+      "agent": "cli",
+      "action": "register_op",
+      "detail": {
+        "stageName": "v0.3.0-stage-09",
+        "opId": "op-005"
+      }
+    },
+    {
+      "time": "2026-10-09T20:19:08.179Z",
+      "agent": "cli",
+      "action": "register_op",
+      "detail": {
+        "stageName": "v0.3.0-stage-09",
+        "opId": "op-006"
+      }
+    },
+    {
+      "time": "2026-10-09T20:20:49.008Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.3.0-stage-09",
+        "from": "scheme_pending",
+        "to": "scheme_review"
+      }
+    },
+    {
+      "time": "2026-10-09T20:23:23.103Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.3.0-stage-09",
+        "from": "scheme_review",
+        "to": "scheme_passed"
+      }
+    },
+    {
+      "time": "2026-10-09T20:23:23.421Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.3.0-stage-09",
+        "from": "scheme_passed",
+        "to": "exec_running"
+      }
+    },
+    {
+      "time": "2026-10-09T20:26:25.578Z",
+      "agent": "openfeel-executor",
+      "action": "attempt_pass",
+      "detail": {
+        "opId": "v0.3.0-stage-09.op-001",
+        "attempts": 1
+      }
+    },
+    {
+      "time": "2026-10-09T20:28:34.252Z",
+      "agent": "openfeel-executor",
+      "action": "attempt_pass",
+      "detail": {
+        "opId": "v0.3.0-stage-09.op-002",
+        "attempts": 1
+      }
+    },
+    {
+      "time": "2026-10-09T20:29:47.644Z",
+      "agent": "openfeel-executor",
+      "action": "attempt_pass",
+      "detail": {
+        "opId": "v0.3.0-stage-09.op-003",
+        "attempts": 1
+      }
+    },
+    {
+      "time": "2026-10-09T20:32:13.711Z",
+      "agent": "openfeel-executor",
+      "action": "attempt_pass",
+      "detail": {
+        "opId": "v0.3.0-stage-09.op-004",
+        "attempts": 1
+      }
+    },
+    {
+      "time": "2026-10-09T20:34:46.448Z",
+      "agent": "openfeel-executor",
+      "action": "attempt_pass",
+      "detail": {
+        "opId": "v0.3.0-stage-09.op-005",
+        "attempts": 1
+      }
+    },
+    {
+      "time": "2026-10-09T20:36:41.020Z",
+      "agent": "openfeel-executor",
+      "action": "attempt_pass",
+      "detail": {
+        "opId": "v0.3.0-stage-09.op-006",
+        "attempts": 1
+      }
+    },
+    {
+      "time": "2026-10-09T20:36:41.390Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.3.0-stage-09",
+        "from": "exec_running",
+        "to": "review_pending"
+      }
+    },
+    {
+      "time": "2026-10-09T20:40:27.719Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.3.0-stage-09",
+        "from": "review_pending",
+        "to": "review_passed"
+      }
+    },
+    {
+      "time": "2026-10-09T20:40:28.041Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.3.0-stage-09",
+        "from": "review_passed",
+        "to": "test_pending"
+      }
+    },
+    {
+      "time": "2026-10-09T20:43:42.070Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.3.0-stage-09",
+        "from": "test_pending",
+        "to": "test_failed"
+      }
+    },
+    {
+      "time": "2026-10-09T20:43:42.392Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.3.0-stage-09",
+        "from": "test_failed",
+        "to": "scheme_pending"
+      }
+    },
+    {
+      "time": "2026-10-09T20:43:56.275Z",
+      "agent": "cli",
+      "action": "register_op",
+      "detail": {
+        "stageName": "v0.3.0-stage-09",
+        "opId": "op-007"
+      }
+    },
+    {
+      "time": "2026-10-09T20:44:40.478Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.3.0-stage-09",
+        "from": "scheme_pending",
+        "to": "scheme_review"
+      }
+    },
+    {
+      "time": "2026-10-09T20:45:08.357Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.3.0-stage-09",
+        "from": "scheme_review",
+        "to": "scheme_passed"
+      }
+    },
+    {
+      "time": "2026-10-09T20:45:08.690Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.3.0-stage-09",
+        "from": "scheme_passed",
+        "to": "exec_running"
+      }
+    },
+    {
+      "time": "2026-10-09T20:48:13.362Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.3.0-stage-09",
+        "from": "exec_running",
+        "to": "review_pending"
+      }
+    },
+    {
+      "time": "2026-10-09T20:49:49.633Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.3.0-stage-09",
+        "from": "review_pending",
+        "to": "review_passed"
+      }
+    },
+    {
+      "time": "2026-10-09T20:49:49.960Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.3.0-stage-09",
+        "from": "review_passed",
+        "to": "test_pending"
+      }
+    },
+    {
+      "time": "2026-10-09T20:51:16.819Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.3.0-stage-09",
+        "from": "test_pending",
+        "to": "test_passed"
       }
     }
   ]

@@ -238,3 +238,37 @@ resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } }
 - **兼容性**：**Vite 8（rolldown）兼容 `build.rollupOptions.output.manualChunks`**（实测生效，产出 3 个独立 chunk）；strict TS 下回调参数须显式标注 `(id: string)`。
 - **实测收益**：入口 **909.94 → 356.57 kB raw（−60.8%）**、gzip **285.97 → 111.45 kB（−61.0%）**，JS 总增量 ≈0（+0.02 kB），`>500 kB` 警告消除 → **判定采纳**（保留配置）。残余 `editor` chunk 466 kB 为后续可选优化（StarterKit → 精选扩展裁剪）。
 - **报告落点**：`docs/build-size-report.md`（基线 / 分包后 / 收益判定 / BLOCKED 跟踪）。
+
+## [+] 手写类型守卫做数据校验（无第三方校验库，零新增依赖） (2026-10-10)
+
+- **场景**：64 卦静态数据需运行时校验（计数/唯一性/集合覆盖/映射自洽）。初版计划用 `zod`，审查（REV-006）判定其为**未声明的第三方依赖**（`package.json` 无、`src/` 源码零引用），违反「零新增依赖」惯例与 C-08。
+- **裁决与模式（采纳方案①）**：改用**手写 TS 类型守卫 + 运行时断言**（`src/data/iching/validate.ts`）——`validateIChing(ex, tri): { ok, errors[] }` **逐条收集错误（不早退）**，规则：① 64 卦 ② 384 爻 ③ 名唯一 ④ 8×8 组合 ⑤ King Wen 1~64 连续 ⑥ binary↔卦名自洽（先校验 binary 为 6 位 0/1，再 `binaryToNames` 上/下卦核对）。
+- **要点**：六条规则本就需自定义逻辑，schema 库开箱能力覆盖有限 → **手写收益不低于引入依赖**；报错粒度「**总数级 + 单条级双报错**」（如爻辞总数 ≠384 与某卦 `lines.length≠6` 分列）；类型 `LineState`（变爻契约）即便暂无数据也**保留为契约**并注释。
+- **验证**：正向（六规则 + 乾/坤/既济抽样）+ **负向**（篡改 → `ok=false`）；`rg "zod" package.json src/data/iching` **零命中**（裁决落地断言）；实现注释与文档改「不引入任何第三方校验库」表述（保留裁决可读性、去掉库名字面量）。
+- **通用**：为单一功能引入第三方依赖前先评估「手写收益 vs 依赖成本」；校验/断言类能力常可零依赖手写（见 C-08）。
+
+## [+] 朱熹变爻纯函数 + 可注入随机源（种子复现） (2026-10-10)
+
+- **场景**：起卦与解卦须与 UI/IO 解耦、可判定单测。
+- **模式**：`src/orchestration/iching/` **纯函数**（无 IO）——`deriveHexagram(lines: LineState[]) → Casting`（本卦/之卦=变爻取反/变爻下标）；`zhuXiReading(changingLines, benGua, zhiGua) → ZhuXiReading`（朱熹七情形，`{ changingCount, source:"ben"|"zhi"|"both", lineIndices, primaryIndex? }`）；**`readingVerses(casting)`** 单一来源据 `reading` 取原文（卦辞/爻辞）数组，供引导卡与 UI 复用（避免多 op 重复实现）。
+- **一致性守卫**：`zhuXiReading` 把传入的 `benGua`/`zhiGua` 用于**不变量校验**（变爻集合须等于两卦 `binary` 差异位，否则抛错）——既避免 `noUnusedParameters` 告警，又提供真实负向可测点。
+- **起卦可注入性**：`castRandom(rng = Math.random)` 逐爻用三枚铜钱法（每枚 2/3 → 和 6/7/8/9 → 老阴(变)/少阳/少阴/老阳(变)）；`createSeededRng(seed)`（mulberry32）支持**种子复现**（如 `castRandom(() => 0)` → 六爻皆老阴 → 坤之乾，可判定）；`castManual(binary, changingLineIndices)` 手动指定。
+- **测试**：`derive.test.ts` 覆盖朱熹 **0~6 全七情形**（含 3 爻变 `source="both"`、4 爻变 `primaryIndex`、5 爻变）+ 一致性守卫；`random.test.ts` 种子序列一致 + 手动指定正确 + UI 无「时间起卦」入口。
+- **通用**：领域算法（解卦/推导）做**纯函数 + 可注入随机源**，把不确定性收敛到单一注入点，便于种子复现与全分支单测。
+
+## [+] store 单例状态共享（防多实例独立 `useState` 不同步） (2026-10-10)
+
+- **教训来源**：BUG-001（medium）——开关 hook `useIChingEnabled()` 在开关 UI（`ExplorationPanel`）与消费侧（`useExploration`）**各调用一次**，实为**两份互不相通的 `useState`**；写 `localStorage` 后另一实例不重读 → **运行时切换开关不生效**（引导未注入），且反向（挂载时开、运行关）引导仍注入。
+- **模式（采纳 store 单例）**：把跨组件共享的开关状态**提升到已有 store 单例**（`explorationStore.ichingEnabled` + `setIChingEnabled` 写 store + `localStorage`）；`useIChingEnabled` 改造为 **store 薄封装**（`useExplorationStore(selector)` 读 + 动作，**保留对外 API 不变、移除本地 `useState`**）；消费侧 `useExploration` 改 **store 选择器** → store 订阅天然驱动两处**同步重渲染**。
+- **采纳理由**：`explorationStore` 已是该域会话单例（`casting` 等跨组件状态已在其中，REV-007 先例）；**比 Context/storage 事件更简单、可测、零新增依赖**。
+- **验证**：运行时切换用例——挂载关闭 `guideCalls=[]` → 运行时 `click` 开启 → `["buildGuideCard","renderGuideText"]` + `localStorage="true"` → 运行时关闭 → 零调用 + `"false"`；hook 级「`setIChingEnabled(true)` 后 `ichingEnabled` 立即为 true（无需重挂载）」。
+- **通用**：**跨组件共享的可变状态必须单一数据源**——勿让多个组件各持一份 `useState`（持久化/存储 ≠ 状态同步）；优先复用已有 store 单例。
+
+## [+] 装配层可选注入参数（向后兼容，缺省零影响） (2026-10-10)
+
+- **适用**：跨阶段为既有装配函数追加可选能力（stage-05 `skills?` → stage-08 → stage-09 `hexagramGuide?`），须**零回归**。
+- **模式**：`buildExplorationOptions` 增**可选参数 `hexagramGuide?: { text: string }`**——开启且已起卦时把 `renderGuideText(buildGuideCard(casting))` 并入 **system 约束段**；**缺省/未传时输出与基线逐字段一致**（`toEqual` 断言）。
+- **实现要点**：system 段用**数组拼装 + `filter(Boolean)`**（`[baseSystem, constraints, guide].filter(Boolean).join("\n\n")`）——空 guide **不产生空段残留**；**空白 guide 视为未传**（`trim()` 后判空）；只改 system 段，`intent`（user 段）与 `settingCardIds` 不变。
+- **求值稳定性**：消费侧以 `useMemo([enabled, casting])` 计算 guide（关闭或未起卦 → `undefined`），避免每次渲染重算并保证关闭时**零调用**。
+- **零副作用断言落点**：`buildExplorationOptions` 本身**不引用**卦象模块（文本由调用方渲染）——故「模块零调用」断言落于宿主组件（`vi.mock` 记录 `buildGuideCard`/`renderGuideText`）；装配层测试保留「缺省/空白 → 与基线逐字段一致」。
+- **通用**：向后兼容的可选注入 = **可选参数缺省旁路 + 空值语义归一（空白=未传）+ 数组拼装无空段 + 消费侧 memo 稳定求值**；跨阶段扩展须回写 `manual/` 并做既有测试全量回归。
