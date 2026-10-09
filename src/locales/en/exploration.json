@@ -16,5 +16,12 @@
   "guideSettings": "Configure a model and store an API key in Settings first",
   "statusPending": "Running",
   "statusDone": "Done",
-  "statusError": "Failed"
+  "statusError": "Failed",
+  "compare": "Branch comparison",
+  "unique": "Unique key turns",
+  "shared": "Shared key turns",
+  "collapse": "Collapse",
+  "expand": "Expand",
+  "select": "Select",
+  "settingRefs": "Setting cards"
 }

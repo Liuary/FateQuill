@@ -16,5 +16,12 @@
   "guideSettings": "请先在「设置」配置模型并写入 API Key",
   "statusPending": "进行中",
   "statusDone": "已完成",
-  "statusError": "失败"
+  "statusError": "失败",
+  "compare": "分支对比",
+  "unique": "独有关键转折",
+  "shared": "共现关键转折",
+  "collapse": "折叠",
+  "expand": "展开",
+  "select": "选中",
+  "settingRefs": "引用设定卡"
 }

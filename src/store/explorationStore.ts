@@ -18,11 +18,19 @@ interface ExplorationState {
   branches: ExplorationBranch[];
   /** 是否正在运行 */
   running: boolean;
+  /** 选中的分支（对比视图） */
+  selectedBranchId: string | null;
+  /** 折叠的分支 id（对比视图） */
+  collapsedIds: string[];
   setIntent: (intent: string) => void;
   setTemperatures: (temperatures: number[]) => void;
   setBranches: (branches: ExplorationBranch[]) => void;
   updateBranch: (id: string, patch: Partial<ExplorationBranch>) => void;
   setRunning: (running: boolean) => void;
+  /** 选中分支（再次点击同分支 → 取消选中） */
+  selectBranch: (id: string) => void;
+  /** 折叠/展开分支 */
+  toggleCollapsed: (id: string) => void;
   clear: () => void;
 }
 
@@ -32,6 +40,8 @@ export const useExplorationStore = create<ExplorationState>((set) => ({
   temperatures: [...DEFAULT_TEMPERATURES],
   branches: [],
   running: false,
+  selectedBranchId: null,
+  collapsedIds: [],
   setIntent: (intent) => set({ intent }),
   setTemperatures: (temperatures) => set({ temperatures }),
   setBranches: (branches) => set({ branches }),
@@ -42,6 +52,14 @@ export const useExplorationStore = create<ExplorationState>((set) => ({
       ),
     })),
   setRunning: (running) => set({ running }),
-  // 清空分支与运行态（保留意向与温度配置）
-  clear: () => set({ branches: [], running: false }),
+  selectBranch: (id) =>
+    set((state) => ({ selectedBranchId: state.selectedBranchId === id ? null : id })),
+  toggleCollapsed: (id) =>
+    set((state) => ({
+      collapsedIds: state.collapsedIds.includes(id)
+        ? state.collapsedIds.filter((current) => current !== id)
+        : [...state.collapsedIds, id],
+    })),
+  // 清空分支、选中与折叠态（保留意向与温度配置）
+  clear: () => set({ branches: [], running: false, selectedBranchId: null, collapsedIds: [] }),
 }));

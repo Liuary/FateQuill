@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useGenerationAvailability } from "@/features/generation/useGenerationAvailability";
 import { useExplorationStore } from "@/store/explorationStore";
+import { BranchCompare } from "./BranchCompare";
 import { TemperatureConfig } from "./TemperatureConfig";
 import { useExploration } from "./useExploration";
 
@@ -34,11 +35,6 @@ export function ExplorationPanel({ novelId, chapterId }: ExplorationPanelProps) 
   const { run, stop } = useExploration({ novelId, chapterId, config });
 
   const canRun = state === "ready" && novelId != null && intent.trim().length > 0 && !running;
-  const statusLabel = {
-    pending: t("statusPending"),
-    done: t("statusDone"),
-    error: t("statusError"),
-  };
 
   return (
     <div className="flex flex-col gap-3 p-3 text-sm">
@@ -71,28 +67,7 @@ export function ExplorationPanel({ novelId, chapterId }: ExplorationPanelProps) 
         <h3 className="text-xs opacity-70">
           {t("branch")}（{branches.length}）
         </h3>
-        {branches.length === 0 ? (
-          <p className="text-xs opacity-70">{t("empty")}</p>
-        ) : (
-          <ul className="flex flex-col gap-1">
-            {branches.map((branch) => (
-              <li
-                key={branch.id}
-                data-testid="exploration-branch"
-                className="border-border/40 flex flex-col gap-1 rounded border p-1"
-              >
-                <span className="text-xs opacity-70">
-                  {t("temperatureLabel")}: {branch.temperature} ｜ {t("effectiveLabel")}:{" "}
-                  {branch.effectiveTemperature}
-                  {branch.clamped ? ` ｜ ${t("clamped")}` : ""}
-                </span>
-                <span className="text-xs">{statusLabel[branch.status]}</span>
-                {branch.card && <span>{branch.card.summary}</span>}
-                {branch.error && <span className="text-destructive text-xs">{branch.error}</span>}
-              </li>
-            ))}
-          </ul>
-        )}
+        <BranchCompare />
       </section>
     </div>
   );

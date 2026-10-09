@@ -56,14 +56,15 @@ describe("ExplorationPanel（多温度并行推演）", () => {
     fireEvent.change(screen.getByLabelText("走向意向"), { target: { value: "北上" } });
     fireEvent.click(screen.getByRole("button", { name: "开始推演" }));
 
-    await waitFor(() => expect(screen.getAllByTestId("exploration-branch")).toHaveLength(3));
+    await waitFor(() => expect(screen.getAllByTestId("branch-card")).toHaveLength(3));
     // 三分支各以指定温度下发
-    expect(screen.getByText(/温度: 0\.3/)).toBeInTheDocument();
-    expect(screen.getByText(/温度: 0\.7/)).toBeInTheDocument();
+    const cards = screen.getAllByTestId("branch-card");
+    expect(cards[0].textContent).toContain("温度: 0.3");
+    expect(cards[1].textContent).toContain("温度: 0.7");
     // anthropic [0,1] → 1.1 被 clamp 至 1，并显式标注
-    expect(
-      screen.getByText(/温度: 1\.1 ｜ 有效温度: 1 ｜ 已按 provider 区间 clamp/),
-    ).toBeInTheDocument();
+    expect(cards[2].textContent).toContain("温度: 1.1");
+    expect(cards[2].textContent).toContain("有效温度: 1");
+    expect(cards[2].textContent).toContain("已按 provider 区间 clamp");
     // 走向卡摘要渲染
     expect(screen.getAllByText("走向：北上结盟")).toHaveLength(3);
   });
