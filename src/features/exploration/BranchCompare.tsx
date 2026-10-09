@@ -26,9 +26,13 @@ export function BranchCompare() {
   const toggleCollapsed = useExplorationStore((s) => s.toggleCollapsed);
   const selectBranch = useExplorationStore((s) => s.selectBranch);
 
-  // 并排顺序：按温度升序（与分支创建顺序解耦）
+  // 并排顺序：收敛权重降序（偏离分支被降权）；权重并列或无权重 → 温度升序（稳定排序）
   const ordered = useMemo(
-    () => [...branches].sort((a, b) => a.temperature - b.temperature),
+    () =>
+      [...branches].sort((a, b) => {
+        const weightDiff = (b.weight ?? 0) - (a.weight ?? 0);
+        return weightDiff !== 0 ? weightDiff : a.temperature - b.temperature;
+      }),
     [branches],
   );
   const diffs = useMemo(

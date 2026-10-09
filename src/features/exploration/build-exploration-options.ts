@@ -21,7 +21,10 @@ function stripHtml(html: string): string {
 }
 
 /**
- * 装配推演 `ChatOptions`（provider 无关）：设定卡 + 前章末尾 + 走向意向 + 推演约束。
+ * 装配推演 `ChatOptions`（provider 无关）：**用户设定约束并入 system 段**（生成期克制收敛第一层），
+ * 前章末尾按 stage-05 预算取末尾；**走向意向为 user 段**。
+ *
+ * 返回附带 `settingCardIds`（本次注入的设定卡 id 集），供产出期**覆盖检查**（收敛第二层）使用。
  */
 export async function buildExplorationOptions(params: {
   novelId: number;
@@ -29,7 +32,7 @@ export async function buildExplorationOptions(params: {
   intent: string;
   model: string;
   temperature: number;
-}): Promise<ChatOptions> {
+}): Promise<{ options: ChatOptions; settingCardIds: number[] }> {
   const settingCards: ChapterSettingCard[] = (
     await repositories.settingCard.listByNovel(params.novelId)
   ).map((card) => ({ id: card.id, title: card.title, content: card.content }));
@@ -45,12 +48,23 @@ export async function buildExplorationOptions(params: {
     previousChapterTail = previous ? stripHtml(previous.content) : "";
   }
 
-  return buildChapterPrompt({
-    systemPrompt: TURN_CARD_SYSTEM_PROMPT,
-    settingCards,
+  // 约束进 system 段：设定卡文本并入 systemPrompt；settings 传 [] 避免重复
+  const constraints =
+    settingCards.length > 0
+      ? `用户设定约束：\n${settingCards.map((card) => `${card.title}: ${card.content}`).join("\n")}`
+      : "";
+  const systemPrompt = constraints
+    ? `${TURN_CARD_SYSTEM_PROMPT}\n\n${constraints}`
+    : TURN_CARD_SYSTEM_PROMPT;
+
+  const options = buildChapterPrompt({
+    systemPrompt,
+    settingCards: [], // 已并入 system 段（避免重复注入）
     previousChapterTail,
     userInstruction: params.intent, // 走向意向 → user 段
     model: params.model,
     temperature: params.temperature,
   });
+
+  return { options, settingCardIds: settingCards.map((card) => card.id) };
 }

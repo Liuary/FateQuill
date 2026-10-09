@@ -23,5 +23,10 @@
   "collapse": "折叠",
   "expand": "展开",
   "select": "选中",
-  "settingRefs": "引用设定卡"
+  "settingRefs": "引用设定卡",
+  "deviation": "偏离设定",
+  "flagged": "偏离设定（已降权）",
+  "coverage": "覆盖率",
+  "missingSettings": "缺失设定卡",
+  "invalidRefs": "无效引用"
 }

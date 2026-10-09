@@ -36,9 +36,10 @@ export function BranchCard({
       data-testid="branch-card"
       data-selected={selected}
       className={
-        selected
+        (selected
           ? "border-primary flex flex-col gap-1 rounded border-2 p-2 text-sm"
-          : "border-border/40 flex flex-col gap-1 rounded border p-2 text-sm"
+          : "border-border/40 flex flex-col gap-1 rounded border p-2 text-sm") +
+        (branch.deviation?.flagged ? " opacity-60" : "") // 降权：视觉弱化（不隐藏）
       }
     >
       <header className="flex flex-wrap items-center gap-2">
@@ -58,7 +59,23 @@ export function BranchCard({
       {!collapsed &&
         (branch.card ? (
           <>
+            {branch.deviation?.flagged && (
+              <span data-testid="deviation-flag" className="text-destructive text-xs">
+                {t("flagged")}
+              </span>
+            )}
             <p>{branch.card.summary}</p>
+            {branch.deviation && (
+              <p className="text-xs opacity-70" data-testid="deviation-detail">
+                {t("coverage")}: {branch.deviation.coverage.toFixed(2)}
+                {branch.deviation.missingSettingCardIds.length > 0
+                  ? ` ｜ ${t("missingSettings")}: ${branch.deviation.missingSettingCardIds.join(", ")}`
+                  : ""}
+                {branch.deviation.invalidSettingCardIds.length > 0
+                  ? ` ｜ ${t("invalidRefs")}: ${branch.deviation.invalidSettingCardIds.join(", ")}`
+                  : ""}
+              </p>
+            )}
             {branch.card.keyTurns.length > 0 && (
               <ul className="flex flex-col gap-1 text-xs">
                 {branch.card.keyTurns.map((turn) => {

@@ -8,7 +8,9 @@
 
 import { useCallback, useRef } from "react";
 import type { ModelConfig } from "@/domain/models/model-config";
+import { repositories } from "@/ipc/repositories";
 import type { ChatOptions } from "@/orchestration/types";
+import { converge } from "@/orchestration/exploration/converge";
 import { runExploration, type RunBranchInput } from "@/orchestration/exploration/runner";
 import { clampTemperature } from "@/orchestration/exploration/temperature";
 import { resolveProviderForConfig } from "@/features/generation/resolve-provider";
@@ -50,19 +52,21 @@ export function useExploration(opts: {
       .getState()
       .setBranches(branches.map((branch) => ({ ...branch, status: "pending" })));
     try {
-      // 逐分支装配输入（复用 stage-05 装配 + 走向意向；以 effectiveTemperature 下发）
+      // 逐分支装配输入（设定约束并入 system 段）；收集本次**注入**的设定卡 id 集
       const optionsByBranch = new Map<string, ChatOptions>();
+      const injectedSettingCardIds = new Set<number>();
       for (const branch of branches) {
-        optionsByBranch.set(
-          branch.id,
-          await buildExplorationOptions({
-            novelId,
-            chapterId: opts.chapterId,
-            intent,
-            model: config.modelName,
-            temperature: branch.effectiveTemperature,
-          }),
-        );
+        const built = await buildExplorationOptions({
+          novelId,
+          chapterId: opts.chapterId,
+          intent,
+          model: config.modelName,
+          temperature: branch.effectiveTemperature,
+        });
+        optionsByBranch.set(branch.id, built.options);
+        for (const id of built.settingCardIds) {
+          injectedSettingCardIds.add(id);
+        }
       }
 
       const provider = resolveProviderForConfig(config);
@@ -78,7 +82,16 @@ export function useExploration(opts: {
         },
         signal: controller.signal,
       });
-      useExplorationStore.getState().setBranches(results);
+
+      // 产出期收敛（第二层）：覆盖检查 + 存在性校验（过滤幻觉引用）→ 标注 + 降权（**不删不改**）
+      const existingSettingCardIds = new Set(
+        (await repositories.settingCard.listByNovel(novelId)).map((card) => card.id),
+      );
+      const converged = converge(results, {
+        injectedSettingCardIds: [...injectedSettingCardIds],
+        existingSettingCardIds,
+      });
+      useExplorationStore.getState().setBranches(converged);
     } finally {
       abortRef.current = null;
       useExplorationStore.getState().setRunning(false);

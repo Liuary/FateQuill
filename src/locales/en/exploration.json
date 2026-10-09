@@ -23,5 +23,10 @@
   "collapse": "Collapse",
   "expand": "Expand",
   "select": "Select",
-  "settingRefs": "Setting cards"
+  "settingRefs": "Setting cards",
+  "deviation": "Deviation",
+  "flagged": "Deviates from settings (down-weighted)",
+  "coverage": "Coverage",
+  "missingSettings": "Missing settings",
+  "invalidRefs": "Invalid refs"
 }
