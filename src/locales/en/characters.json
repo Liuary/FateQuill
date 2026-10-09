@@ -1,0 +1,20 @@
+{
+  "tab": "Characters",
+  "title": "Character profiles",
+  "add": "Add character",
+  "edit": "Edit",
+  "delete": "Delete",
+  "save": "Save",
+  "cancel": "Cancel",
+  "loading": "Loading…",
+  "empty": "No characters yet",
+  "name": "Name",
+  "identity": "Identity",
+  "personality": "Personality",
+  "speechStyle": "Speech style",
+  "goal": "Goal",
+  "extra": "Extra",
+  "major": "Major character",
+  "majorBadge": "major",
+  "confirmDelete": "Delete this character?"
+}

@@ -22,6 +22,8 @@ import zhIChing from "@/locales/zh-CN/iching.json";
 import enIChing from "@/locales/en/iching.json";
 import zhDialogue from "@/locales/zh-CN/dialogue.json";
 import enDialogue from "@/locales/en/dialogue.json";
+import zhCharacters from "@/locales/zh-CN/characters.json";
+import enCharacters from "@/locales/en/characters.json";
 
 export const DEFAULT_LANG = "zh-CN";
 
@@ -41,6 +43,7 @@ void i18n
         exploration: zhExploration,
         iching: zhIChing,
         dialogue: zhDialogue,
+        characters: zhCharacters,
       },
       en: {
         common: enCommon,
@@ -53,6 +56,7 @@ void i18n
         exploration: enExploration,
         iching: enIChing,
         dialogue: enDialogue,
+        characters: enCharacters,
       },
     },
     fallbackLng: DEFAULT_LANG, // 英文缺失回退中文

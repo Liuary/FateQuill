@@ -1,0 +1,20 @@
+{
+  "tab": "角色",
+  "title": "角色档案",
+  "add": "新增角色",
+  "edit": "编辑",
+  "delete": "删除",
+  "save": "保存",
+  "cancel": "取消",
+  "loading": "加载中…",
+  "empty": "暂无角色",
+  "name": "姓名",
+  "identity": "身份",
+  "personality": "性格",
+  "speechStyle": "说话风格",
+  "goal": "目标",
+  "extra": "补充",
+  "major": "主要角色",
+  "majorBadge": "主要",
+  "confirmDelete": "确认删除该角色？"
+}

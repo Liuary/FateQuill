@@ -4,3 +4,4 @@ export * from "./persona";
 export * from "./agents";
 export * from "./generate";
 export * from "./assemble";
+export * from "./profile";

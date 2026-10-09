@@ -7,6 +7,7 @@ import { SettingCardsPanel } from "@/features/setting-cards/SettingCardsPanel";
 import { ReviewPanel } from "@/features/review/ReviewPanel";
 import { ExplorationPanel } from "@/features/exploration/ExplorationPanel";
 import { DialoguePanel } from "@/features/dialogue/DialoguePanel";
+import { CharactersPanel } from "@/features/characters/CharactersPanel";
 import { useNovels } from "./useNovels";
 import { OutlineTree } from "./OutlineTree";
 import { ChapterEditor } from "./ChapterEditor";
@@ -28,7 +29,7 @@ export function WorkspaceLayout({ onEditorReady }: WorkspaceLayoutProps = {}) {
   const setSaveStatus = useEditorStore((s) => s.setSaveStatus);
   const [editor, setEditor] = useState<Editor | null>(null);
   const [tab, setTab] = useState<
-    "generation" | "settingCards" | "review" | "exploration" | "dialogue"
+    "generation" | "settingCards" | "review" | "exploration" | "dialogue" | "characters"
   >("generation");
   const { t } = useTranslation();
   // 指向「当前渲染的 ChapterEditor 的 flush」，其闭包绑定当前 chapterId/editor
@@ -117,6 +118,13 @@ export function WorkspaceLayout({ onEditorReady }: WorkspaceLayoutProps = {}) {
           >
             {t("dialogue:tab")}
           </button>
+          <button
+            type="button"
+            className={tab === "characters" ? "font-medium" : "opacity-70"}
+            onClick={() => setTab("characters")}
+          >
+            {t("characters:tab")}
+          </button>
         </div>
         {tab === "generation" ? (
           <GenerationPanel novelId={currentNovelId} chapterId={currentChapterId} editor={editor} />
@@ -126,8 +134,10 @@ export function WorkspaceLayout({ onEditorReady }: WorkspaceLayoutProps = {}) {
           <ReviewPanel novelId={currentNovelId} chapterId={currentChapterId} editor={editor} />
         ) : tab === "exploration" ? (
           <ExplorationPanel novelId={currentNovelId} chapterId={currentChapterId} editor={editor} />
-        ) : (
+        ) : tab === "dialogue" ? (
           <DialoguePanel novelId={currentNovelId} chapterId={currentChapterId} editor={editor} />
+        ) : (
+          <CharactersPanel novelId={currentNovelId} />
         )}
       </aside>
     </div>
