@@ -29,6 +29,21 @@
 - **词表覆盖范围有限**：`compliance-rules.ts` 的内置词表为示意性初始集，需随规范演进更新（版本常量 `COMPLIANCE_RULES_VERSION`）。
 - **降级不抛穿**：JSON 解析 / 调用失败经 `evaluateWithFallback` 有限重试后降级为默认分（`DEGRADED_SCORE = 60`）并标注「判定失败」。
 
-## 4. 变更记录
+## 4. 共享判据与判定基准（stage-06 / stage-07）
+
+> 本节统一 stage-06（审查）与 stage-07（研究/素材）的**判据口径**，避免两套标准漂移（REV-009/010）。
+
+- **真人感 rubric 共享**：stage-06 评审「真人感」（子维度：套话密度 / 句式单调 / 情感空洞 / 信息密度）与 stage-07 素材标注**同源判据**——素材标注即「按同一 rubric 指出 AI 味」。
+- **重写「失败判定」（stage-06）**：
+  - **总分口径**：`weightedTotal(results, weights) < passThreshold`（默认 `passThreshold = 60`）→ 未通过；
+  - **单维口径**：`failedDims` = **单维 `score < passThreshold`** 的维度集合（用于反馈注入与 `compliance` 排除）；
+  - 两口径**各司其职**：总分决定「是否继续重写」，单维集合决定「注入哪些反馈 / 哪些维度不触发自动重写」。
+- **交叉判断「命中」（stage-07）**：**引文精确交集**（verbatim 为键，**不做模糊对齐**）——
+  - 命中模型数 **≥2 = 高置信**（模型共识）；
+  - 命中模型数 **=1 = 待确认**（人工裁决）。
+- **落库策略**：交叉结果**不入库直达**，入**会话内存待确认队列**（`researchStore.pendingResults`）；用户确认后才写 `material`（`status=confirmed`）；`material.status` 的 `candidate` 为**预留枚举**（跨会话待确认扩展，REV-013）。
+
+## 5. 变更记录
 
 - **1.0.0**（stage-06 T2）：初版四维子维度与四档分档。
+- **1.0.0 + 共享判据节**（stage-07 T2）：补「共享判据与判定基准」（真人感 rubric 共享、重写失败判定双口径、交叉判断命中分级、待确认队列落库策略）。

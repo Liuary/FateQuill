@@ -6,24 +6,38 @@
  */
 
 import { create } from "zustand";
-import type { MaterialCandidate } from "@/orchestration/research/types";
+import type { CrossJudgeResult, MaterialCandidate } from "@/orchestration/research/types";
 
 interface ResearchState {
   /** 勾选的 `model_config.id`（≥1 才可采样） */
   selectedConfigIds: number[];
   /** 素材候选（会话内存；T3 标记后入库） */
   candidates: MaterialCandidate[];
+  /**
+   * 交叉判断**待确认队列**（会话内存；T3 工作台首屏）。
+   * 交叉结果**不入库直达**——用户确认后才写 `material`（`status=confirmed`）；
+   * `material.status` 的 `candidate` 为**预留枚举**（跨会话待确认扩展，REV-013）。
+   */
+  pendingResults: CrossJudgeResult[];
   setSelectedConfigIds: (ids: number[]) => void;
   addCandidate: (candidate: MaterialCandidate) => void;
   clearCandidates: () => void;
+  setPendingResults: (results: CrossJudgeResult[]) => void;
+  addPendingResults: (results: CrossJudgeResult[]) => void;
+  clearPending: () => void;
 }
 
-/** 研究元状态（勾选 + 候选；独立 `create`，不持正文） */
+/** 研究元状态（勾选 + 候选 + 待确认队列；独立 `create`，不持正文） */
 export const useResearchStore = create<ResearchState>((set) => ({
   selectedConfigIds: [],
   candidates: [],
+  pendingResults: [],
   setSelectedConfigIds: (selectedConfigIds) => set({ selectedConfigIds }),
   // 采样中增量入池；**停止采样时已采集候选保留**（不在此清理）
   addCandidate: (candidate) => set((state) => ({ candidates: [...state.candidates, candidate] })),
   clearCandidates: () => set({ candidates: [] }),
+  setPendingResults: (pendingResults) => set({ pendingResults }),
+  addPendingResults: (results) =>
+    set((state) => ({ pendingResults: [...state.pendingResults, ...results] })),
+  clearPending: () => set({ pendingResults: [] }),
 }));
