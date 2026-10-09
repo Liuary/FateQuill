@@ -11,10 +11,12 @@
 import { useMemo } from "react";
 import type { ModelConfig } from "@/domain/models/model-config";
 import type { ModelRef } from "@/orchestration/types";
+import type { ConflictRecord } from "@/domain/models/conflict-record";
 import type { AutopilotDeps, AutopilotPromptContext } from "@/orchestration/autopilot/types";
 import { toPlainText } from "@/orchestration/consistency/extract";
 import { selectInjectableCards } from "@/orchestration/consistency/inject";
 import { runExtraction } from "@/orchestration/consistency/run";
+import { runL1Rules } from "@/orchestration/consistency/rules";
 import { createEvaluatorRegistry } from "@/orchestration/review/evaluator";
 import { registerBuiltinEvaluators } from "@/orchestration/review/register";
 import { PROMPT_BUDGET } from "@/orchestration/prompts/chapter-generation";
@@ -102,6 +104,30 @@ export function useAutopilot(opts: {
             degradedReason: input.degradedReason ?? "",
             attempt: input.attempt ?? 0,
           });
+        },
+      },
+      // 冲突策略端口：检测复用 stage-11 `runL1Rules`；落库走 `conflict_record`
+      // （IPC `save_conflict_record` / `resolve_conflict_record`）
+      detectConflicts: async () => {
+        const cards = await repositories.settingCard.listByNovel(novelId);
+        return runL1Rules(
+          cards.map((card) => ({ id: card.id, title: card.title, content: card.content })),
+        );
+      },
+      conflictSink: {
+        saveConflictRecord: async (record) => {
+          const saved = await repositories.conflictRecord.save({
+            novelId,
+            aId: record.aId,
+            bId: record.bId,
+            type: record.type as ConflictRecord["type"],
+            evidence: record.evidence,
+            severity: record.severity as ConflictRecord["severity"],
+          });
+          return saved.id;
+        },
+        resolveConflictRecord: async (id, action) => {
+          await repositories.conflictRecord.resolve(id, action);
         },
       },
       archiveFn: async (_chapter, content) => {

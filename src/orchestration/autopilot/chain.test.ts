@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DEFAULT_CHAPTER_AGENT_SYSTEM_PROMPT } from "@/orchestration/prompts/chapter-generation";
 import { TURN_CARD_SYSTEM_PROMPT } from "@/orchestration/exploration/parse";
+import type { ConflictReport } from "@/orchestration/consistency/types";
 import type { EvaluationBundle } from "@/orchestration/review/aggregate";
 import { createEvaluatorRegistry } from "@/orchestration/review/evaluator";
 import type { ChatOptions } from "@/orchestration/types";
@@ -211,5 +212,86 @@ describe("runAutopilot（无人值守整轮；零人工交互）", () => {
     });
     expect(outcome.aborted).toBe(true);
     expect(outcome.chapters).toHaveLength(0);
+  });
+});
+
+describe("runAutopilot（无人值守冲突策略；stage-12 T4）", () => {
+  const conflict: ConflictReport = {
+    aId: 1,
+    bId: 2,
+    type: "life-status",
+    evidence: "渡鸦已死 ｜ 渡鸦尚在人间",
+    severity: "high",
+  };
+
+  /** 带冲突检测与落库端口（**留痕 spy**）的依赖 */
+  function conflictHarness() {
+    const { deps } = harness([80]);
+    const saved: Record<string, unknown>[] = [];
+    const resolved: { id: number; action: string }[] = [];
+    deps.detectConflicts = () => Promise.resolve([conflict]);
+    deps.conflictSink = {
+      saveConflictRecord: (record) => {
+        saved.push(record as unknown as Record<string, unknown>);
+        return Promise.resolve(saved.length); // 冲突记录 id
+      },
+      resolveConflictRecord: (id, action) => {
+        resolved.push({ id, action });
+        return Promise.resolve();
+      },
+    };
+    return { deps, saved, resolved };
+  }
+
+  it("默认（暂停 + 通知）：冲突以 `open` **留痕**、run 置 `paused`、**不启动后续章**（可续跑）", async () => {
+    const { deps, saved, resolved } = conflictHarness();
+    const statuses: string[] = [];
+    const outcome = await runAutopilot({
+      outline: OUTLINE,
+      config: defaultAutopilotConfig({ pauseOnConflict: true }),
+      deps,
+      onProgress: (progress) => statuses.push(progress.status),
+    });
+
+    expect(outcome.trippedBy).toBe("conflict");
+    expect(outcome.chapters).toHaveLength(1); // 第 1 章完成后即暂停
+    expect(statuses[statuses.length - 1]).toBe("paused"); // 面板可呈现「暂停通知」
+    expect(saved).toHaveLength(1);
+    expect(saved[0]).toMatchObject({
+      aId: 1,
+      bId: 2,
+      type: "life-status",
+      status: "open",
+      action: "",
+    });
+    expect(resolved).toHaveLength(0); // 暂停路径**不做自动处置**（保留用户终裁决）
+    expect(outcome.conflicts).toBe(1);
+  });
+
+  it("**用户显式授权**（自动忽略继续）：冲突 `ignored` + `action:ignore` **留痕**、**继续产出后续章**", async () => {
+    const { deps, saved, resolved } = conflictHarness();
+    const outcome = await runAutopilot({
+      outline: OUTLINE,
+      config: defaultAutopilotConfig({ pauseOnConflict: false }),
+      deps,
+    });
+
+    expect(outcome.chapters).toHaveLength(3); // **继续**跑完
+    expect(outcome.conflicts).toBe(1); // 同一冲突去重（不重复落库）
+    expect(saved).toHaveLength(1);
+    expect(saved[0]).toMatchObject({ status: "ignored", action: "ignore" });
+    expect(resolved).toEqual([{ id: 1, action: "ignore" }]); // 授权路径**标记 ignored**
+    expect(outcome.trippedBy).toBeUndefined();
+  });
+
+  it("两路径**均留痕**：无冲突检测端口时不落库（缺省零副作用）", async () => {
+    const { deps } = harness([80]);
+    const outcome = await runAutopilot({
+      outline: OUTLINE,
+      config: defaultAutopilotConfig(),
+      deps,
+    });
+    expect(outcome.conflicts).toBe(0);
+    expect(outcome.chapters).toHaveLength(3);
   });
 });

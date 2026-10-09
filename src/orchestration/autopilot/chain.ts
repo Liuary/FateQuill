@@ -28,6 +28,7 @@ import { REVIEW_DIMENSIONS } from "@/orchestration/review/types";
 import type { ChatOptions, Chunk, ModelProvider } from "@/orchestration/types";
 import { isPassed, markDegraded, pickBranch, shouldRewrite, type BranchScore } from "./decide";
 import { checkBreakers, estimateTokens } from "./breaker";
+import { conflictKey, decideConflictPolicy } from "./conflict-policy";
 import type {
   AutopilotChapterInput,
   AutopilotConfig,
@@ -229,8 +230,47 @@ export async function runChapter(
   return outcome;
 }
 
-/** 续跑 seed：已完成章 → 章结果（不重跑，仅为报告与统计） */
-function seedOutcome(chapter: AutopilotChapterInput, settled: SettledChapter): ChapterOutcome {
+/**
+ * 一致性冲突策略（stage-12 T4）：章归档后检测（stage-11 `runL1Rules`）→ `decideConflictPolicy` 决策：
+ * - **暂停路径（默认）**：冲突经 `save_conflict_record` 落 `open`（**留痕**）→ **暂停 + 通知**（保留用户终裁决）；
+ * - **授权路径（用户显式勾选）**：落 `ignored` + `action:"ignore"`（**留痕**）→ **继续**。
+ * 两路径**均留痕**（可审计）；同一冲突（`(aId,bId,type)`）**不重复落库**。
+ */
+async function handleConflicts(
+  deps: AutopilotDeps,
+  config: AutopilotConfig,
+  seen: Set<string>,
+): Promise<{ found: number; paused: boolean }> {
+  if (!deps.detectConflicts || !deps.conflictSink) {
+    return { found: 0, paused: false };
+  }
+  const detected = await deps.detectConflicts();
+  let found = 0;
+  for (const conflict of detected) {
+    const key = conflictKey(conflict);
+    if (seen.has(key)) {
+      continue;
+    }
+    seen.add(key);
+    const decision = decideConflictPolicy({ conflict, pauseOnConflict: config.pauseOnConflict });
+    // 两路径**均落库留痕**（`save_conflict_record`）
+    const id = await deps.conflictSink.saveConflictRecord(decision.record);
+    found += 1;
+    if (decision.action === "ignore-continue") {
+      // 授权路径：`resolve_conflict_record(action:"ignore")` → 记录置 `ignored` 后**继续**
+      await deps.conflictSink.resolveConflictRecord(id, "ignore");
+    } else {
+      // 默认路径：**暂停 + 通知**（不做自动处置，保留用户终裁决）
+      return { found, paused: true };
+    }
+  }
+  return { found, paused: false };
+}
+
+/** 续跑 seed：已完成章 → 章结果（不重跑，仅为报告与统计） */ function seedOutcome(
+  chapter: AutopilotChapterInput,
+  settled: SettledChapter,
+): ChapterOutcome {
   const outcome: ChapterOutcome = {
     index: chapter.index,
     title: chapter.title,
@@ -277,6 +317,8 @@ export async function runAutopilot(opts: {
   const outcomes: ChapterOutcome[] = [];
   let spentTokens = opts.spentTokens ?? 0;
   let consecutiveFailures = 0;
+  let conflictsFound = 0;
+  const seenConflicts = new Set<string>();
   let trippedBy: RunOutcome["trippedBy"];
   let trippedDetail: string | undefined;
   let aborted = false;
@@ -366,6 +408,16 @@ export async function runAutopilot(opts: {
         attempt: outcome.rounds,
       });
     }
+
+    // 一致性冲突策略（stage-11 检测 → 决策 → 留痕）：默认**暂停 + 通知**；授权则**忽略并继续**
+    const conflictOutcome = await handleConflicts(deps, config, seenConflicts);
+    conflictsFound += conflictOutcome.found;
+    if (conflictOutcome.paused) {
+      trippedBy = "conflict";
+      trippedDetail = `检测到 ${conflictOutcome.found} 处一致性冲突 → 已暂停（默认策略，保留用户裁决）；授权「自动忽略」后可从断点续跑`;
+      break;
+    }
+
     emit("running", position + 1);
   }
 
@@ -380,7 +432,7 @@ export async function runAutopilot(opts: {
   }
 
   emit(aborted ? "aborted" : trippedBy ? "paused" : "done", outcomes.length);
-  const summary = summarize(outcomes, config, aborted);
+  const summary = summarize(outcomes, config, aborted, conflictsFound);
   if (trippedBy) {
     summary.trippedBy = trippedBy;
     if (trippedDetail) {
@@ -390,16 +442,18 @@ export async function runAutopilot(opts: {
   return summary;
 }
 
-/** 汇总（过阈 / 降级计数） */
+/** 汇总（过阈 / 降级 / 冲突计数） */
 function summarize(
   outcomes: ChapterOutcome[],
   config: AutopilotConfig,
   aborted: boolean,
+  conflicts: number,
 ): RunOutcome {
   return {
     chapters: outcomes,
     passed: outcomes.filter((chapter) => isPassed(chapter, config.passThreshold)).length,
     degraded: outcomes.filter((chapter) => chapter.degraded).length,
     aborted,
+    conflicts,
   };
 }

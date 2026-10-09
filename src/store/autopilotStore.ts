@@ -23,12 +23,16 @@ interface AutopilotState {
   chapters: ChapterOutcome[];
   /** 整轮报告（结束时可读） */
   report: RunOutcome | null;
+  /** 「冲突策略」授权开关（**单源**；`false` = 默认「暂停 + 通知」，`true` = 用户显式授权「自动忽略继续」） */
+  autoIgnoreConflicts: boolean;
   setStatus: (status: AutopilotProgress["status"]) => void;
   /** 覆盖式写入进度（与 `runAutopilot` 的 `onProgress` 对齐；幂等） */
   setProgress: (progress: AutopilotProgress) => void;
   /** 追加单章结果 */
   appendChapter: (chapter: ChapterOutcome) => void;
   setReport: (report: RunOutcome | null) => void;
+  /** 设置「冲突策略」授权开关（默认 `false`：暂停 + 通知） */
+  setAutoIgnoreConflicts: (value: boolean) => void;
   reset: () => void;
 }
 
@@ -39,6 +43,7 @@ export const useAutopilotStore = create<AutopilotState>((set) => ({
   total: 0,
   chapters: [],
   report: null,
+  autoIgnoreConflicts: false, // **缺省关闭**：默认「暂停 + 通知」，保留用户终裁决
   setStatus: (status) => set({ status }),
   setProgress: (progress) =>
     set({
@@ -49,5 +54,6 @@ export const useAutopilotStore = create<AutopilotState>((set) => ({
     }),
   appendChapter: (chapter) => set((state) => ({ chapters: [...state.chapters, chapter] })),
   setReport: (report) => set({ report }),
+  setAutoIgnoreConflicts: (value) => set({ autoIgnoreConflicts: value }),
   reset: () => set({ status: "idle", currentIndex: -1, total: 0, chapters: [], report: null }),
 }));

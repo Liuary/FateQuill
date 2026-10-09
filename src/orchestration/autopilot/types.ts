@@ -6,6 +6,7 @@
  */
 
 import type { ChapterSettingCard } from "@/orchestration/prompts/chapter-generation";
+import type { ConflictReport } from "@/orchestration/consistency/types";
 import type { EvaluationBundle, ReviewWeights } from "@/orchestration/review/aggregate";
 import type { EvaluatorRegistry } from "@/orchestration/review/evaluator";
 import type { ChatOptions, Chunk } from "@/orchestration/types";
@@ -72,10 +73,12 @@ export interface RunOutcome {
   degraded: number;
   /** 是否被中止（用户 `abort`） */
   aborted: boolean;
-  /** **熔断原因**（三层任一触发即停时写入；未触发为缺省） */
-  trippedBy?: "budget" | "consecutive-failure" | "max-chapters";
+  /** 熔断原因（三层任一触发即停时写入；未触发为缺省） */
+  trippedBy?: "budget" | "consecutive-failure" | "max-chapters" | "conflict";
   /** 熔断细节（可读） */
   trippedDetail?: string;
+  /** 本轮**新检出**的一致性冲突数（含暂停路径与授权忽略路径；可审计留痕见 `conflict_record`） */
+  conflicts: number;
 }
 
 /** 续跑：已完成章（**不重跑**，用于 seed 报告与跳过） */
@@ -84,6 +87,25 @@ export interface SettledChapter {
   status: "done" | "degraded";
   score?: number | null;
   degradedReason?: string;
+}
+
+/**
+ * 冲突落库端口（**真机**：IPC `save_conflict_record` + `resolve_conflict_record`，即 stage-11 `conflict_record`）。
+ * 编排层只依赖本端口，**经注入**接入（mock/离线不注入 → 不做一致性检测与落库）。
+ */
+export interface AutopilotConflictSink {
+  /** → IPC **`save_conflict_record`**；返回冲突记录 id */
+  saveConflictRecord(record: {
+    aId: number;
+    bId: number;
+    type: string;
+    evidence: string;
+    severity: string;
+    status: "open" | "ignored";
+    action: string;
+  }): Promise<number>;
+  /** → IPC **`resolve_conflict_record`**（授权忽略路径：`action: "ignore"` → 记录置 `ignored`） */
+  resolveConflictRecord(id: number, action: "ignore"): Promise<void>;
 }
 
 /**
@@ -131,6 +153,10 @@ export interface AutopilotDeps {
   contextFor?: (chapter: AutopilotChapterInput) => Promise<AutopilotPromptContext>;
   /** 断点持久化（**可选**：真机注入 → 可续跑；mock/离线缺省 → 纯内存链路） */
   persistence?: AutopilotPersistence;
+  /** 一致性冲突检测（**可选**：真机 → stage-11 `runL1Rules`；缺省不做检测） */
+  detectConflicts?: () => Promise<ConflictReport[]>;
+  /** 冲突落库端口（**可选**：真机 → stage-11 `conflict_record` 命令；缺省不落库） */
+  conflictSink?: AutopilotConflictSink;
 }
 
 /** 缺省配置（可部分覆盖） */

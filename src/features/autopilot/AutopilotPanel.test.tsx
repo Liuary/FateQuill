@@ -247,3 +247,41 @@ describe("AutopilotPanel（全自动创作；生产接线）", () => {
     ).toBe(true);
   });
 });
+
+describe("AutopilotPanel（冲突策略；stage-12 T4）", () => {
+  it("授权开关：默认**关闭**（= 暂停 + 通知）；勾选写入 store（**单源**）", async () => {
+    render(<AutopilotPanel novelId={1} chapterId={null} />);
+    const toggle = screen.getByTestId("autopilot-auto-ignore") as HTMLInputElement;
+    expect(toggle.checked).toBe(false); // **非默认行为**：仅用户显式授权后生效
+    expect(useAutopilotStore.getState().autoIgnoreConflicts).toBe(false);
+
+    fireEvent.click(toggle);
+    expect(useAutopilotStore.getState().autoIgnoreConflicts).toBe(true);
+    expect((screen.getByTestId("autopilot-auto-ignore") as HTMLInputElement).checked).toBe(true);
+  });
+
+  it("暂停通知区：`status=paused` → `autopilot-paused` 渲染（含原因与提示）", async () => {
+    useAutopilotStore.setState({
+      status: "paused",
+      currentIndex: 0,
+      total: 2,
+      chapters: [{ index: 0, title: "第一章", content: "", score: 80, degraded: false, rounds: 0 }],
+      report: {
+        chapters: [],
+        passed: 1,
+        degraded: 0,
+        aborted: false,
+        conflicts: 1,
+        trippedBy: "conflict",
+        trippedDetail: "检测到 1 处一致性冲突 → 已暂停（默认策略，保留用户裁决）",
+      },
+    });
+
+    render(<AutopilotPanel novelId={1} chapterId={null} />);
+
+    const notice = await screen.findByTestId("autopilot-paused");
+    expect(notice.textContent).toContain("已暂停");
+    expect(notice.textContent).toContain("保留用户裁决");
+    expect(screen.getByTestId("autopilot-report").textContent).toContain("冲突 1 处");
+  });
+});

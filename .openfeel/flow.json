@@ -2,14 +2,14 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-09T23:07:10.340Z",
-    "revision": 430
+    "updated": "2026-10-09T23:12:52.673Z",
+    "revision": 431
   },
   "pipeline": {
     "phase": "active",
     "current": {
       "stage": "v0.6.0-stage-12",
-      "op": "op-004"
+      "op": "op-005"
     },
     "retry": 0
   },
@@ -1692,9 +1692,9 @@
         },
         "op-004": {
           "title": "熔断三层与迁移 v6 断点续跑（T3）",
-          "state": "pending",
+          "state": "done",
           "assignee": "openfeel-executor",
-          "attempts": 0,
+          "attempts": 1,
           "max_attempts": 3,
           "checkpoints": {
             "plan": "pending",
@@ -5945,6 +5945,15 @@
       "action": "attempt_pass",
       "detail": {
         "opId": "v0.6.0-stage-12.op-003",
+        "attempts": 1
+      }
+    },
+    {
+      "time": "2026-10-09T23:12:52.643Z",
+      "agent": "openfeel-executor",
+      "action": "attempt_pass",
+      "detail": {
+        "opId": "v0.6.0-stage-12.op-004",
         "attempts": 1
       }
     }

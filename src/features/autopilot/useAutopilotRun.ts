@@ -73,6 +73,7 @@ export function useAutopilotRun(deps: AutopilotDeps | null) {
           passed: 0,
           degraded: 0,
           aborted: true,
+          conflicts: 0,
         });
         return false;
       } finally {

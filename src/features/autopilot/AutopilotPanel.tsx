@@ -36,11 +36,17 @@ export function AutopilotPanel({ novelId, chapterId = null }: AutopilotPanelProp
   const [passThreshold, setPassThreshold] = useState(60);
   const [autoConfirmArchive, setAutoConfirmArchive] = useState(true);
 
+  // 冲突策略授权开关（store **单源**）：默认关闭 = 「暂停 + 通知」；勾选 = 用户显式授权「自动忽略继续」
+  const autoIgnoreConflicts = useAutopilotStore((s) => s.autoIgnoreConflicts);
+  const setAutoIgnoreConflicts = useAutopilotStore((s) => s.setAutoIgnoreConflicts);
+
   const autopilotConfig = defaultAutopilotConfig({
     maxChapters,
     maxRewriteRounds,
     passThreshold,
     autoConfirmArchive,
+    // 冲突策略：**默认暂停 + 通知**；仅当用户显式勾选授权时才「自动 ignored 继续」
+    pauseOnConflict: !autoIgnoreConflicts,
   });
   const { deps } = useAutopilot({
     config: modelConfig,
@@ -158,6 +164,16 @@ export function AutopilotPanel({ novelId, chapterId = null }: AutopilotPanelProp
           />
           {t("autoConfirmArchive")}
         </label>
+        {/* 冲突策略：**默认「暂停 + 通知」**；勾选 = 用户**显式授权**「自动忽略继续」（均留痕） */}
+        <label className="flex items-center gap-1">
+          <input
+            type="checkbox"
+            data-testid="autopilot-auto-ignore"
+            checked={autoIgnoreConflicts}
+            onChange={(event) => setAutoIgnoreConflicts(event.target.checked)}
+          />
+          {t("autoIgnore")}
+        </label>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -191,6 +207,14 @@ export function AutopilotPanel({ novelId, chapterId = null }: AutopilotPanelProp
         <p className="text-xs opacity-70">{t("resumeHint", { count: resumable.length })}</p>
       )}
 
+      {status === "paused" && (
+        <div data-testid="autopilot-paused" className="rounded-md border border-dashed p-2 text-xs">
+          <p className="font-medium">{t("pauseNotice")}</p>
+          {report?.trippedDetail && <p className="opacity-70">{report.trippedDetail}</p>}
+          <p className="opacity-70">{t("pauseHint")}</p>
+        </div>
+      )}
+
       {status !== "idle" && (
         <p data-testid="autopilot-progress" className="text-xs opacity-70">
           {t(`status.${status}`)}：{Math.min(currentIndex + 1, total)}/{total}
@@ -222,6 +246,7 @@ export function AutopilotPanel({ novelId, chapterId = null }: AutopilotPanelProp
             degraded: report.degraded,
             total: report.chapters.length,
           })}
+          {` ｜ ${t("conflictCount", { count: report.conflicts })}`}
         </p>
       )}
     </div>
