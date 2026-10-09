@@ -95,8 +95,11 @@ pub async fn delete_chapter(app: AppHandle, id: i64) -> Result<(), IpcError> {
 
 // ---------- SettingCard ----------
 #[tauri::command]
-pub async fn list_setting_cards(app: AppHandle) -> Result<Vec<db::setting_card::SettingCardRow>, IpcError> {
-    db::setting_card::list(&pool(&app).await?).await
+pub async fn list_setting_cards(
+    app: AppHandle,
+    tier: Option<String>,
+) -> Result<Vec<db::setting_card::SettingCardRow>, IpcError> {
+    db::setting_card::list(&pool(&app).await?, tier.as_deref()).await
 }
 #[tauri::command]
 pub async fn get_setting_card(app: AppHandle, id: i64) -> Result<db::setting_card::SettingCardRow, IpcError> {
@@ -109,8 +112,9 @@ pub async fn create_setting_card(
     title: String,
     content: String,
     kind: String,
+    tier: Option<String>,
 ) -> Result<db::setting_card::SettingCardRow, IpcError> {
-    db::setting_card::create(&pool(&app).await?, novel_id, &title, &content, &kind).await
+    db::setting_card::create(&pool(&app).await?, novel_id, &title, &content, &kind, tier.as_deref()).await
 }
 #[tauri::command]
 pub async fn update_setting_card(
@@ -119,8 +123,9 @@ pub async fn update_setting_card(
     title: String,
     content: String,
     kind: String,
+    tier: Option<String>,
 ) -> Result<db::setting_card::SettingCardRow, IpcError> {
-    db::setting_card::update(&pool(&app).await?, id, &title, &content, &kind).await
+    db::setting_card::update(&pool(&app).await?, id, &title, &content, &kind, tier.as_deref()).await
 }
 #[tauri::command]
 pub async fn delete_setting_card(app: AppHandle, id: i64) -> Result<(), IpcError> {

@@ -12,6 +12,9 @@ pub const MIGRATION_V3_SQL: &str = include_str!("../../migrations/0003_review.sq
 /// v4 素材库（material）与经验条目（skill_entry）
 pub const MIGRATION_V4_SQL: &str = include_str!("../../migrations/0004_material_skill.sql");
 
+/// v5 设定分级（setting_card.tier）与一致性冲突记录（conflict_record）
+pub const MIGRATION_V5_SQL: &str = include_str!("../../migrations/0005_setting_tier_conflict.sql");
+
 pub fn migrations() -> Vec<Migration> {
     vec![
         Migration {
@@ -38,6 +41,12 @@ pub fn migrations() -> Vec<Migration> {
             sql: MIGRATION_V4_SQL,
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 5,
+            description: "setting_tier_conflict",
+            sql: MIGRATION_V5_SQL,
+            kind: MigrationKind::Up,
+        },
     ]
 }
 
@@ -51,10 +60,23 @@ mod tests {
         let pool = test_pool().await;
         sqlx::migrate!("./migrations").run(&pool).await.unwrap();
         let rows = pool
-            .fetch_all("SELECT name FROM sqlite_master WHERE type='table' AND name IN ('novel','volume','chapter','setting_card','character','model_config','review_record','material','skill_entry')")
+            .fetch_all("SELECT name FROM sqlite_master WHERE type='table' AND name IN ('novel','volume','chapter','setting_card','character','model_config','review_record','material','skill_entry','conflict_record')")
             .await
             .unwrap();
-        assert_eq!(rows.len(), 9);
+        assert_eq!(rows.len(), 10); // v5 新增 conflict_record
+    }
+
+    #[tokio::test]
+    async fn migration_adds_setting_card_tier_column() {
+        let pool = test_pool().await;
+        sqlx::migrate!("./migrations").run(&pool).await.unwrap();
+        // PRAGMA table_info(setting_card) 含 tier 列（v5 ALTER TABLE 生效）
+        let rows = pool.fetch_all("PRAGMA table_info(setting_card)").await.unwrap();
+        let names: Vec<String> = rows
+            .iter()
+            .map(|row| sqlx::Row::try_get::<String, _>(row, "name").unwrap())
+            .collect();
+        assert!(names.iter().any(|name| name == "tier"), "setting_card 应含 tier 列：{names:?}");
     }
 
     #[tokio::test]
@@ -65,7 +87,7 @@ mod tests {
         migrator.run(&pool).await.unwrap(); // 第二次应为 no-op
         let count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM _sqlx_migrations")
             .fetch_one(&pool).await.unwrap();
-        assert_eq!(count, 4, "_sqlx_migrations 应有 v1~v4 四条，且不重复记录");
+        assert_eq!(count, 5, "_sqlx_migrations 应有 v1~v5 五条，且不重复记录");
     }
 
     #[tokio::test]
