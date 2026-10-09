@@ -1,0 +1,13 @@
+{
+  "tab": "研究",
+  "workbench": "研究工作台",
+  "models": "参与采样的模型",
+  "instruction": "创作指令",
+  "startSampling": "开始采样",
+  "stopSampling": "停止采样",
+  "candidates": "素材候选",
+  "emptyCandidates": "暂无候选",
+  "loading": "加载中…",
+  "guideSettings": "请先在「设置」配置模型并写入 API Key",
+  "keyMissing": "未配置 Key"
+}

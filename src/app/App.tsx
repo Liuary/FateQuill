@@ -4,11 +4,12 @@ import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/ui/LanguageSwitcher";
 import { SettingsPage } from "@/features/settings/SettingsPage";
 import { WorkspaceLayout } from "@/features/editor/WorkspaceLayout";
+import { ResearchWorkbench } from "@/features/research/ResearchWorkbench";
 import { BenchPanel } from "@/features/editor/perf/BenchPanel";
 
 function App() {
   const { t } = useTranslation();
-  const [view, setView] = useState<"workspace" | "settings">("workspace");
+  const [view, setView] = useState<"workspace" | "settings" | "research">("workspace");
   return (
     <div className="flex h-screen flex-col">
       <header className="border-border flex items-center justify-between gap-2 border-b px-4 py-2">
@@ -22,6 +23,13 @@ function App() {
             {t("editor:workspace")}
           </Button>
           <Button
+            variant={view === "research" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setView("research")}
+          >
+            {t("research:tab")}
+          </Button>
+          <Button
             variant={view === "settings" ? "default" : "outline"}
             size="sm"
             onClick={() => setView("settings")}
@@ -32,7 +40,13 @@ function App() {
         </div>
       </header>
       <div className="min-h-0 flex-1">
-        {view === "workspace" ? <WorkspaceLayout /> : <SettingsPage />}
+        {view === "workspace" ? (
+          <WorkspaceLayout />
+        ) : view === "settings" ? (
+          <SettingsPage />
+        ) : (
+          <ResearchWorkbench />
+        )}
       </div>
       {import.meta.env.DEV && <BenchPanel />}
     </div>

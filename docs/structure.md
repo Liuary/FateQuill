@@ -5,22 +5,24 @@
 
 ## 1. 分层目录职责
 
-| 目录                   | 职责                                                                          |
-| ---------------------- | ----------------------------------------------------------------------------- |
-| `src/app/`             | 应用入口与全局装配（`main.tsx`、`App.tsx`、i18n 初始化、Provider 等）         |
-| `src/components/`      | 应用级组合组件（自建）                                                        |
-| `src/components/ui/`   | shadcn/ui 源码组件（由 shadcn CLI 管理，落库为可编辑源码）                    |
-| `src/ui/`              | 通用可复用 UI 层（布局、非 shadcn 组合组件）                                  |
-| `src/features/`        | 面向用户的功能模块（按功能内聚）                                              |
-| `src/features/editor/` | 编辑器与大纲树（Tiptap 基础编辑器；同域功能模块；i18n `editor` 命名空间启用） |
-| `src/features/review/` | 审查 UI（权重配置 + 版本池回看；stage-06，**暂未接入 i18n**）                 |
-| `src/domain/`          | 纯 TS 领域模型与业务规则（无 UI、无网络）                                     |
-| `src/orchestration/`   | Agent 编排引擎（可插拔）                                                      |
-| `src/ipc/`             | 前端 IPC 封装（`invoke` 包装）                                                |
-| `src/store/`           | 状态管理目录（Zustand 于 stage-04 接入）                                      |
-| `src/lib/`             | 通用工具（如 `cn`）                                                           |
-| `src/locales/`         | i18n 资源（zh-CN / en）                                                       |
-| `src-tauri/`           | Rust 后端（网络 / 密钥 / SQLite 边界）                                        |
+| 目录                          | 职责                                                                                      |
+| ----------------------------- | ----------------------------------------------------------------------------------------- |
+| `src/app/`                    | 应用入口与全局装配（`main.tsx`、`App.tsx`、i18n 初始化、Provider 等）                     |
+| `src/components/`             | 应用级组合组件（自建）                                                                    |
+| `src/components/ui/`          | shadcn/ui 源码组件（由 shadcn CLI 管理，落库为可编辑源码）                                |
+| `src/ui/`                     | 通用可复用 UI 层（布局、非 shadcn 组合组件）                                              |
+| `src/features/`               | 面向用户的功能模块（按功能内聚）                                                          |
+| `src/features/editor/`        | 编辑器与大纲树（Tiptap 基础编辑器；同域功能模块；i18n `editor` 命名空间启用）             |
+| `src/features/review/`        | 审查 UI（权重配置 + 版本池回看；stage-06，**暂未接入 i18n**）                             |
+| `src/features/research/`      | 研究/采样工作台（多模型无限制创作采样 + 素材候选；stage-07 建立）                         |
+| `src/domain/`                 | 纯 TS 领域模型与业务规则（无 UI、无网络）                                                 |
+| `src/orchestration/`          | Agent 编排引擎（可插拔）                                                                  |
+| `src/orchestration/research/` | 研究契约与采样调度器（**串行逐模型**；无预算裁剪 / 不触发审查 / 不进正文；stage-07 建立） |
+| `src/ipc/`                    | 前端 IPC 封装（`invoke` 包装）                                                            |
+| `src/store/`                  | 状态管理目录（Zustand 于 stage-04 接入）                                                  |
+| `src/lib/`                    | 通用工具（如 `cn`）                                                                       |
+| `src/locales/`                | i18n 资源（zh-CN / en）                                                                   |
+| `src-tauri/`                  | Rust 后端（网络 / 密钥 / SQLite 边界）                                                    |
 
 > 空目录以 `.gitkeep` 占位，保证纳入版本管理。
 
@@ -141,4 +143,12 @@ plan v3 技术约束中的目录集为 `src/{app,components,features,domain,orch
 - **版本池（`src/store/reviewStore.ts`）**：`ReviewVersion { id, label, content, round, results, totalScore }`；`addVersion` 按当前权重算总分，`setWeights` **重算全部版本总分**，`setActive` 选中待采纳版本；非最优版本**保留在池中可回看**；`clear()` 清空版本池与选中态（保留权重/开关）。
 - **审查 UI 落点**：`src/features/review/` —— `ReviewPanel.tsx`（四维分数/理由 + 改判 + 触发重写 + 自动重写开关 + 人工裁决提示）、`VersionList.tsx`（版本对比：加权总分降序 + 回看 + 采纳）、`useReview.ts`（编排：`runReview`/`rejudge`/`triggerRewrite`/`adopt`）、`WeightConfig.tsx`（四维权重输入 → `setWeights`；展示按加权总分的版本排序）。
 - **第三栏 tab（stage-06 T5）**：`WorkspaceLayout` 第三栏以 **tab** 承载「生成 / 设定卡 / **审查**」（`review` tab → `ReviewPanel`）；i18n 新增 `review` 命名空间（zh-CN / en 同步）。
+
+## 14. 研究/采样（stage-07 T1）
+
+- **落点**：`src/orchestration/research/`（契约与调度器：`types.ts` 的 `MaterialCandidate` / `SamplingModel`、`sampler.ts` 的 `buildSamplingMessages` / `runSampling`）与 `src/features/research/`（`ResearchWorkbench.tsx` 工作台、`useSampling.ts` 编排）；i18n `research` 命名空间；入口在 `App.tsx` 视图切换（工作区 / 研究 / 设置）。
+- **采样「无限制」边界（REV-002）**：**不触发自动审查**、**不自动保存**、**不做预算裁剪**（不引用 `PROMPT_BUDGET` / `buildChapterPrompt`）；产出**仅入素材候选**（`researchStore.candidates`，会话内存），**绝不进编辑器正文 / 不落 `chapter`**。
+- **配置来源**：列出**全部 `model_config`**，用户**勾选 ≥1**；Key 缺失（`keyringExists=false`）→ 禁用采样 + 引导「设置」。
+- **调度形态**：**串行逐模型**；持 `AbortController` 支持**停止采样**（模型边界 / 流循环内检查，已采集候选保留）。
+- **通道单一来源（REV-016②）**：`MaterialSourceType` 定义于 `src/domain/models/material.ts`，`orchestration/research` 引用之（采样候选自带 `sourceType=multi_model_creation`）。
 - **`EditorController` 命令面**：`appendChunk(text, options?)`（增量**追加**语义不变）/ `flushPending()` / **`replaceContent(html)`**（整章替换 = **单条撤销历史**，供审查采纳落地）/ `dispose()`。**`replaceContent` 是前端 `EditorController` 命令面，非 IPC 命令**——正文替换**不新增 IPC**（见 `docs/ipc.md`）。

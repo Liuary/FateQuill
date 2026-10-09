@@ -1,0 +1,13 @@
+{
+  "tab": "Research",
+  "workbench": "Research workbench",
+  "models": "Models to sample",
+  "instruction": "Creative instruction",
+  "startSampling": "Start sampling",
+  "stopSampling": "Stop sampling",
+  "candidates": "Material candidates",
+  "emptyCandidates": "No candidates yet",
+  "loading": "Loading…",
+  "guideSettings": "Configure a model and store an API key in Settings first",
+  "keyMissing": "No API key"
+}
