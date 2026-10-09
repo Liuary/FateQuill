@@ -192,3 +192,18 @@ plan v3 技术约束中的目录集为 `src/{app,components,features,domain,orch
 - **i18n**：新增 `characters` / `dialogue` 命名空间。
 - **IPC**：**无 IPC 增量**——复用既有 `Character` 五命令（`list/get/create/update/delete_character`）与 `chapter` 命令；对话条目**会话内存**、合并落章走既有 `update_chapter`（见 `docs/ipc.md`）。
 - **详文**：模块手册 `manual/features/characters.md` / `manual/features/dialogue.md`（建立并收尾于 **op-008**）。
+
+## 18. 设定分级与一致性（stage-11）
+
+> 本阶段为 **v0.5.0-stage-11** 的**骨架登记**（`op-001` 建立）：落点与契约先登记，实现随 op-002~op-006 落地，模块详文由 **op-007** 收尾。
+
+- **落点**：
+  - `src/orchestration/consistency/`（provider 无关；**规划**）：`extract`（归档抽取：LLM + `evidence` 原文回查防幻觉 + 名称去重）、`rules`（L1 规则校验，零幻觉）、`judge`（L2 语义判定，建议性）、`report`（冲突报告 `{aId,bId,type,evidence,severity}`）、`inject`（分级注入装配：白名单 `{main,short}`，**排除 `dark`**）。
+  - `src/features/consistency/`（**规划**）：冲突面板（处置动作：改分级 / 跳转 / 标记误报 / 忽略）+ 「归档本章」入口（候选入**待确认队列**，**不入库直达**）。
+  - `setting_card.tier` **装载侧过滤点**（分级注入）：`buildChapterPrompt`（`src/orchestration/prompts/chapter-generation.ts`）、`buildExplorationOptions`（`src/features/exploration/build-exploration-options.ts`）、`buildCharacterAgentPrompt`（`src/orchestration/dialogue/persona.ts`）。
+- **分级模型**：四级 `main` / `dark` / `short` / `temp`（**与 `kind` 正交**，不扩 `kind`）；迁移 **v5** 增 `setting_card.tier`（`DEFAULT 'short'`）+ `conflict_record` 表（op-002 落地；**v5 不含**版本池快照持久化——stage-08 REV-009 **独立跟踪**）。
+- **持久化边界**：候选与抽取结果**仅会话内存**（待确认队列）；**冲突记录 `conflict_record` 落库**。
+- **i18n**：新增 `consistency` 命名空间。
+- **IPC**：`setting_card` 命令**签名扩展、命令数不变**；**计划新增 6 命令**（归档批落库 1 + 冲突记录 5）——**计数与明细由 op-003 / op-005 与实现同提交更新**（见 `docs/ipc.md` §8.4）。
+- **与评审的边界**：一致性引擎 = **设定库内冲突（设定 vs 设定）**；四维评审「世界观」= **正文 vs 设定（文本质量）**——职责切分，见 `docs/review-rubric.md` §4.2。
+- **详文**：模块手册 `manual/features/consistency.md`（stage-11 建立，**详文于 op-007 收尾**）。

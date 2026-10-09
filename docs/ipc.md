@@ -226,3 +226,12 @@ try {
 > **易经卦象（stage-09）**：卦象系统为**前端静态数据 + 纯函数**（`src/data/iching/` + `src/orchestration/iching/`）；**无新增 Rust 命令**——起卦/解卦/引导卡/宿命卡均在前端完成，宿命卡经**既有** `create_setting_card` 落库（`kind="fate"`），可选开关存 `localStorage`。
 
 > **多声部对话（stage-10）**：**无 IPC 增量**——复用 §8.1 既有 **`Character` 五命令**（`list_characters` / `get_character` / `create_character` / `update_character` / `delete_character`）；对话条目为**会话内存**（`dialogueStore`），**合并落章**走既有 `chapter` 命令（`update_chapter`）。
+
+> **Stage-11（设定分级与一致性）占位声明**：**本 op（op-001）不改计数数值**——§8.1 仍为 **45 个**、全仓仍为 **47 条**（命令明细与计数由 **op-003 / op-005** 与实现**同提交**回填，避免提交窗口内文档虚高）。
+>
+> - **口径定义（消除歧义）**：
+>   - **§8.1 口径（数据访问命令子集）** = 5 实体 × 5（25）+ ordering 3 + model_config 5 + keyring 3 + review_record 2 + material 3 + skill 4 = **45**；
+>   - **全仓口径（含流式 2 条）** = §8.1 + §6 流式通道 2（`http_stream` / `abort_stream`）= **47**。
+> - **`setting_card` 命令：签名扩展、命令数不变**——`create_setting_card` / `update_setting_card` 增 `tier?`；`list_setting_cards` 增可选 `tier` 过滤 + 返回 `tier`。
+> - **计划新增命令 6 个**（明细由对应 op 落地后回填）：归档批量落库 1（`save_extracted_settings`，随 **op-003**）+ 冲突记录 5（`save_conflict_record` / `list_conflict_records` / `get_conflict_record` / `resolve_conflict_record` / `delete_conflict_record`，随 **op-005**）。
+> - **占位声明句**：「Stage-11 计划新增 1+5 命令（计划终态 §8.1=51 / 全仓=53），由 op-003（45→46 / 47→48）与 op-005（46→51 / 48→53）随实现同提交更新——本 op 不改计数数值」。
