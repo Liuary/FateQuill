@@ -1,0 +1,20 @@
+{
+  "tab": "Explore",
+  "title": "Multi-temperature exploration",
+  "intent": "Direction intent",
+  "temperatures": "Temperatures",
+  "temperatureLabel": "Temp",
+  "effectiveLabel": "Effective",
+  "addTemp": "Add temperature",
+  "removeTemp": "Remove",
+  "run": "Run exploration",
+  "stop": "Stop",
+  "running": "Exploring…",
+  "branch": "Branches",
+  "clamped": "Clamped to provider range",
+  "empty": "No branches yet",
+  "guideSettings": "Configure a model and store an API key in Settings first",
+  "statusPending": "Running",
+  "statusDone": "Done",
+  "statusError": "Failed"
+}

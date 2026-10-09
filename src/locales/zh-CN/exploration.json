@@ -1,0 +1,20 @@
+{
+  "tab": "推演",
+  "title": "多温度并行推演",
+  "intent": "走向意向",
+  "temperatures": "温度集",
+  "temperatureLabel": "温度",
+  "effectiveLabel": "有效温度",
+  "addTemp": "新增温度",
+  "removeTemp": "移除",
+  "run": "开始推演",
+  "stop": "停止推演",
+  "running": "推演中…",
+  "branch": "推演分支",
+  "clamped": "已按 provider 区间 clamp",
+  "empty": "暂无分支",
+  "guideSettings": "请先在「设置」配置模型并写入 API Key",
+  "statusPending": "进行中",
+  "statusDone": "已完成",
+  "statusError": "失败"
+}

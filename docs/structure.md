@@ -5,24 +5,26 @@
 
 ## 1. 分层目录职责
 
-| 目录                          | 职责                                                                                      |
-| ----------------------------- | ----------------------------------------------------------------------------------------- |
-| `src/app/`                    | 应用入口与全局装配（`main.tsx`、`App.tsx`、i18n 初始化、Provider 等）                     |
-| `src/components/`             | 应用级组合组件（自建）                                                                    |
-| `src/components/ui/`          | shadcn/ui 源码组件（由 shadcn CLI 管理，落库为可编辑源码）                                |
-| `src/ui/`                     | 通用可复用 UI 层（布局、非 shadcn 组合组件）                                              |
-| `src/features/`               | 面向用户的功能模块（按功能内聚）                                                          |
-| `src/features/editor/`        | 编辑器与大纲树（Tiptap 基础编辑器；同域功能模块；i18n `editor` 命名空间启用）             |
-| `src/features/review/`        | 审查 UI（权重配置 + 版本池回看；stage-06，**暂未接入 i18n**）                             |
-| `src/features/research/`      | 研究/采样工作台（多模型无限制创作采样 + 素材候选；stage-07 建立）                         |
-| `src/domain/`                 | 纯 TS 领域模型与业务规则（无 UI、无网络）                                                 |
-| `src/orchestration/`          | Agent 编排引擎（可插拔）                                                                  |
-| `src/orchestration/research/` | 研究契约与采样调度器（**串行逐模型**；无预算裁剪 / 不触发审查 / 不进正文；stage-07 建立） |
-| `src/ipc/`                    | 前端 IPC 封装（`invoke` 包装）                                                            |
-| `src/store/`                  | 状态管理目录（Zustand 于 stage-04 接入）                                                  |
-| `src/lib/`                    | 通用工具（如 `cn`）                                                                       |
-| `src/locales/`                | i18n 资源（zh-CN / en）                                                                   |
-| `src-tauri/`                  | Rust 后端（网络 / 密钥 / SQLite 边界）                                                    |
+| 目录                             | 职责                                                                                              |
+| -------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `src/app/`                       | 应用入口与全局装配（`main.tsx`、`App.tsx`、i18n 初始化、Provider 等）                             |
+| `src/components/`                | 应用级组合组件（自建）                                                                            |
+| `src/components/ui/`             | shadcn/ui 源码组件（由 shadcn CLI 管理，落库为可编辑源码）                                        |
+| `src/ui/`                        | 通用可复用 UI 层（布局、非 shadcn 组合组件）                                                      |
+| `src/features/`                  | 面向用户的功能模块（按功能内聚）                                                                  |
+| `src/features/editor/`           | 编辑器与大纲树（Tiptap 基础编辑器；同域功能模块；i18n `editor` 命名空间启用）                     |
+| `src/features/review/`           | 审查 UI（权重配置 + 版本池回看；stage-06，**暂未接入 i18n**）                                     |
+| `src/features/research/`         | 研究/采样工作台（多模型无限制创作采样 + 素材候选；stage-07 建立）                                 |
+| `src/features/exploration/`      | 多温度并行推演（走向意向 → 分支推演 → 走向卡；stage-08 建立）                                     |
+| `src/domain/`                    | 纯 TS 领域模型与业务规则（无 UI、无网络）                                                         |
+| `src/orchestration/`             | Agent 编排引擎（可插拔）                                                                          |
+| `src/orchestration/research/`    | 研究契约与采样调度器（**串行逐模型**；无预算裁剪 / 不触发审查 / 不进正文；stage-07 建立）         |
+| `src/orchestration/exploration/` | 推演引擎契约（温度集与 per-provider clamp / 走向卡解析 / **并行 + 乱序归位**编排；stage-08 建立） |
+| `src/ipc/`                       | 前端 IPC 封装（`invoke` 包装）                                                                    |
+| `src/store/`                     | 状态管理目录（Zustand 于 stage-04 接入）                                                          |
+| `src/lib/`                       | 通用工具（如 `cn`）                                                                               |
+| `src/locales/`                   | i18n 资源（zh-CN / en）                                                                           |
+| `src-tauri/`                     | Rust 后端（网络 / 密钥 / SQLite 边界）                                                            |
 
 > 空目录以 `.gitkeep` 占位，保证纳入版本管理。
 
@@ -153,3 +155,12 @@ plan v3 技术约束中的目录集为 `src/{app,components,features,domain,orch
 - **通道单一来源（REV-016②）**：`MaterialSourceType` 定义于 `src/domain/models/material.ts`，`orchestration/research` 引用之（采样候选自带 `sourceType=multi_model_creation`）。
 - **闭环回注与度量（stage-07 T6）**：装配器 `src/orchestration/prompts/chapter-generation.ts` 增 `ChapterPromptInput.skills?`（`PromptSkill { title, rule }`；拼入 **system**，预算桶 **≤500 字**，**缺省向后兼容**，超总预算时最后削）；`features/generation` 在生成前加载 skill 并透传；度量实验落点 `src/features/research/experiments/`（`samples/*` 固定样本集 ≥3 篇、`run-experiment.ts`、`report.md`——真机执行由用户 / feel-tester 协验，报告含**数据状态**字段，未执行前**不得填分数**）。
 - **`EditorController` 命令面**：`appendChunk(text, options?)`（增量**追加**语义不变）/ `flushPending()` / **`replaceContent(html)`**（整章替换 = **单条撤销历史**，供审查采纳落地）/ `dispose()`。**`replaceContent` 是前端 `EditorController` 命令面，非 IPC 命令**——正文替换**不新增 IPC**（见 `docs/ipc.md`）。
+
+## 15. 多温度并行推演（stage-08 T1）
+
+- **落点**：`src/orchestration/exploration/`（`temperature.ts` 温度集与 clamp、`types.ts` 走向卡/分支契约、`parse.ts` 走向卡解析与输出契约、`runner.ts` 并行编排）与 `src/features/exploration/`（`ExplorationPanel.tsx` / `TemperatureConfig.tsx` / `useExploration.ts` / `build-exploration-options.ts`）；`explorationStore`（**会话内存**，独立 `create`）；第三栏新增「推演」tab。
+- **温度集**：默认 `{0.3, 0.7, 1.1}`，UI 可增删/调值并持久化 `localStorage['fatequill.exploration.temperatures']`；**per-provider clamp**（`openai-compatible [0,2]` / `anthropic [0,1]` / 未知 `[0,2]`），被 clamp 分支以 `effectiveTemperature` + `clamped` **显式标注**。首版**同模型多温度**（跨模型留待后续）。
+- **输入**：复用 stage-05 装配（设定卡 + 前章末尾 + 预算裁剪）；**走向意向 → user 段**、**走向卡 JSON 契约 → system 段**。
+- **输出**：走向卡 `{ summary, keyTurns, settingCardIds }`；**非流式收口**（聚合全文后解析 JSON，容错复用 `review/json` 的 `extractJson`）。
+- **编排**：`runExploration` **并行**（默认并发 3）且**结果按输入顺序归位**（乱序完成不影响）；单分支失败置 `error` 不抛穿。
+- **无新增 IPC**：复用 `http_stream`（§6）与既有仓储命令（见 `docs/ipc.md`）。
