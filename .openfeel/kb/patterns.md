@@ -152,7 +152,7 @@ resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } }
 
 ## [+] 评审 JSON 容错降级（extractJson + DEGRADED_SCORE） (2026-10-10)
 
-- **两段式解析**：`json.ts` 的 `extractJson(raw)` 先去 ```json 围栏 / 取首 `{` 至末 `}`；`parseEvaluationJson(raw)` 再归一化——`score` 夹取 0–100、`reasons` 归一为 `string[]`、score 非有限数字 / 结构非法则**抛错**（交上层降级）。
+- **两段式解析**：`json.ts` 的 `extractJson(raw)` 先去 JSON 代码围栏（fenced code block）/ 取首 `{` 至末 `}`；`parseEvaluationJson(raw)` 再归一化——`score` 夹取 0–100、`reasons` 归一为 `string[]`、score 非有限数字 / 结构非法则**抛错**（交上层降级）。
 - **降级不抛穿**：`evaluator.ts` 的 `evaluateWithFallback(ev, input, { retries })` 有限重试，仍失败返回 `degradedResult(reason)` = `{ score: DEGRADED_SCORE(=60), reasons: ["判定失败：…"] }`，**绝不向上抛穿流水线**（评审失败不应中断生成/重写闭环）。
 - **测试**：夹具回放（`tests/fixtures/review/` 合法 / 围栏 / 非法）；`evaluator.test.ts` 断言抛错评估器 → 默认分 + 「判定失败」reason，成功路径原样返回。
 
