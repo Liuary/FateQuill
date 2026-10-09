@@ -14,9 +14,11 @@ import { Input } from "@/components/ui/input";
 import { useGenerationAvailability } from "@/features/generation/useGenerationAvailability";
 import { useExplorationStore } from "@/store/explorationStore";
 import { BranchCompare } from "./BranchCompare";
+import { FatePanel } from "./FatePanel";
 import { IChingPanel } from "./IChingPanel";
 import { TemperatureConfig } from "./TemperatureConfig";
 import { useExploration } from "./useExploration";
+import { useIChingEnabled } from "./useIChingEnabled";
 
 export interface ExplorationPanelProps {
   novelId: number | null;
@@ -38,6 +40,8 @@ export function ExplorationPanel({ novelId, chapterId, editor = null }: Explorat
     chapterId,
     config,
   });
+  // 易经可选开关：缺省关闭 → 起卦/宿命入口**不可见**
+  const { enabled: ichingEnabled } = useIChingEnabled();
 
   const canRun = state === "ready" && novelId != null && intent.trim().length > 0 && !running;
 
@@ -56,7 +60,12 @@ export function ExplorationPanel({ novelId, chapterId, editor = null }: Explorat
 
       <TemperatureConfig />
 
-      <IChingPanel />
+      {ichingEnabled && (
+        <>
+          <IChingPanel />
+          <FatePanel novelId={novelId} />
+        </>
+      )}
 
       <div className="flex flex-wrap items-center gap-2 text-xs">
         <label className="flex items-center gap-1">

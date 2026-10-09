@@ -71,7 +71,7 @@ export function IChingPanel() {
   const readingKey = `reading${casting?.reading.changingCount ?? 0}` as const;
 
   return (
-    <section className="flex flex-col gap-2">
+    <section data-testid="iching-panel" className="flex flex-col gap-2">
       <h3 className="font-medium">{t("title")}</h3>
 
       <div className="flex flex-wrap items-end gap-2 text-xs">
