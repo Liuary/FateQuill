@@ -261,3 +261,28 @@ pub async fn keyring_delete(provider: String, label: String) -> Result<(), IpcEr
 pub async fn keyring_exists(provider: String, label: String) -> Result<bool, IpcError> {
     crate::keyring_store::exists(&provider, &label)
 }
+
+// ---------- Review (T6) ----------
+/// 保存一条审查记录（每维一行）；`reasons` 前端数组 → Rust 侧序列化为 `reasons_json`
+#[tauri::command]
+pub async fn save_review_record(
+    app: AppHandle,
+    chapter_id: i64,
+    round: i64,
+    dimension: String,
+    score: i64,
+    reasons: Vec<String>,
+) -> Result<db::review::ReviewRecordRow, IpcError> {
+    let reasons_json = serde_json::to_string(&reasons)
+        .map_err(|e| IpcError::new(codes::INTERNAL, e.to_string()))?;
+    db::review::insert(&pool(&app).await?, chapter_id, round, &dimension, score, &reasons_json).await
+}
+
+/// 按章查询审查历史（时间倒序）
+#[tauri::command]
+pub async fn list_review_records(
+    app: AppHandle,
+    chapter_id: i64,
+) -> Result<Vec<db::review::ReviewRecordRow>, IpcError> {
+    db::review::list_by_chapter(&pool(&app).await?, chapter_id).await
+}

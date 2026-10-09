@@ -6,6 +6,9 @@ pub const MIGRATION_V1_SQL: &str = include_str!("../../migrations/0001_init.sql"
 /// v2 模型配置表（单一来源；不含 key 字段）
 pub const MIGRATION_V2_SQL: &str = include_str!("../../migrations/0002_model_config.sql");
 
+/// v3 审查结果表（每维一行：round/dimension/score/reasons_json）
+pub const MIGRATION_V3_SQL: &str = include_str!("../../migrations/0003_review.sql");
+
 pub fn migrations() -> Vec<Migration> {
     vec![
         Migration {
@@ -18,6 +21,12 @@ pub fn migrations() -> Vec<Migration> {
             version: 2,
             description: "model_config",
             sql: MIGRATION_V2_SQL,
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 3,
+            description: "review",
+            sql: MIGRATION_V3_SQL,
             kind: MigrationKind::Up,
         },
     ]
@@ -33,10 +42,10 @@ mod tests {
         let pool = test_pool().await;
         sqlx::migrate!("./migrations").run(&pool).await.unwrap();
         let rows = pool
-            .fetch_all("SELECT name FROM sqlite_master WHERE type='table' AND name IN ('novel','volume','chapter','setting_card','character','model_config')")
+            .fetch_all("SELECT name FROM sqlite_master WHERE type='table' AND name IN ('novel','volume','chapter','setting_card','character','model_config','review_record')")
             .await
             .unwrap();
-        assert_eq!(rows.len(), 6);
+        assert_eq!(rows.len(), 7);
     }
 
     #[tokio::test]
@@ -47,7 +56,7 @@ mod tests {
         migrator.run(&pool).await.unwrap(); // 第二次应为 no-op
         let count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM _sqlx_migrations")
             .fetch_one(&pool).await.unwrap();
-        assert_eq!(count, 2, "_sqlx_migrations 应有 v1/v2 两条，且不重复记录");
+        assert_eq!(count, 3, "_sqlx_migrations 应有 v1/v2/v3 三条，且不重复记录");
     }
 
     #[tokio::test]

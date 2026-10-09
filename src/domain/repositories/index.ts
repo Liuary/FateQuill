@@ -12,3 +12,4 @@ export type {
   ModelConfigCreateInput,
   ModelConfigUpdateInput,
 } from "./model-config-repository";
+export type { ReviewRecordRepository } from "./review-record-repository";

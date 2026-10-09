@@ -34,6 +34,7 @@ pub fn run() {
             commands::http_stream, commands::abort_stream,
             commands::list_model_configs, commands::get_model_config, commands::create_model_config, commands::update_model_config, commands::delete_model_config,
             commands::keyring_set, commands::keyring_delete, commands::keyring_exists,
+            commands::save_review_record, commands::list_review_records,
         ])
         .manage(Arc::new(stream::StreamRegistry::default()))
         .run(tauri::generate_context!())

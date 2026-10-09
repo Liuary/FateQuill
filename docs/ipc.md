@@ -86,9 +86,9 @@
 
 ## 8. 数据访问命令与错误结构
 
-### 8.1 数据访问命令清单（36 个）
+### 8.1 数据访问命令清单（38 个）
 
-> 另见 §6 流式通道命令（`http_stream` / `abort_stream`）——故全仓实际注册命令共 38 条。
+> 另见 §6 流式通道命令（`http_stream` / `abort_stream`）——故全仓实际注册命令共 40 条。
 
 5 实体 × [list / get / create / update / delete]，命令名 snake_case：
 
@@ -128,12 +128,26 @@
 | Keyring | `keyring_delete` | `{ provider, label }`      | 删除密钥                              |
 | Keyring | `keyring_exists` | `{ provider, label }`      | 查询是否存在（布尔；不返回 Key）      |
 
+审查记录命令（review_record，共 2 个；stage-06 T6）：
+
+| 类别         | 命令                  | 参数（前端 camelCase）                                      | 语义                                                     |
+| ------------ | --------------------- | ----------------------------------------------------------- | -------------------------------------------------------- |
+| ReviewRecord | `save_review_record`  | `{ chapterId, round, dimension, score, reasons: string[] }` | 保存一条审查记录（每维一行；`reasons` → `reasons_json`） |
+| ReviewRecord | `list_review_records` | `{ chapterId }`                                             | 按章查询审查历史（时间倒序）                             |
+
+#### review_record 关联语义（stage-06 T6）
+
+- 表 `review_record(id, chapter_id, round, dimension, score, reasons_json, created_at)`：**每维一行**；`chapter_id` 外键 `ON DELETE CASCADE`（删章级联清理）。
+- **关联（v0.2 简化）**：按 `chapter_id` + `round` 关联「该章某轮审查」；生成会话级关联留待演进（`generationStore.requestId` 为内存态，不持久化）。
+- **可回溯口径**：`list_review_records(chapterId)` 返回该章全部审查记录，**按时间倒序**（`round DESC, created_at DESC, id DESC`）。
+- `dimension` 仅接受 `plot` / `worldview` / `compliance` / `humanity`；`score` 限 0–100（非法 → `VALIDATION`）。
+
 #### 配置表 ↔ 密钥链条目关联
 
 - `model_config(provider, label)` ↔ keyring 条目：`service = fatequill`、`account = {provider}/{label}`（即 `fatequill/{provider}/{label}`）。
 - 经 `keyring_set` / `keyring_delete` / `keyring_exists` 三命令管理（**无 `keyring_get`**）：**Key 不入库**（`model_config` 表不含 key 列，C-05）、**不下发前端**；仅 Rust 中继（`http_stream`）在注入授权头时内部读取。
 
-> 后续 op 新增命令须同步本清单（stage-03 已完成 `http_stream` / `abort_stream`（§6）与模型配置/密钥命令（本清单））。
+> 后续 op 新增命令须同步本清单（stage-03 已完成 `http_stream` / `abort_stream`（§6）与模型配置/密钥命令；stage-06 T6 追加审查记录命令）。
 
 ### 8.2 错误结构与错误码表
 

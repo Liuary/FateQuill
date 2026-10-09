@@ -4,3 +4,4 @@ export * from "./chapter";
 export * from "./setting-card";
 export * from "./character";
 export * from "./model-config";
+export * from "./review-record";

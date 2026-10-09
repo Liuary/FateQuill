@@ -26,10 +26,22 @@ src/orchestration/
 │   ├── runner.ts       # runSteps / GenerationInput / GenerationStep（可组合签名）
 │   ├── single-agent-step.ts  # 单 Agent 生成 Step
 │   └── index.ts
-└── stream/             # 纯 TS 消费工具
-    ├── async-queue.ts  # push/close/fail 异步队列（适配器与消费端复用）
-    ├── throttle.ts     # ≥50ms 合并（可注入时钟）
-    ├── subscribe.ts    # subscribeChunks 消费入口
+├── stream/             # 纯 TS 消费工具
+│   ├── async-queue.ts  # push/close/fail 异步队列（适配器与消费端复用）
+│   ├── throttle.ts     # ≥50ms 合并（可注入时钟）
+│   ├── subscribe.ts    # subscribeChunks 消费入口
+│   └── index.ts
+└── review/             # 审查评估（stage-06）：Evaluator 契约 / 注册表 / 四维评估器 / rubric / 合规规则 / rewrite / loop
+    ├── types.ts        # ReviewDimension / EvaluationResult / ReviewInput / Evaluator
+    ├── evaluator.ts    # EvaluatorRegistry（复用 Registry<T>）+ evaluateWithFallback（重试/降级）
+    ├── json.ts         # extractJson / parseEvaluationJson（围栏/夹取/非法抛错）
+    ├── rubric.ts       # 四维子维度 + buildReviewSystemPrompt（内联 rubric）
+    ├── compliance-rules.ts  # 合规词表/正则（无 Token）+ scanCompliance
+    ├── evaluators/     # llm-judge（非流式收口）/ plot / worldview / humanity / compliance
+    ├── aggregate.ts    # weightedTotal 加权归一（纯函数）
+    ├── rewrite.ts      # 反馈注入重写（非流式）
+    ├── loop.ts         # runReviewLoop（上限 2 / 合规排除 / 入池不替换正文）
+    ├── register.ts     # registerBuiltinEvaluators
     └── index.ts
 
 src/ipc/stream.ts       # httpStream()：Tauri Channel 封装 + StreamEvent TS 契约（requestId 缺省生成，返回 abort）
@@ -45,6 +57,7 @@ tests/fixtures/*.sse    # SSE 录制回放夹具（openai-compatible / anthropic
 - **Pipeline**：`PipelineStep<In,Out>`；v0.1 仅 `createSingleAgentStep`（解析 Agent → Provider → 组装 messages → `provider.stream()`）；多步组合于 **stage-06/08** 启用。
 - **消费工具**：`throttleChunks`（默认 50ms 合并、源结束冲刷）、`subscribeChunks`；**不建 store**，stage-05 `generationStore` 订阅其输出。
 - **无 AI SDK**：`orchestration` 任何文件不得 `import "ai"`（ADR-001）。
+- **审查评估（stage-06）**：`src/orchestration/review/` —— `Evaluator` 契约 / `Registry<Evaluator>` 注册表（`evaluateWithFallback` 有限重试 + 降级不抛穿）/ 四维评估器（剧情·世界观·真人感为 LLM-as-judge，经 `ModelProvider` **非流式收口**；合规为**规则引擎**，无需 Token）/ rubric（`REVIEW_RUBRIC_VERSION`）/ 加权归一 `weightedTotal` / `runReviewLoop`（自动重写上限 2，**合规低分仅人工裁决**，产物入池**不自动替换正文**）。
 
 ## 测试基线（v0.1.0-stage-03）
 
