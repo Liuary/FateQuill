@@ -2,14 +2,14 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-09T15:40:05.503Z",
-    "revision": 135
+    "updated": "2026-10-09T15:41:08.218Z",
+    "revision": 136
   },
   "pipeline": {
     "phase": "active",
     "current": {
       "stage": "v0.1.0-stage-04",
-      "op": "op-004"
+      "op": "op-005"
     },
     "retry": 0
   },
@@ -511,9 +511,9 @@
         },
         "op-004": {
           "title": "Markdown 输入/导入导出与往返测试（T3）",
-          "state": "pending",
+          "state": "done",
           "assignee": "openfeel-executor",
-          "attempts": 0,
+          "attempts": 1,
           "max_attempts": 3,
           "checkpoints": {
             "plan": "pending",
@@ -2014,6 +2014,15 @@
       "action": "attempt_pass",
       "detail": {
         "opId": "v0.1.0-stage-04.op-003",
+        "attempts": 1
+      }
+    },
+    {
+      "time": "2026-10-09T15:41:08.187Z",
+      "agent": "openfeel-executor",
+      "action": "attempt_pass",
+      "detail": {
+        "opId": "v0.1.0-stage-04.op-004",
         "attempts": 1
       }
     }
