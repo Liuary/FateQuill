@@ -17,6 +17,8 @@
 
 - **features/** — 用户功能模块（stage-04 建立）
   - [`editor.md`](features/editor.md)：章节编辑器（Tiptap 一章一实例、HTML 存储）、卷章大纲树与 dnd-kit 排序、自动保存、AI 增量插入接口（stage-04 建立）
+  - [`generation.md`](features/generation.md)：生成入口/面板、`generationStore` 边界、模式 A 流式直插（stage-05 建立）
+  - [`setting-cards.md`](features/setting-cards.md)：设定卡 CRUD 面板（stage-05 建立）
 
 ## 维护约定
 

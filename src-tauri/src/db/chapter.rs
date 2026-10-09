@@ -176,4 +176,27 @@ mod tests {
         let bad_status = chapter::update(&pool, ok.id, "T", "", "html", "published", 0).await.unwrap_err();
         assert_eq!(bad_status.code, codes::VALIDATION);
     }
+
+    /// v0.1 收口（T6）数据层往返：update 写入新 HTML → get 一致；`content_format='html'`；`word_count` html 分支回填
+    #[tokio::test]
+    async fn chapter_roundtrip_html_word_count() {
+        let (pool, volume_id) = fixture().await;
+        let created = chapter::create(&pool, volume_id, "第一段", "", "html", 0).await.unwrap();
+
+        // 模拟「AI 流式直插后」的正文（HTML 存储）
+        let html = "<p>你好，世界</p><p>第二段</p>";
+        let updated = chapter::update(&pool, created.id, "第一段", html, "html", "draft", 0)
+            .await
+            .unwrap();
+        assert_eq!(updated.content, html);
+        assert_eq!(updated.content_format, "html");
+        // 去标签后「你好，世界第二段」= 8 个非空白字符（html 分支回填）
+        assert_eq!(updated.word_count, 8);
+
+        // 再 get 往返一致
+        let got = chapter::get(&pool, created.id).await.unwrap();
+        assert_eq!(got.content, html);
+        assert_eq!(got.content_format, "html");
+        assert_eq!(got.word_count, 8);
+    }
 }
