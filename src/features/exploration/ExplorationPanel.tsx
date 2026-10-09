@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { useGenerationAvailability } from "@/features/generation/useGenerationAvailability";
 import { useExplorationStore } from "@/store/explorationStore";
 import { BranchCompare } from "./BranchCompare";
+import { IChingPanel } from "./IChingPanel";
 import { TemperatureConfig } from "./TemperatureConfig";
 import { useExploration } from "./useExploration";
 
@@ -54,6 +55,8 @@ export function ExplorationPanel({ novelId, chapterId, editor = null }: Explorat
       </label>
 
       <TemperatureConfig />
+
+      <IChingPanel />
 
       <div className="flex flex-wrap items-center gap-2 text-xs">
         <label className="flex items-center gap-1">

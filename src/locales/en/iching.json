@@ -1,0 +1,23 @@
+{
+  "tab": "Cast",
+  "title": "Casting and reading",
+  "castRandom": "Cast at random",
+  "castManual": "Cast manually",
+  "seed": "Random seed",
+  "manualBinary": "Hexagram binary",
+  "manualChanging": "Changing lines",
+  "benGua": "Primary",
+  "zhiGua": "Resulting",
+  "changingLines": "Changing lines",
+  "none": "none",
+  "empty": "No casting yet",
+  "reading": {
+    "reading0": "No changing line: read the primary hexagram judgment",
+    "reading1": "One changing line: read that line of the primary hexagram",
+    "reading2": "Two changing lines: read both lines (upper one leads)",
+    "reading3": "Three changing lines: read both hexagram judgments",
+    "reading4": "Four changing lines: read the two unchanged lines of the resulting hexagram (lower one leads)",
+    "reading5": "Five changing lines: read the unchanged line of the resulting hexagram",
+    "reading6": "Six changing lines: read the resulting hexagram judgment"
+  }
+}

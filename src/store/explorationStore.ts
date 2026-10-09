@@ -8,6 +8,7 @@
 import { create } from "zustand";
 import { DEFAULT_TEMPERATURES } from "@/orchestration/exploration/temperature";
 import type { ExplorationBranch } from "@/orchestration/exploration/types";
+import type { Casting } from "@/orchestration/iching/types";
 
 interface ExplorationState {
   /** 走向意向（user 段） */
@@ -22,6 +23,10 @@ interface ExplorationState {
   selectedBranchId: string | null;
   /** 折叠的分支 id（对比视图） */
   collapsedIds: string[];
+  /**
+   * 起卦结果（**跨组件状态**，REV-007）：由 `IChingPanel` 写入，供推演/展示等其它组件读取。
+   */
+  casting: Casting | null;
   setIntent: (intent: string) => void;
   setTemperatures: (temperatures: number[]) => void;
   setBranches: (branches: ExplorationBranch[]) => void;
@@ -33,6 +38,8 @@ interface ExplorationState {
   toggleCollapsed: (id: string) => void;
   /** 丢弃分支（会话容器移除；选中/折叠状态一并清理） */
   removeBranch: (id: string) => void;
+  /** 写入/清空起卦结果（REV-007 跨组件共享） */
+  setCasting: (casting: Casting | null) => void;
   clear: () => void;
 }
 
@@ -44,6 +51,7 @@ export const useExplorationStore = create<ExplorationState>((set) => ({
   running: false,
   selectedBranchId: null,
   collapsedIds: [],
+  casting: null,
   setIntent: (intent) => set({ intent }),
   setTemperatures: (temperatures) => set({ temperatures }),
   setBranches: (branches) => set({ branches }),
@@ -69,6 +77,7 @@ export const useExplorationStore = create<ExplorationState>((set) => ({
       selectedBranchId: state.selectedBranchId === id ? null : state.selectedBranchId,
       collapsedIds: state.collapsedIds.filter((current) => current !== id),
     })),
-  // 清空分支、选中与折叠态（保留意向与温度配置）
+  setCasting: (casting) => set({ casting }),
+  // 清空分支、选中与折叠态（保留意向、温度配置与起卦结果）
   clear: () => set({ branches: [], running: false, selectedBranchId: null, collapsedIds: [] }),
 }));

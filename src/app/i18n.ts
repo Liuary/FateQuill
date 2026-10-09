@@ -18,6 +18,8 @@ import zhResearch from "@/locales/zh-CN/research.json";
 import enResearch from "@/locales/en/research.json";
 import zhExploration from "@/locales/zh-CN/exploration.json";
 import enExploration from "@/locales/en/exploration.json";
+import zhIChing from "@/locales/zh-CN/iching.json";
+import enIChing from "@/locales/en/iching.json";
 
 export const DEFAULT_LANG = "zh-CN";
 
@@ -35,6 +37,7 @@ void i18n
         review: zhReview,
         research: zhResearch,
         exploration: zhExploration,
+        iching: zhIChing,
       },
       en: {
         common: enCommon,
@@ -45,6 +48,7 @@ void i18n
         review: enReview,
         research: enResearch,
         exploration: enExploration,
+        iching: enIChing,
       },
     },
     fallbackLng: DEFAULT_LANG, // 英文缺失回退中文

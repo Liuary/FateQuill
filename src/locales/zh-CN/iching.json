@@ -1,0 +1,23 @@
+{
+  "tab": "起卦",
+  "title": "起卦与解读",
+  "castRandom": "随机起卦",
+  "castManual": "手动起卦",
+  "seed": "随机种子",
+  "manualBinary": "本卦二进制",
+  "manualChanging": "变爻下标",
+  "benGua": "本卦",
+  "zhiGua": "之卦",
+  "changingLines": "变爻",
+  "none": "无",
+  "empty": "尚未起卦",
+  "reading": {
+    "reading0": "六爻皆静：以本卦卦辞断",
+    "reading1": "一爻变：以本卦该变爻爻辞断",
+    "reading2": "二爻变：以本卦两变爻爻辞断（以上爻为主）",
+    "reading3": "三爻变：以本卦与之卦卦辞断",
+    "reading4": "四爻变：以之卦两不变爻爻辞断（以下爻为主）",
+    "reading5": "五爻变：以之卦不变爻爻辞断",
+    "reading6": "六爻变：以之卦卦辞断"
+  }
+}
