@@ -4,7 +4,7 @@
 
 ## 状态统计
 
-- **open 0 ｜ fixing 0 ｜ resolved 0 ｜ closed 5**
+- **open 0 ｜ fixing 0 ｜ resolved 0 ｜ closed 6**
 
 ## 按模块
 
@@ -35,3 +35,9 @@
 - [`generation.md`](generation.md)：**BUG-001** — `v0.1-e2e.test.tsx` 未含 C-03 Profiler 断言，与 op-006 声明不一致 → `vi.mock("@tiptap/react")` 将真实 `EditorContent` 包进 `<Profiler>` + 非空洞性守卫（集成路径 C-03 成立）。
 - [`build.md`](build.md)：**BUG-001** — chunk 体积登记值（311KB / gzip 97KB）与实际（~850KB / gzip ~268KB）严重不符 → 活文档更正为实测值（历史评审留痕不改）。
 - 验收报告：`.openfeel/tmp/stage-05-acceptance.md`
+
+### v0.2.0-stage-06（审查流水线：剧情/世界观/合规/真人感）@openfeel-feel-tester
+
+- **1 个 low Bug，已闭环**（修复 commit `1bbd3e8`，验收人 openfeel-feel-tester）；验收结论 **DoD 10 条 9 完整满足 + 1 项人工协验 BLOCKED**；门禁 `pnpm test` **52 文件 221/221**、lint/build、`cargo test` **45/45** 全绿。
+- [`review.md`](review.md)：**BUG-001** — 评审输入未沿用预算裁剪，长章正文全量送入四维评审与重写 prompt → 新增 `budget.ts`（`REVIEW_CONTENT_BUDGET` 单一来源复用 stage-05 装配预算=8000 + `trimReviewContent`），接入 `llm-judge.ts`/`rewrite.ts`；临时探针证实超长输入被裁剪。
+- 验收报告：`.openfeel/tmp/stage-06-acceptance.md`

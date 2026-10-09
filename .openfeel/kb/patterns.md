@@ -149,3 +149,27 @@ resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } }
 - **写法**：以 React `Profiler` 的 `onRender` 包裹 `EditorContent` 子树（测试经 `vi.mock("@tiptap/react")` 把真实 `EditorContent` 包进 `<Profiler>`，**仅测试接缝、不改源码**）；记录「点击开始生成 → 生成完成」区间的 render 增量并断言 **= 0**。
 - **非空洞性守卫（关键）**：断言前先 `expect(rendersBefore).toBeGreaterThan(0)`（确认 Profiler 已生效、含挂载渲染被捕获）——否则「0 增量」可能是插桩未生效的假绿。可用独立探针（临时用例：触发父组件重渲染 → 计数递增）验证插桩能捕获真实重渲染。
 - **配套**：`editorStore` 快照（除 `saveStatus/lastSavedAt` 自动保存域外）不变；代理指标 `dispatch` 次数 ≤ chunk 数 / 2 且无 `setContent` 全量重设。
+
+## [+] 评审 JSON 容错降级（extractJson + DEGRADED_SCORE） (2026-10-10)
+
+- **两段式解析**：`json.ts` 的 `extractJson(raw)` 先去 ```json 围栏 / 取首 `{` 至末 `}`；`parseEvaluationJson(raw)` 再归一化——`score` 夹取 0–100、`reasons` 归一为 `string[]`、score 非有限数字 / 结构非法则**抛错**（交上层降级）。
+- **降级不抛穿**：`evaluator.ts` 的 `evaluateWithFallback(ev, input, { retries })` 有限重试，仍失败返回 `degradedResult(reason)` = `{ score: DEGRADED_SCORE(=60), reasons: ["判定失败：…"] }`，**绝不向上抛穿流水线**（评审失败不应中断生成/重写闭环）。
+- **测试**：夹具回放（`tests/fixtures/review/` 合法 / 围栏 / 非法）；`evaluator.test.ts` 断言抛错评估器 → 默认分 + 「判定失败」reason，成功路径原样返回。
+
+## [+] rubric 双载体版本一致性（代码源 ↔ 人读文档） (2026-10-10)
+
+- **双载体**：代码源 `src/orchestration/review/rubric.ts`（`REVIEW_RUBRIC_VERSION` + `RUBRICS` 四维子维度 + `buildReviewSystemPrompt` 把**精简 rubric 内联进评审 prompt**）↔ 人读权威 `docs/review-rubric.md`（**同名版本号** + 分档描述）。
+- **约定**：两者须同步演进；验证用 `rg -n REVIEW_RUBRIC_VERSION` **双命中且一致**。合规词表同法版本化（`COMPLIANCE_RULES_VERSION`）并显式声明「内置词表覆盖范围有限」。
+- 同源启示：凡「机器消费副本 + 人读权威文档」并存（如 rubric、模板、码表），以**版本常量**做同步锚点并纳入 `rg` 断言，防载体漂移。
+
+## [+] 合规排除重写（triggerDims 三处隔离） (2026-10-10)
+
+- **背景**：合规（规则引擎）存在误判风险，自动重写会放大误判 → 合规低分**只提示人工裁决**。
+- **机制**：`failedDims`（单维 score < passThreshold）→ `triggerDims = failedDims \ {compliance}`；`triggerDims` 为空则不触发自动重写、置 `needsHuman`。
+- **三处隔离**（防漏改）：① `loop.ts` 判定排除 `compliance`；② `rewrite.ts` 反馈注入仅用 `triggerDims`；③ `ReviewPanel` 合规低分仅显示 `complianceManual` 提示、不提供自动重写。测试以 spy 断言 `rewriteChapter` 零调用。
+
+## [+] 评审预算裁剪（单一来源复用生成预算） (2026-10-10)
+
+- **落点** `src/orchestration/review/budget.ts`：`REVIEW_CONTENT_BUDGET = PROMPT_BUDGET.total`（**单一来源复用** stage-05 装配预算，=8000 字符）、`REVIEW_TRIM_MARKER`、`trimReviewContent(content, budget?)`（≤预算原样；超限保留开头至预算 + 裁剪标记）。
+- **接入两处**：`evaluators/llm-judge.ts`（评审 user message 正文）与 `rewrite.ts`（`buildRewriteMessages` 待改正文）——避免长章正文全量进入每维评审（每章 4 次评审 + 最多 2 次重写）造成 Token 线性放大。
+- **验证**：临时探针以 5×预算超长正文调用，断言送入 LLM 的文本含标记且 `length ≤ 预算 + 标记长`、`< 原文长`（探针用后清理）。

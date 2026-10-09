@@ -39,6 +39,7 @@ src/orchestration/
     ├── compliance-rules.ts  # 合规词表/正则（无 Token）+ scanCompliance
     ├── evaluators/     # llm-judge（非流式收口）/ plot / worldview / humanity / compliance
     ├── aggregate.ts    # weightedTotal 加权归一（纯函数）
+    ├── budget.ts       # REVIEW_CONTENT_BUDGET / trimReviewContent（沿用生成装配预算）
     ├── rewrite.ts      # 反馈注入重写（非流式）
     ├── loop.ts         # runReviewLoop（上限 2 / 合规排除 / 入池不替换正文）
     ├── register.ts     # registerBuiltinEvaluators

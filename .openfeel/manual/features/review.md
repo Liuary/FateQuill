@@ -17,6 +17,7 @@ src/orchestration/review/     # 契约与算法（provider 无关）
 ├── compliance-rules.ts       # COMPLIANCE_RULES_VERSION / COMPLIANCE_RULES / scanCompliance
 ├── evaluators/               # llm-judge（非流式收口）/ plot / worldview / humanity / compliance
 ├── aggregate.ts              # DEFAULT_WEIGHTS / weightedTotal（纯函数）
+├── budget.ts                 # REVIEW_CONTENT_BUDGET / trimReviewContent（沿用生成装配预算）
 ├── rewrite.ts                # buildRewriteMessages / rewriteChapter（反馈注入）
 ├── loop.ts                   # runReviewLoop（上限 2 / 合规排除 / 入池不替换）
 └── register.ts               # registerBuiltinEvaluators（四维注册）
@@ -38,6 +39,7 @@ src/ipc/repositories/review-record-repository.ts  # reasons_json ↔ reasons 映
 
 - **四维与评分**：`EvaluationResult = { score: 0–100; reasons: string[]; findings? }`；`weightedTotal(results, weights) = Σ(score×weight)/Σweight`（**缺维 / 零权不参与**，归一 0–100）。
 - **评估器**：LLM 维经 stage-03 `ModelProvider` **非流式收口**（聚合全文 → `parseEvaluationJson`）；**合规为规则引擎**（本地词表/正则，**无需 Token**）；解析/调用失败经 `evaluateWithFallback` 有限重试 → 降级默认分（`DEGRADED_SCORE=60`），**不抛穿**。
+- **评审预算裁剪**：`budget.ts` 的 `REVIEW_CONTENT_BUDGET` **单一来源复用** stage-05 `PROMPT_BUDGET.total`（=8000），`trimReviewContent` 对超长正文裁剪（含标记）后接入 `evaluators/llm-judge.ts` 与 `rewrite.ts`（避免长章 Token 线性放大）。
 - **重写回路（`runReviewLoop`）**：初版评分 → 未通过且可自动重写 → **注入上轮反馈**重写 → 复审；**上限 2 次**（`maxRounds`）；**合规低分不作为自动重写触发项**（`triggerDims` 排除 `compliance`，仅人工裁决）；达上限 / 关闭开关 / 仅合规未通过 → `needsHuman`。产物经 `onVersion` **入池，不自动替换正文**。
 - **版本池**：`ReviewVersion { id, label, content, round, results, totalScore }`；`setWeights` 重算全部总分；非最优版本保留可回看。
 - **采纳**：`EditorController.replaceContent(html)`（**单条撤销历史**）——**前端命令面，非 IPC**；一次性 controller 用后 `dispose()`（REV-008）。

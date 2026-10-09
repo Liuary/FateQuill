@@ -130,3 +130,26 @@
 - **隔离机制**：与 `editorStore` **各自独立 `create()`、不互相 `setState`**；跨域通信仅经 `EditorController` 命令面（插入）与自动保存域（`editorStore.saveStatus`）。
 - **收敛语义**：`status` 枚举保留 `'error'|'aborted'` 供前向兼容，但 **v0.1 收敛态统一为 `'idle'`**——停止 → `reset()`（`status=idle`、`requestId=null`、草稿保留）；失败 → `fail(IpcError)`（`status=idle`、`requestId=null`、`error` 展示）。「半态」= 残留 `streaming`/悬挂 `requestId`，**状态机复位断言入测试**。
 - **requestId 澄清**：`generationStore.requestId` 为**生成会话关联 id**（`crypto.randomUUID()`，供 UI/日志关联）；底层断流经适配器 `AbortSignal` → stage-03 `abort_stream`（前端不持有底层 requestId）。
+
+## [+] 四维评审机制（LLM-as-judge + 合规规则引擎） (2026-10-10)
+
+- **落点** `src/orchestration/review/`（provider 无关，复用编排引擎契约，与 `manual/orchestration/engine.md` 扩展点一致）；UI 在 `src/features/review/`、元状态在 `src/store/reviewStore.ts`。
+- **契约**：`Evaluator.evaluate(input: ReviewInput) → Promise<EvaluationResult>`；`EvaluationResult = { score: 0–100; reasons: string[]; findings? }`；注册表复用泛型 `Registry<Evaluator>`。
+- **四维执行机制**：剧情 / 世界观 / 真人感 = **LLM-as-judge**（经 stage-03 `ModelProvider.stream(ChatOptions)` 发评审 prompt，`for await` **非流式收口**聚合全文后 `parseEvaluationJson`；`temperature=0`）；**合规 = 规则引擎**（`compliance-rules.ts` 本地词表/正则，**无需 Token**、可单测）+ 可选 LLM 复核。
+- **判据共享**：真人感 rubric 与 stage-07（去 AI 味）**共享同一判据定义**，避免两套口径。
+- **测试口径**：LLM 维 = 夹具回放（`tests/fixtures/review/` mock 响应 + `review-samples/expected.json` 期望区间）；合规维无需 provider。
+
+## [+] 会话级版本池与加权择优 (2026-10-10)
+
+- **版本池 = 初版 + 重写轮次产物**；v0.2 为**会话级（内存）**——采纳后正文持久化，版本内容持久化留待后续（避免过度设计）。非最优版本保留可回看。
+- **加权总分** `weightedTotal(results, weights) = Σ(score×weight)/Σweight`（**缺维 / 零权不参与**，归一 0–100）；`DEFAULT_WEIGHTS` 四维=1；`reviewStore.setWeights` 变更后**重算全部版本总分**（权重可调且改变排序）。
+- **采纳落地**：以选定版本**整章替换**正文 → stage-04 扩展 `EditorController.replaceContent(html)`（**单条撤销历史**，替换前丢弃未 flush 的 `appendChunk` 缓冲）；`appendChunk` **追加语义保留不变**；`replaceContent` 属**前端命令面，非 IPC**。
+- **store 边界**：`reviewStore` 独立 `create()`（与 `editorStore`/`generationStore` 并列，不互相 setState），持版本池 / 权重 / `autoRewrite` / `needsHumanReview`。
+
+## [+] 重写回路（上限 2 / 反馈注入 / 合规排除 / 入池不替换） (2026-10-10)
+
+- `runReviewLoop`（`src/orchestration/review/loop.ts`）：初版评分 → 未通过且可自动重写 → **注入上轮反馈**重写 → 复审 → 逐轮入池；返回 `{ needsHuman, rounds }`。
+- **失败判定**：`weightedTotal < passThreshold`（默认 60）判该轮失败；`failedDims` = 单维 `score < passThreshold` 的维度集合（仅用于反馈注入与合规排除）。
+- **自动重写触发**：`triggerDims = failedDims \ {compliance}`；`triggerDims` 为空（仅合规未过）→ **不自动重写**、`needsHuman=true`。**上限 2 次**（`maxRounds`），默认开启、可在权重配置关闭（成本控制）。
+- **反馈注入**：`buildRewriteMessages` 结构化注入未通过维度的 `score + reasons` + 要求（保留原意、改进反馈项）。
+- **落地**：重写产物经 `onVersion` **入池 + 自动评分**，回路**不调用任何正文替换**（`replaceContent`/`setContent` 零调用）——由用户择优采纳，兼顾成本与安全。

@@ -1,7 +1,25 @@
 # 代码审查索引（公共域）
 
 > 存放各阶段审查关闭后的核心结论摘要。详细审查过程与逐提交点内容见私域 `.openfeel/users/{username}/code_review/REV-{stage}.md`。
-> 状态统计：**pending 2 ｜ fixing 0 ｜ resolved 0 ｜ closed 69**
+> 状态统计：**pending 6 ｜ fixing 0 ｜ resolved 0 ｜ closed 76**
+
+## v0.2.0-stage-06（审查流水线：剧情/世界观/合规/真人感）
+
+- **结论**：代码审查**通过**（2026-10-10 01:30），stage 已 test_passed → archiving。**修复闭环**：1 个 low Bug（review BUG-001，评审输入未沿用预算裁剪）经修复后测试官独立复验通过并关闭（修复 commit `1bbd3e8`）。
+- **心得总结**：[`v0.2.0-stage-06.md`](v0.2.0-stage-06.md)
+- **审查对象**：
+  1. 阶段计划 `plan.md`（01:10 → 复审 v2 01:13 通过）：REV-001~007 **closed**（7 条）。
+  2. 操作方案 `ops/op-001~007.md`（00:35 方案审查通过）：REV-008~009 **pending**（非阻塞）。
+  3. 执行产出代码审查（01:30）：REV-010~011 **pending**（非阻塞）。
+- **closed 合计 7 条**：计划 7。
+- **关键**：四维评审（剧情/世界观/真人感 = LLM-as-judge **非流式收口** + 合规 = **规则引擎**无 Token）；rubric 双载体版本化；加权总分 `weightedTotal` 归一择优；**会话级版本池**；重写回路（上限 2 / 反馈注入 / 合规排除 `triggerDims` / 入池不自动替换）；采纳经 `EditorController.replaceContent`（单条撤销）；迁移 v3 `review_record` + IPC 2 命令（共 40 注册）。实测 `cargo test` **45/45**、Vitest **221/221**（52 文件）、lint 0 errors、build 通过（chunk 警告已知项）；DoD 10 条 **9 完整满足 + 第 10 条人工协验 BLOCKED**。
+- **BUG-001（low, closed）**：评审输入未沿用预算裁剪，长章正文全量送入四维评审与重写 prompt → 新增 `budget.ts`（`REVIEW_CONTENT_BUDGET` 单一来源复用 stage-05 装配预算=8000 + `trimReviewContent`），接入 `llm-judge.ts`/`rewrite.ts`；修复 commit `1bbd3e8`。
+- **遗留 4 条（非阻塞，建议随 stage-07 首要 op 清理）**：
+  - REV-008（medium）op-006 采纳临时 `EditorController` 未 dispose（composition 监听器累积）→ **已代码修复**（`try/finally dispose`），REV 待收口
+  - REV-009（low）杂项：重写判定基准歧义 / op-002 表格式 / chunk 评估未兑现 / 冒烟未覆盖审查流程（与 REV-011 重复）
+  - REV-010（low）判定基准澄清（op-005 修正记录）未同步 plan v2 约定节
+  - REV-011（low）杂项：chunk 评估未兑现 / 冒烟检查单扩展
+- **stage-05 遗留 REV-009**：人工协验（perf + 冒烟）并入本阶段 T7，**BLOCKED**（需真实 WebView / 真实 API Key）；4 项人工协验未执行（如实标注未伪造）。
 
 ## v0.1.0-stage-01（工程脚手架与工程化基础设施）
 

@@ -23,3 +23,4 @@
 | [2026-10-10-Liuary-018.md](2026-10-10-Liuary-018.md) | Liuary | v0.2.0-stage-06.op-005 执行通过 |
 | [2026-10-10-Liuary-019.md](2026-10-10-Liuary-019.md) | Liuary | v0.2.0-stage-06.op-006 执行通过 |
 | [2026-10-10-Liuary-020.md](2026-10-10-Liuary-020.md) | Liuary | v0.2.0-stage-06.op-007 执行通过 |
+| [2026-10-10-Liuary-021.md](2026-10-10-Liuary-021.md) | Liuary | 阶段 v0.2.0-stage-06 完成 |
