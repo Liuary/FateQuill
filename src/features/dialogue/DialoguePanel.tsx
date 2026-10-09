@@ -33,6 +33,7 @@ import { NarrationComposer } from "./NarrationComposer";
 import { useDialogue } from "./useDialogue";
 import { useDialogueCost } from "./useDialogueCost";
 import { useMergeDialogue } from "./useMergeDialogue";
+import { useSceneContext } from "./scene-context";
 
 export interface DialoguePanelProps {
   novelId: number | null;
@@ -59,6 +60,8 @@ export function DialoguePanel({ novelId, chapterId = null, editor = null }: Dial
   const [majorOnly, setMajorOnly] = useState(false); // 「仅主要角色」过滤
   const [reviewing, setReviewing] = useState(false);
   const [reviewSummary, setReviewSummary] = useState<string | null>(null);
+  // 公共场景上下文：设定卡 + 前章末尾（装载）+ 场景指令（会话态）
+  const scene = useSceneContext({ novelId, chapterId });
   const {
     generateNarration,
     generateCharacterLine,
@@ -67,7 +70,7 @@ export function DialoguePanel({ novelId, chapterId = null, editor = null }: Dial
     error,
     concurrency,
     setConcurrency,
-  } = useDialogue({ config });
+  } = useDialogue({ config, scene });
   const { participants, estimate } = useDialogueCost(characters, { majorOnly });
   const { mergeAsNextChapter, replaceCurrentChapter, error: mergeError } = useMergeDialogue(editor);
 
@@ -143,6 +146,19 @@ export function DialoguePanel({ novelId, chapterId = null, editor = null }: Dial
       {(state === "no-config" || state === "no-key") && (
         <p className="text-destructive">{t("guideSettings")}</p>
       )}
+
+      {/* 场景指令（公共场景上下文的一块；会话态，置于旁白区上方） */}
+      <section data-testid="scene-section" className="flex flex-col gap-1 text-xs">
+        <label htmlFor="dialogue-scene-instruction">{t("sceneInstruction")}</label>
+        <textarea
+          id="dialogue-scene-instruction"
+          data-testid="scene-instruction"
+          className="border-input min-h-16 rounded-md border bg-transparent px-3 py-2 text-sm"
+          placeholder={t("sceneInstructionPlaceholder")}
+          value={scene.sceneInstruction}
+          onChange={(event) => scene.setSceneInstruction(event.target.value)}
+        />
+      </section>
 
       <NarrationComposer running={running} onGenerate={() => void generateNarration()} />
 

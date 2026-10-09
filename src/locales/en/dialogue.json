@@ -17,6 +17,8 @@
   "empty": "No entries yet",
   "unknownSpeaker": "Unknown speaker",
   "history": "Shared history",
+  "sceneInstruction": "Scene instruction",
+  "sceneInstructionPlaceholder": "Scene notes (optional), e.g. \"rainy night, ruined temple, just after a fight\"",
   "merge": "Merge to chapter",
   "cost": "Cost estimate",
   "majorOnly": "Major characters only",

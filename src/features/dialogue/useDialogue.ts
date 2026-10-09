@@ -4,6 +4,9 @@
  * 职责：**旁白 / 对话分离生成**——旁白与角色台词各自独立入口，均为**非流式收口**；
  * 生成结果追加到 `dialogueStore`（会话内存），轮次**用户主导**（可反复）。
  * 持 `AbortController` 支持停止；失败不抛穿（`error` 供 UI 反馈）。
+ *
+ * 公共场景上下文（**单源**）：经 `@/orchestration/dialogue/context` 的 `buildPublicContext` 装配
+ * **设定卡 + 前章末尾 + 场景指令 + 公共对话历史**四块（op-009 / BUG-001 修复）。
  */
 
 import { useCallback, useRef, useState } from "react";
@@ -16,9 +19,11 @@ import {
   toNarratorOptions,
 } from "@/orchestration/dialogue/generate";
 import { DEFAULT_DIALOGUE_CONCURRENCY } from "@/orchestration/dialogue/concurrency";
+import { buildPublicContext, type PublicHistoryEntry } from "@/orchestration/dialogue/context";
 import type { DialogueProfile } from "@/orchestration/dialogue/types";
 import { resolveProviderForConfig } from "@/features/generation/resolve-provider";
 import { useDialogueStore } from "@/store/dialogueStore";
+import type { SceneContextInput } from "./scene-context";
 
 /** 角色台词目标 */
 export interface DialogueSpeaker {
@@ -28,24 +33,28 @@ export interface DialogueSpeaker {
 }
 
 /** 对话生成编排 */
-export function useDialogue(opts: { config: ModelConfig | null }) {
+export function useDialogue(opts: { config: ModelConfig | null; scene: SceneContextInput }) {
   const abortRef = useRef<AbortController | null>(null);
   const [error, setError] = useState<string | null>(null);
   /** 批量生成并发上限（默认 3；超限排队） */
   const [concurrency, setConcurrency] = useState<number>(DEFAULT_DIALOGUE_CONCURRENCY);
 
   /**
-   * 最小公共上下文接线（同装配链）：既有条目按顺序拼接；
-   * op-006 的 `buildPublicContext`（设定卡/前文/角色卡）将在此之上替换实现。
+   * 公共场景上下文（**单源装配**）：设定卡 + 前章末尾 + 场景指令（来自 `useSceneContext`）
+   * + 公共对话历史（实时从会话 store 取，保持条目顺序）。
    */
-  const buildPublicContext = useCallback(() => {
-    return useDialogueStore
-      .getState()
-      .entries.map((entry) =>
-        entry.kind === "dialogue" ? `${entry.speakerName ?? ""}：${entry.content}` : entry.content,
-      )
-      .join("\n");
-  }, []);
+  const assemblePublicContext = useCallback(() => {
+    const history: PublicHistoryEntry[] = useDialogueStore.getState().entries.map((entry) => {
+      const speaker = entry.kind === "dialogue" ? entry.speakerName : undefined;
+      return speaker ? { speaker, content: entry.content } : { content: entry.content };
+    });
+    return buildPublicContext({
+      settingCards: opts.scene.settingCards,
+      previousChapterTail: opts.scene.previousChapterTail,
+      sceneInstruction: opts.scene.sceneInstruction,
+      history,
+    });
+  }, [opts.scene]);
 
   const generate = useCallback(
     async (
@@ -64,7 +73,7 @@ export function useDialogue(opts: { config: ModelConfig | null }) {
       setError(null);
       try {
         const modelRef: ModelRef = { providerId: config.provider, model: config.modelName };
-        const publicContext = buildPublicContext();
+        const publicContext = assemblePublicContext();
         // 旁白与角色台词**分别装配**（仅 system 差异）
         const options =
           kind === "narration"
@@ -104,7 +113,7 @@ export function useDialogue(opts: { config: ModelConfig | null }) {
         useDialogueStore.getState().setRunning(false);
       }
     },
-    [opts.config, buildPublicContext],
+    [opts.config, assemblePublicContext],
   );
 
   const generateNarration = useCallback(() => generate("narration"), [generate]);
@@ -138,7 +147,7 @@ export function useDialogue(opts: { config: ModelConfig | null }) {
         const provider = resolveProviderForConfig(config);
         const results = await generateBatch({
           participants,
-          publicContext: buildPublicContext(),
+          publicContext: assemblePublicContext(),
           modelRef,
           streamFor: (chatOptions) =>
             provider.stream({ ...chatOptions, signal: controller.signal }),
@@ -166,7 +175,7 @@ export function useDialogue(opts: { config: ModelConfig | null }) {
         useDialogueStore.getState().setRunning(false);
       }
     },
-    [opts.config, buildPublicContext, concurrency],
+    [opts.config, assemblePublicContext, concurrency],
   );
 
   return {

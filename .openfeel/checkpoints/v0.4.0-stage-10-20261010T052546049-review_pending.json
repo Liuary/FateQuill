@@ -2,14 +2,14 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-09T21:32:57.072Z",
-    "revision": 362
+    "updated": "2026-10-09T21:25:45.737Z",
+    "revision": 354
   },
   "pipeline": {
     "phase": "active",
     "current": {
       "stage": "v0.4.0-stage-10",
-      "op": "op-009"
+      "op": ""
     },
     "retry": 0
   },
@@ -1311,8 +1311,8 @@
     },
     "v0.4.0-stage-10": {
       "name": "v0.4.0-stage-10",
-      "phase": "scheme_passed",
-      "status": "review_passed",
+      "phase": "review_pending",
+      "status": "planned",
       "deps": [
         "v0.1.0-stage-03",
         "v0.1.0-stage-05"
@@ -1442,23 +1442,6 @@
           "state": "done",
           "assignee": "openfeel-executor",
           "attempts": 1,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        },
-        "op-009": {
-          "title": "修复多声部生产装配未含设定卡/前文/场景指令（BUG-001）(fix)",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
           "max_attempts": 3,
           "checkpoints": {
             "plan": "pending",
@@ -4926,85 +4909,6 @@
       "detail": {
         "opId": "v0.4.0-stage-10.op-008",
         "attempts": 1
-      }
-    },
-    {
-      "time": "2026-10-09T21:25:46.066Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.4.0-stage-10",
-        "from": "exec_running",
-        "to": "review_pending"
-      }
-    },
-    {
-      "time": "2026-10-09T21:28:17.799Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.4.0-stage-10",
-        "from": "review_pending",
-        "to": "review_passed"
-      }
-    },
-    {
-      "time": "2026-10-09T21:28:18.104Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.4.0-stage-10",
-        "from": "review_passed",
-        "to": "test_pending"
-      }
-    },
-    {
-      "time": "2026-10-09T21:31:49.500Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.4.0-stage-10",
-        "from": "test_pending",
-        "to": "test_failed"
-      }
-    },
-    {
-      "time": "2026-10-09T21:31:49.809Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.4.0-stage-10",
-        "from": "test_failed",
-        "to": "scheme_pending"
-      }
-    },
-    {
-      "time": "2026-10-09T21:32:07.429Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.4.0-stage-10",
-        "opId": "op-009"
-      }
-    },
-    {
-      "time": "2026-10-09T21:32:29.770Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.4.0-stage-10",
-        "from": "scheme_pending",
-        "to": "scheme_review"
-      }
-    },
-    {
-      "time": "2026-10-09T21:32:57.071Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.4.0-stage-10",
-        "from": "scheme_review",
-        "to": "scheme_passed"
       }
     }
   ]

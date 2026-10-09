@@ -50,6 +50,7 @@ beforeEach(async () => {
     if (cmd === "list_model_configs") return Promise.resolve([cfgRow]);
     if (cmd === "keyring_exists") return Promise.resolve(true);
     if (cmd === "list_characters") return Promise.resolve([characterRow]);
+    if (cmd === "list_setting_cards") return Promise.resolve([]);
     return Promise.resolve(undefined);
   });
   hoisted.providerStream.mockReset();
@@ -161,6 +162,26 @@ describe("DialoguePanel（旁白 / 对话分离，T2）", () => {
     );
     expect(entries()).toHaveLength(2);
     expect(entries().map((entry) => entry.orderIndex)).toEqual([0, 1]);
+  });
+
+  it("场景指令（BUG-001）：面板输入 → 生成时进入公共上下文", async () => {
+    hoisted.providerStream.mockImplementation(async function* () {
+      yield { delta: "雨点砸在破庙瓦上。" };
+    });
+    render(<DialoguePanel novelId={1} />);
+    await waitFor(() => expect(screen.getByTestId("dialogue-panel")).toBeInTheDocument());
+
+    // 场景指令入口存在且为受控输入
+    const textarea = screen.getByTestId("scene-instruction") as HTMLTextAreaElement;
+    fireEvent.change(textarea, { target: { value: "雨夜破庙" } });
+    expect(textarea.value).toBe("雨夜破庙");
+
+    // 生成时该指令进入 provider options（【场景指令】块）
+    fireEvent.click(screen.getByRole("button", { name: "生成旁白" }));
+    await waitFor(() => expect(entries()).toHaveLength(1));
+    const text = hoisted.streamOptions[0].messages.map((message) => message.content).join("\n");
+    expect(text).toContain("【场景指令】");
+    expect(text).toContain("雨夜破庙");
   });
 
   it("无配置 → Key/设置引导；空历史提示", async () => {

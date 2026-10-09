@@ -1311,7 +1311,7 @@
     },
     "v0.4.0-stage-10": {
       "name": "v0.4.0-stage-10",
-      "phase": "scheme_passed",
+      "phase": "exec_running",
       "status": "review_passed",
       "deps": [
         "v0.1.0-stage-03",

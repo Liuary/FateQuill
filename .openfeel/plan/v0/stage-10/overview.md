@@ -35,6 +35,7 @@
 | op-006 | 上下文隔离（防串味）装配 | T5 | op-002 |
 | op-007 | 成本与并发控制 | T6 | op-002、op-003 |
 | op-008 | 台词评审衔接与 manual 文档收尾 | T7（收尾） | op-003~op-007 |
+| op-009 | 修复多声部生产装配未含设定卡/前文/场景指令（BUG-001）(fix) | T2/T5（补） | op-003、op-006 |
 
 > T1~T7 全覆盖：T7 拆为**首 op（遗留清理，op-001）** + **末 op（评审衔接与文档终稿，op-008）**（模块建立后方可写详文，遵守「未建立模块不提前占位」约定）。
 
@@ -57,3 +58,4 @@ op 拆分（首 op 含遗留清理，标 `(chore)`）；文档回写（`docs/str
 - **文档回写**：`docs/structure.md` §17、`docs/ipc.md`（无增量声明）、`manual/index.md`（characters/dialogue 登记）+ `manual/features/{characters,dialogue}.md`、`manual/orchestration/engine.md`（`dialogue/`）。
 - **审查衔接**：`src/orchestration/dialogue/review-bridge.ts` 对齐 stage-06 `ReviewInput`（**不新增评估器**）；「千人一腔」与 humanity/真人感互认登记于 `docs/review-rubric.md`。
 - **边界纪律**：零新增依赖、无迁移 v5、无 IPC 增量（复用 character 五命令 + chapter 命令）；op-001 的 `\|` 自检已排除（统一 `rg -n -e A -e B`）。
+- **修复闭环（op-009）**：BUG-001（medium）——生产 `useDialogue` 最小 `buildPublicContext` 未接完整场景上下文；修复=删除本地最小实现改调 `context.buildPublicContext`（单源），经 `useSceneContext` 装载设定卡 + 前章末尾、面板补场景指令输入，补「生产调用非零 + 四块入 options」断言，由 feel-tester 回归复验。
