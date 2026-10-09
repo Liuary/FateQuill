@@ -5,4 +5,7 @@ export * from "./json";
 export * from "./rubric";
 export * from "./compliance-rules";
 export * from "./evaluators";
+export * from "./aggregate";
+export * from "./rewrite";
+export * from "./loop";
 export * from "./register";

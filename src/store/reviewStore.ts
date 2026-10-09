@@ -33,10 +33,13 @@ interface ReviewState {
   autoRewrite: boolean;
   /** 自动重写最大轮次 */
   maxRounds: number;
+  /** 回路结束后是否已转人工（达上限 / 关闭自动重写 / 仅合规未通过） */
+  needsHumanReview: boolean;
   addVersion: (v: Omit<ReviewVersion, "totalScore">) => void;
   setWeights: (w: ReviewWeights) => void;
   setActive: (id: string) => void;
   setAutoRewrite: (b: boolean) => void;
+  setNeedsHumanReview: (b: boolean) => void;
   clear: () => void;
 }
 
@@ -48,6 +51,7 @@ function initialState() {
     activeVersionId: null as string | null,
     autoRewrite: true,
     maxRounds: 2,
+    needsHumanReview: false,
   };
 }
 
@@ -70,11 +74,13 @@ export const useReviewStore = create<ReviewState>((set) => ({
     })),
   setActive: (id) => set({ activeVersionId: id }),
   setAutoRewrite: (autoRewrite) => set({ autoRewrite }),
+  setNeedsHumanReview: (needsHumanReview) => set({ needsHumanReview }),
   // 清空版本池与选中态（保留用户权重与开关）
   clear: () =>
     set((state) => ({
       versions: [],
       activeVersionId: null,
+      needsHumanReview: false,
       weights: state.weights,
       autoRewrite: state.autoRewrite,
       maxRounds: state.maxRounds,
