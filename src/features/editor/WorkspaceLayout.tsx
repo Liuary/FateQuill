@@ -10,6 +10,7 @@ import { DialoguePanel } from "@/features/dialogue/DialoguePanel";
 import { CharactersPanel } from "@/features/characters/CharactersPanel";
 import { ConsistencyPanel } from "@/features/consistency/ConsistencyPanel";
 import { ArchivePanel } from "@/features/consistency/ArchivePanel";
+import { AutopilotPanel } from "@/features/autopilot/AutopilotPanel";
 import { useConsistencyFocusStore } from "@/store/consistencyStore";
 import { useNovels } from "./useNovels";
 import { OutlineTree } from "./OutlineTree";
@@ -39,6 +40,7 @@ export function WorkspaceLayout({ onEditorReady }: WorkspaceLayoutProps = {}) {
     | "dialogue"
     | "characters"
     | "consistency"
+    | "autopilot"
   >("generation");
   const focusCard = useConsistencyFocusStore((s) => s.focus);
   const clearFocus = useConsistencyFocusStore((s) => s.clearFocus);
@@ -150,6 +152,13 @@ export function WorkspaceLayout({ onEditorReady }: WorkspaceLayoutProps = {}) {
           >
             {t("consistency:tab")}
           </button>
+          <button
+            type="button"
+            className={activeTab === "autopilot" ? "font-medium" : "opacity-70"}
+            onClick={() => selectTab("autopilot")}
+          >
+            {t("autopilot:tab", { defaultValue: "全自动" })}
+          </button>
         </div>
         {activeTab === "generation" ? (
           <GenerationPanel novelId={currentNovelId} chapterId={currentChapterId} editor={editor} />
@@ -163,12 +172,15 @@ export function WorkspaceLayout({ onEditorReady }: WorkspaceLayoutProps = {}) {
           <DialoguePanel novelId={currentNovelId} chapterId={currentChapterId} editor={editor} />
         ) : activeTab === "characters" ? (
           <CharactersPanel novelId={currentNovelId} />
-        ) : (
+        ) : activeTab === "consistency" ? (
           // 「一致性」tab **双区**：归档区（上）+ 冲突区（下）——两面板均生产可达（BUG-001 修复）
           <div data-testid="consistency-tab" className="flex flex-col">
             <ArchivePanel novelId={currentNovelId} chapterId={currentChapterId} />
             <ConsistencyPanel novelId={currentNovelId} />
           </div>
+        ) : (
+          // 「全自动」tab（stage-12 T2）：无人值守链路入口（生产可达）
+          <AutopilotPanel novelId={currentNovelId} chapterId={currentChapterId} />
         )}
       </aside>
     </div>

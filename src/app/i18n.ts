@@ -28,6 +28,8 @@ import zhConsistency from "@/locales/zh-CN/consistency.json";
 import enConsistency from "@/locales/en/consistency.json";
 import zhLiuren from "@/locales/zh-CN/liuren.json";
 import enLiuren from "@/locales/en/liuren.json";
+import zhAutopilot from "@/locales/zh-CN/autopilot.json";
+import enAutopilot from "@/locales/en/autopilot.json";
 
 export const DEFAULT_LANG = "zh-CN";
 
@@ -50,6 +52,7 @@ void i18n
         characters: zhCharacters,
         consistency: zhConsistency,
         liuren: zhLiuren,
+        autopilot: zhAutopilot,
       },
       en: {
         common: enCommon,
@@ -65,6 +68,7 @@ void i18n
         characters: enCharacters,
         consistency: enConsistency,
         liuren: enLiuren,
+        autopilot: enAutopilot,
       },
     },
     fallbackLng: DEFAULT_LANG, // 英文缺失回退中文

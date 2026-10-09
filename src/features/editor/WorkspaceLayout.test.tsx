@@ -66,6 +66,25 @@ describe("WorkspaceLayout", () => {
     expect(screen.getByTestId("archive-button")).toBeInTheDocument();
   });
 
+  it("「全自动」tab **挂载断言**：AutopilotPanel 生产可达（stage-12 T2）", async () => {
+    invokeMock.mockImplementation((cmd: string) => {
+      if (cmd === "list_novels") return Promise.resolve(novels);
+      if (cmd === "list_volumes") return Promise.resolve([]);
+      if (cmd === "list_chapters") return Promise.resolve([]);
+      if (cmd === "list_model_configs") return Promise.resolve([]);
+      if (cmd === "list_setting_cards") return Promise.resolve([]);
+      return Promise.resolve(undefined);
+    });
+    render(<WorkspaceLayout />);
+    await waitFor(() => expect(useEditorStore.getState().currentNovelId).toBe(1));
+
+    fireEvent.click(screen.getByText("全自动"));
+
+    await waitFor(() => expect(screen.getByTestId("autopilot-panel")).toBeInTheDocument());
+    expect(screen.getByTestId("autopilot-outline")).toBeInTheDocument();
+    expect(screen.getByTestId("autopilot-start")).toBeInTheDocument();
+  });
+
   it("空态渲染新建入口，创建调用 create_novel 并 reload", async () => {
     novels = [];
     render(<WorkspaceLayout />);
