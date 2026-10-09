@@ -83,11 +83,21 @@ export function DialoguePanel({ novelId, chapterId = null, editor = null }: Dial
         characters={characters}
         running={running}
         onGenerate={(character) =>
-          void generateCharacterLine({
-            id: character.id,
-            name: character.name,
-            profile: character.profile as DialogueProfile,
-          })
+          void generateCharacterLine(
+            {
+              id: character.id,
+              name: character.name,
+              profile: character.profile as DialogueProfile,
+            },
+            // 白名单（T5）：在场其他角色仅传公开身份摘要所需字段（prompt 层不再含其 persona 细节）
+            characters
+              .filter((other) => other.id !== character.id)
+              .map((other) => ({
+                id: other.id,
+                name: other.name,
+                profile: other.profile as DialogueProfile,
+              })),
+          )
         }
       />
 

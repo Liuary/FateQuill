@@ -44,7 +44,11 @@ export function useDialogue(opts: { config: ModelConfig | null }) {
   }, []);
 
   const generate = useCallback(
-    async (kind: "narration" | "dialogue", speaker?: DialogueSpeaker): Promise<boolean> => {
+    async (
+      kind: "narration" | "dialogue",
+      speaker?: DialogueSpeaker,
+      others: DialogueSpeaker[] = [],
+    ): Promise<boolean> => {
       const config = opts.config;
       if (!config) {
         setError("no-config");
@@ -61,7 +65,17 @@ export function useDialogue(opts: { config: ModelConfig | null }) {
         const options =
           kind === "narration"
             ? toNarratorOptions({ publicContext, modelRef })
-            : toCharacterOptions({ profile: speaker?.profile ?? {}, publicContext, modelRef });
+            : toCharacterOptions({
+                profile: speaker?.profile ?? {},
+                publicContext,
+                modelRef,
+                // 白名单（T5）：在场他人**仅公开身份摘要**入 prompt，绝不传其 persona 细节
+                others: others.map((other) => ({
+                  id: other.id,
+                  name: other.name,
+                  profile: other.profile,
+                })),
+              });
 
         const provider = resolveProviderForConfig(config);
         const result = await generateLine({
@@ -91,7 +105,8 @@ export function useDialogue(opts: { config: ModelConfig | null }) {
 
   const generateNarration = useCallback(() => generate("narration"), [generate]);
   const generateCharacterLine = useCallback(
-    (speaker: DialogueSpeaker) => generate("dialogue", speaker),
+    (speaker: DialogueSpeaker, others: DialogueSpeaker[] = []) =>
+      generate("dialogue", speaker, others),
     [generate],
   );
 

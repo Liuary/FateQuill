@@ -6,7 +6,8 @@
  */
 
 import type { ChatOptions, Chunk, ModelRef } from "@/orchestration/types";
-import { buildCharacterAgentPrompt, buildNarratorAgentPrompt } from "./persona";
+import { buildCharacterAgentInput, type OtherCharacter } from "./context";
+import { buildNarratorAgentPrompt } from "./persona";
 import type { DialogueProfile } from "./types";
 
 /** 生成结果（失败不抛穿） */
@@ -41,16 +42,22 @@ export async function generateLine(opts: {
   }
 }
 
-/** 角色台词 `ChatOptions`（system = persona + 约束；user = 公共上下文） */
+/**
+ * 角色台词 `ChatOptions`（**白名单装配**：system = 本人 persona；user = 公共上下文 + 他人公开身份摘要）。
+ * **只**经 `buildCharacterAgentInput` 装配——**杜绝**把全量角色列表（含他人 persona）直接传入。
+ */
 export function toCharacterOptions(input: {
   profile: DialogueProfile;
   publicContext: string;
   modelRef: ModelRef;
   temperature?: number;
+  /** 在场其他角色（仅其公开身份摘要进入 prompt） */
+  others?: OtherCharacter[];
 }): ChatOptions {
-  const prompt = buildCharacterAgentPrompt({
-    profile: input.profile,
+  const prompt = buildCharacterAgentInput({
+    selfProfile: input.profile,
     publicContext: input.publicContext,
+    others: input.others,
   });
   return {
     model: input.modelRef.model,
