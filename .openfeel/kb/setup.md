@@ -86,3 +86,10 @@ cargo test --manifest-path src-tauri/Cargo.toml   # Rust 测试
 
 - 安装方式：`pnpm add -E`（**禁止 `^`/`~`**，统一精确版本；可复现性由提交的 `pnpm-lock.yaml` 保证）。
 - 编辑器扩展配置见 `src/features/editor/editor-extensions.ts`（StarterKit h1–h3 + `undoRedo.newGroupDelay=5000` + Markdown）。
+
+## [+] 长文性能基准 BenchPanel 用法（人工协验）(2026-10-10)
+
+- **落点**：`src/features/editor/perf/` —— `seed.ts`（生成 5000 字 HTML 载荷）、`editor-bench.ts`（`dispatch→DOM` 耗时采样 + `p95`）、`BenchPanel.tsx`（**仅 DEV**，`import.meta.env.DEV` 守卫，`App.tsx` 挂载）、`README.md`（操作手册 + 实测记录表）。
+- **用法**：`pnpm tauri dev` → 打开 BenchPanel → 执行 → 读 **P95**（目标 < 16ms）/ 连续切 20 章后 `.ProseMirror` 实例数（须 =1）/ `performance.memory.usedJSHeapSize` 堆增幅（< 20%），回填 `README.md` 实测记录表。
+- **口径**：**真实 WebView**（jsdom 无布局，**不可用于延迟测量**）；IME `composition` 期间延迟单独统计/排除；BenchPanel 自身含一个 `.ProseMirror`，实例计数须**排除面板子树**。
+- **自动化部分**（seed/p95 逻辑/边界测试）可在 jsdom 单测；延迟与内存实测为**人工协验项**。

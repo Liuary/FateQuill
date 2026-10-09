@@ -82,3 +82,36 @@ resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } }
 - 错误码表以 Rust `src-tauri/src/error.rs` 的 `codes` 模块为**单一真源**；前端 `src/ipc/errors.ts` 的 `IpcErrorCode` 必须与之逐项对齐（含 `TIMEOUT`）。
 - 约定：**新增/调整任一错误码须在同一 PR 内同步两端**（Rust `codes` + 前端 `IpcErrorCode` + `docs/ipc.md §8.2` 码表），防止码表漂移复发（REV-015）。
 - 前端消费使用 `IpcErrorCode.Timeout` 等常量，**不得硬编码** `"TIMEOUT"` 字符串。
+
+## [+] 切章守卫 `requestSelectChapter`：先 flush 后切 (2026-10-10)
+
+- **唯一合法切章入口** = `WorkspaceLayout.requestSelectChapter(id)`：短路同章 → `await flushRef.current()`（保存**旧**章）**成功才** `setCurrentChapter(id)`；失败置 `saveStatus='error'` 并**阻断切章**（不丢数据）。
+- `flushRef` 始终指向「当前渲染的 `ChapterEditor` 的 flush」，其闭包绑定当前 `chapterId`/editor，在 `setCurrentChapter` 之前调用即保存旧章。
+- `OutlineTree` **不直连** store 切章，改用父层注入的 `onSelectChapter`；`renameChapter`/`removeChapter`/`removeVolume` 前亦先 flush（防陈旧覆盖、防丢）。
+- 关窗 `onCloseRequested → globalFlush → destroy`；**未来键盘等一切切章入口**统一走 `onSelectChapter`。
+- 通用原则：跨实例切换（销毁/重建）前必须**同步 flush 并 await**，成功才切换。
+
+## [+] `flush → Promise<boolean>` + 章号守卫 (2026-10-10)
+
+- `useAutoSave.flush()` 返回 `Promise<boolean>`：无脏→`true`、保存成功→`true`、失败→`false`（失败**仍置脏 + 5s 重试，不静默丢弃**）。
+- `chapterIdRef` 章号守卫：防抖/重试回调执行前校验 `chapterIdRef.current === capturedChapterId`，不等则**跳过** → 杜绝旧实例闭包误写当前活动章（BUG-001 附带缺陷修复）。
+- 消费侧（切章守卫）据返回值决定是否阻断切换。
+
+## [+] Tiptap 撤销分组合并（`undoRedo.newGroupDelay`）(2026-10-10)
+
+- **需求**：一次 `Ctrl+Z` 撤销整段 AI 生成（而非散成数百条历史）。
+- **方案**：流式插入**保持默认入历史**，`StarterKit.configure({ undoRedo: { newGroupDelay: 5000 } })` 把 5s 时间窗内相邻事务**自动合并为单条历史**；用户手动编辑（超窗/光标移动）自然断组。
+- **反例（不可行）**：`addToHistory:false` + 会话末 `delete+insert 同文本` 的 commit 事务对文档**净变化为零** → undo 不弹出生成文本；且会连带误删会话前内容与生成期间用户输入。
+- 注：StarterKit 3.31.4 撤销扩展来自 `@tiptap/extensions` 的 `UndoRedo`，配置键为 `undoRedo`。
+
+## [+] IME 排队监听 `editor.view.dom` 的 DOM composition 事件 (2026-10-10)
+
+- Tiptap `editor.on` 事件总线**不含** composition 系列；IME 排队须 `editor.view.dom.addEventListener("compositionstart"/"compositionend")`。
+- 组合期间 Chunk 入队，`compositionend` 后 flush；组件卸载/实例销毁时 `removeEventListener`（`dispose()`）。
+- 测试用 `editor.view.dom.dispatchEvent(new CompositionEvent("compositionstart"/"compositionend"))` 模拟。
+
+## [+] 自动保存串行链 `chainRef`（防慢写覆盖新写）(2026-10-10)
+
+- 自动保存：**防抖 800ms** + **flush 三时机**（切章前 await / 窗口关闭前 / 失焦可选）+ 失败 **5s 线性退避**重试（上限 5）。
+- **串行化**：所有保存串到同一条 promise 链尾（`chainRef`），执行时**重新取 `editor.getHTML()`**（最新优先） → 消除「慢写旧内容覆盖新写」（并发无互斥的静默丢失）。
+- **清脏标时机**：须在 `await` **之前**清（保存期间的新编辑重新置脏 → 触发后续保存）；失败保留脏态。

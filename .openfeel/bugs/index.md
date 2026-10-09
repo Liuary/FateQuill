@@ -4,7 +4,7 @@
 
 ## 状态统计
 
-- **open 0 ｜ fixing 0 ｜ resolved 0 ｜ closed 2**
+- **open 0 ｜ fixing 0 ｜ resolved 0 ｜ closed 3**
 
 ## 按模块
 
@@ -21,3 +21,10 @@
 - [`orchestration.md`](orchestration.md)：**BUG-001** — 中继测试模块 `MemSink::events()` 未使用（dead_code 告警）→ 删除方法。
 - [`persistence.md`](persistence.md)：**BUG-002** — 「Key 不落库」哨兵断言恒真（不可证伪）→ 改为列集合精确断言 + 负向 INSERT 拒绝断言。
 - 验收报告：`.openfeel/tmp/stage-03-acceptance.md`
+
+### v0.1.0-stage-04（编辑器基础：Tiptap 章节文档 + 大纲树）@openfeel-feel-tester
+
+- **1 个 high Bug，已闭环**（修复 commit `6d7d180`，验收人 openfeel-feel-tester）；
+  验收结论 DoD 9/11 通过（另 2 条为真实 WebView 人工协验待办）；门禁 `pnpm test` 110/110、lint/build、`cargo test` 41/41 全绿。
+- [`editor.md`](editor.md)：**BUG-001** — 切章前未 flush，防抖窗口内切章导致前一章编辑永久丢失 → 修复为 `requestSelectChapter` 守卫（先 `await flush` 成功才切）+ 章号守卫 + 集成用例。
+- 验收报告：`.openfeel/tmp/stage-04-acceptance.md`

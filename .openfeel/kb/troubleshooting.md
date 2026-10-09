@@ -78,3 +78,29 @@
 - **纪律**：新增能力必须走 `tauri-plugin-sql` 内置 migrations 数组追加（`include_str!` 单一来源 + `_sqlx_migrations` 幂等），**不得**旁路（如 JSON 文件存配置、手工改库）。
 - **落地**：`0002_model_config.sql` 经 `db/migrations.rs` 追加 version 2；`cargo test` 经 `sqlx::migrate!("./migrations")` 与生产**同源**消费，保证测试库/生产库 schema 一致。
 - **回归**：升级迁移后须同步更新既有断言——`migration_creates_schema` 表清单加新表、`migration_is_idempotent` 的 `_sqlx_migrations` 计数递增（v2 → `==2`），否则旧期望会误报。
+
+## [+] `react-hooks/set-state-in-effect` 规避：effect 内异步回调 setState (2026-10-10)
+
+- **现象**：`useChapter`/`useOutline`/`useNovels` 在 `useEffect` 内**同步** `setState`（`setChapter(null)`/`setLoading(true)`/`setVolumes(...)`）触发 ESLint `react-hooks/set-state-in-effect`（error）。
+- **处理**：effect 改为**仅异步回调**（`.then` / `queueMicrotask`）内 setState；`loading`/`chapter` 等改为**派生值**（如 `loaded?.id !== chapterId`）；加载函数抽为模块级或 `.then` 回调。
+- 影响 op-003/005/006/008 多个 hook；属 react-hooks 新版规则，须在设计 hook 时预留异步边界。
+
+## [+] Tiptap 事件总线不含 composition 系列，IME 排队需监听 DOM (2026-10-10)
+
+- **现象**：`editor.on("compositionstart", ...)` **永不触发**——Tiptap `Editor` 事件总线仅发射 `create`/`update`/`selectionUpdate`/`transaction`/`focus`/`blur`/`paste`/`drop` 等编辑器生命周期事件，**不含 DOM 级 composition 事件**；`composing` 恒为 false，IME 排队为死代码。
+- **后果**：AI 插入会在用户中文输入法组合期间直接 `dispatch`，**打断/污染 IME 组合**（社区核心用户场景）。
+- **处理**：改监听 `editor.view.dom` 的 `compositionstart`/`compositionend`（见 `kb/patterns.md`），并在卸载时移除监听。
+- **排查信号**：IME 组合期间插入未排队 / `editor.on("composition*")` 监听器不触发 → 检查是否误用 `editor.on`。
+
+## [+] 切章 × 防抖丢数据坑（BUG-001 根因）(2026-10-10)
+
+- **现象**：编辑第 1 章后在 **800ms 防抖窗口内**切第 2 章，第 1 章的编辑**永久丢失**（实测 `update_chapter` 仅写第 2 章、零写第 1 章）。
+- **根因**：切章未先 flush；`RichTextEditor`（`key=chapterId`）卸载、Tiptap 实例销毁，残留防抖计时器回调旧闭包 `editor.getHTML()` 失败 → 置脏重试经 `enqueueRef` 误写**当前活动章**。
+- **修复**：`requestSelectChapter` 守卫（先 `await flush` 成功才切）+ `useAutoSave` 的 `chapterIdRef` 章号守卫 + 集成测试「编辑→<800ms 切章→切回内容完整」。
+- **通用教训**：跨实例切换（销毁/重建）前必须**同步 flush 并 await**；异步防抖回调须带**目标标识（章号）守卫**，避免切换后误写活动对象。
+
+## [+] Tiptap/ProseMirror 生产构建 chunk 体积警告 (2026-10-10)
+
+- **现象**：`pnpm build` 报 Vite 警告「chunk > 500KB」（入口 chunk **311KB / gzip 97KB**），为 Tiptap/ProseMirror 核心体积固有。
+- **处理**：v0.1 **接受现状**（核心依赖懒加载收益有限）；记为**已知项**——stage-05+ 体积继续增长时评估 `manualChunks` 分割（editor/orchestration 分包）或 Tiptap 扩展按需裁剪。
+- **判定**：非错误、不影响功能；不单独立任务，仅记一行备查。

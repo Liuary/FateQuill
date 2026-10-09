@@ -34,9 +34,16 @@ src/features/editor/
 - **`editorStore` 边界**：`src/store/editorStore.ts` 仅元状态（`currentNovelId`/`currentChapterId`/`saveStatus`/`lastSavedAt`），**不含文档正文**（内容在 Tiptap 实例）。
 - **消费侧**：stage-05 `generationStore` 订阅 stage-03 `subscribeChunks` 输出 → `appendChunk`（不直接操作编辑器内部）。
 
+## 已知遗留（非阻塞，stage-04 归档时）
+
+- **性能人工协验**：DoD #1（真实 WebView P95 < 16ms）与 #2（切 20 章实例数=1 / 堆增幅 < 20%）为人工协验项，`perf/README.md` 实测记录表待回填（脚本/面板已入库）。
+- **构建体积警告**：`pnpm build` 入口 chunk 311KB（gzip 97KB，Tiptap/ProseMirror 固有），v0.1 接受现状。
+- **REV-013/014/015**：op-006 验证口径过宽、perf 人工协验待回填、chunk 体积警告（均 low，建议随 stage-05 清理）。
+
 ## 关联文档
 
 - 目录/边界：`docs/structure.md`（§4 store 边界、§10 存储格式、§11 性能基准）。
 - 编排/流式：`.openfeel/manual/orchestration/engine.md`、`src/orchestration/stream/`。
 - 性能基准操作手册：`src/features/editor/perf/README.md`。
 - 持久化：`.openfeel/manual/core/domain-storage.md`。
+- 知识库：`.openfeel/kb/architecture.md`（分层/一章一实例/T8 契约）、`kb/patterns.md`（切章守卫/flush 契约/撤销合并/串行链）、`kb/troubleshooting.md`（set-state-in-effect/IME 总线/切章丢数据）。

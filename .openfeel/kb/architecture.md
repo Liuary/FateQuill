@@ -94,3 +94,23 @@
 - **命令**：`http_stream(request_id, url, headers, body, auth, on_event: Channel<StreamEvent>)`；`abort_stream(request_id)` 从 `StreamRegistry`（`HashMap<request_id, AbortHandle>`）取出并 `abort()`（drop future → 连接关闭）。
 - **事件三态**：`StreamEvent = Chunk{data}`（完整 SSE 事件块）/ `Done` / `Error{code,message,statusCode?}`；Rust `#[serde(tag="type")]` + `#[serde(rename="statusCode")]` 对齐 TS 契约 `src/ipc/stream.ts`。
 - **前端 `httpStream()`**：内部 `requestId ?? crypto.randomUUID()` 缺省生成，返回 `abort` 函数；适配器无需关心 requestId（消除 op-004 真实路径缺参隐患）。
+
+## [+] 编辑器前端分层与 editorStore 单一事实源边界 (2026-10-10)
+
+- **落点**：`src/features/editor/`（编辑器与大纲树同域）承载 `RichTextEditor`/`ChapterEditor`/`useChapter`/`useAutoSave`/`EditorStatusBadge`/`markdown`/`Outline*`/`useOutline`/`useNovels`/`NewNovelPanel`/`WorkspaceLayout`/`EditorController`/`useChunkInjection`/`perf/`；元状态 store 为 `src/store/editorStore.ts`（Zustand **首次接入**，stage-04）。
+- **单一事实源（C-01 边界）**：**ProseMirror/Tiptap 实例是文档内容的唯一事实源**；`editorStore` **不持文档正文**（避免双源同步 bug），仅持元状态 `currentNovelId` / `currentChapterId` / `saveStatus('saved'|'saving'|'dirty'|'error')` / `lastSavedAt`。边界测试 `editorStore.boundary.test.ts` 断言 state 键集合不含 `content`/`html`/`doc`。
+- **存储格式 `content_format='html'`**：保存 `editor.getHTML()` → `chapter.content`；加载 `editor.commands.setContent(html)`；**零迁移**（复用 stage-02 schema 与 `word_count` html 分支，tiptap-json 留待 YAGNI）。
+- `generationStore` 归属 **stage-05**，与 `editorStore` 严格分离（C-03 铺路）。
+
+## [+] 一章一 Tiptap 实例策略 (2026-10-10)
+
+- 切章以 React **`key={chapterId}` 重挂载**（销毁旧实例 / 重建新实例），**禁止累加** → 实例数恒为 1、无串档。
+- `ChapterEditor` 增守卫：`chapterId != null && chapter?.id !== chapterId` 时渲染占位，确保编辑器**仅在「已加载章节与当前 id 匹配」时挂载**（防切章窗口内以旧章内容初始化，潜在串档）。
+- 验证：连续切 20 章后 `.ProseMirror` 计数 === 1；HTML 往返语义等价（`setContent`/`getHTML`）。
+
+## [+] T8 AI 增量插入接口契约 EditorController（供 stage-05）(2026-10-10)
+
+- 编辑器对外**最小命令面**：`appendChunk(text: string, options?: { addToHistory?: boolean; follow?: boolean }): void` / `flushPending(): void` / `dispose(): void`。
+- **消费方**：stage-05 `generationStore` 订阅 stage-03 `subscribeChunks` → 取 `Chunk.delta` → `appendChunk`；**stage-05 不直接操作编辑器内部**（不越界，C-09）。
+- **撤销**：流式插入**恒入历史**，由 `undoRedo.newGroupDelay=5000` 合并为单条 → 一次 `Ctrl+Z` 撤销整段生成（详见 `kb/patterns.md`）。**IME**：`composition` 期间入队、`compositionend` 后 flush。`dispose()` 移除 DOM 监听。
+- `appendChunk` 按节流批次应用（默认 50ms）；`options.follow` 控制滚动到文末；`options.addToHistory` 为**预留**字段（当前实现恒入历史）。
