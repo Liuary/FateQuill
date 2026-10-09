@@ -1177,7 +1177,7 @@
     },
     "v0.3.0-stage-09": {
       "name": "v0.3.0-stage-09",
-      "phase": "plan_pending",
+      "phase": "plan_review",
       "status": "planned",
       "deps": [
         "v0.3.0-stage-08"
