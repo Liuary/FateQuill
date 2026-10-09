@@ -63,8 +63,8 @@ stages:
     title: 审查流水线
     version: v0.2
     hard: ["v0.1.0-stage-03", "v0.1.0-stage-05"]
-    soft: []
-    rationale: 审查以已生成章节为输入，复用编排引擎；需闭环产出样本。
+    soft: ["v0.1.0-stage-04"]
+    rationale: 审查以已生成章节为输入，复用编排引擎；软依赖 stage-04 以扩展 EditorController.replaceContent 实现版本采纳替换。
 
   "v0.2.0-stage-07":
     title: 去 AI 味研究子系统 v1
