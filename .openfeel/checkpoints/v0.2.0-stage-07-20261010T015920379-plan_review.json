@@ -890,7 +890,7 @@
     },
     "v0.2.0-stage-07": {
       "name": "v0.2.0-stage-07",
-      "phase": "plan_pending",
+      "phase": "plan_review",
       "status": "planned",
       "deps": [
         "v0.1.0-stage-03",
