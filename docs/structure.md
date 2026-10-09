@@ -90,3 +90,17 @@ plan v3 技术约束中的目录集为 `src/{app,components,features,domain,orch
 - **扩展点（REV-007②）**：新增 Provider 仅需「新建适配器文件 + 在 `providers/register.ts` 注册一行」，核心文件（`types.ts` / `registry.ts` / `stream/**` / `pipeline/**`）**`git diff` 为零**。
 - **授权头不入前端**：`ChatOptions.headers` 仅承载非 Key 头（Content-Type/Accept 等）；授权头由 Rust 侧注入（op-003）。
 - **Pipeline 启用时点（REV-014②）**：`Pipeline` / `PipelineStep` 为**契约先行**；v0.1 仅实现最小单步（op-006 的 `GenerationStep`），**多步组合管线于 stage-06/08 启用**（届时 `Pipeline.steps` 泛型上下文细化）。
+
+## 9. 流式消费工具（stage-03 T6）与 stage-05 订阅声明
+
+`src/orchestration/stream/` 为**纯 TS** 流式消费工具集（不触网；网络在 Rust 侧）：
+
+| 文件             | 职责                                                                             |
+| ---------------- | -------------------------------------------------------------------------------- |
+| `async-queue.ts` | 极简异步队列（`createAsyncQueue`；适配器与 T6 复用）                             |
+| `throttle.ts`    | 节流合并（`throttleChunks`；窗口默认 **≥50ms**，C-02；可注入时钟以便确定性测试） |
+| `subscribe.ts`   | 消费入口（`subscribeChunks`；对 `Chunk` 序列施加节流）                           |
+
+- **契约**：`Chunk = { delta: string }`（op-002 定稿）；消费端**增量渲染**。
+- **不建 store**：本阶段**不创建任何 store**；`src/store/` 维持空目录（Zustand 于 stage-04 接入）。
+- **stage-05 订阅声明**：**stage-05 的 `generationStore`（`src/store/`）将订阅 `subscribeChunks` 的输出**，本工具为其**上游**；编辑器消费侧不直接驱动（C-03），由 `generationStore` 承接流式状态。
