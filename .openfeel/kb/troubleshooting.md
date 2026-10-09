@@ -99,8 +99,8 @@
 - **修复**：`requestSelectChapter` 守卫（先 `await flush` 成功才切）+ `useAutoSave` 的 `chapterIdRef` 章号守卫 + 集成测试「编辑→<800ms 切章→切回内容完整」。
 - **通用教训**：跨实例切换（销毁/重建）前必须**同步 flush 并 await**；异步防抖回调须带**目标标识（章号）守卫**，避免切换后误写活动对象。
 
-## [+] 生产构建 chunk 体积警告（Tiptap/ProseMirror 入口 311KB / gzip 97KB）(2026-10-10, REV-015)
+## [+] 生产构建 chunk 体积警告（Tiptap/ProseMirror 入口 850KB / gzip 268KB）(2026-10-10, REV-015)
 
-- **现象**：`pnpm build` 报 Vite 警告「chunk > 500KB」（入口 chunk **311KB / gzip 97KB**），为 Tiptap/ProseMirror 核心体积固有。
+- **现象**：`pnpm build` 报 Vite 警告「chunk > 500KB」（入口 chunk **850KB / gzip 268KB**，2026-10-10 实测 `dist/assets/index-*.js` 850.15 kB │ gzip 267.65 kB；stage-04 支点 ~836KB），为 Tiptap/ProseMirror 核心体积固有。
 - **处理**：**v0.1 接受现状**（核心依赖懒加载收益有限）；**v0.2 评估**（`manualChunks` 分包 editor/orchestration，或 StarterKit → 精选扩展裁剪）。
 - **判定**：非错误、不影响功能；**不单独立任务**，记为已知项一行备查。

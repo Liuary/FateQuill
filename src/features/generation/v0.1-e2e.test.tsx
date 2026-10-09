@@ -7,9 +7,10 @@ import { repositories } from "@/ipc/repositories";
 import { useGenerationStore } from "@/store/generationStore";
 import { WorkspaceLayout } from "@/features/editor/WorkspaceLayout";
 
-const { invokeMock, streamHolder } = vi.hoisted(() => ({
+const { invokeMock, streamHolder, renderState } = vi.hoisted(() => ({
   invokeMock: vi.fn(),
   streamHolder: { fn: null as null | ((signal?: AbortSignal) => AsyncIterable<Chunk>) },
+  renderState: { count: 0 }, // C-03：编辑器子树（EditorContent）render 计数
 }));
 vi.mock("@tauri-apps/api/core", () => ({ invoke: invokeMock }));
 vi.mock("@/orchestration/providers/openai-compatible", () => ({
@@ -18,6 +19,25 @@ vi.mock("@/orchestration/providers/openai-compatible", () => ({
     stream: (options: { signal?: AbortSignal }) => streamHolder.fn!(options.signal),
   }),
 }));
+// C-03 断言：以 <Profiler> 包裹真实链路中的 EditorContent，统计其 render 次数（BUG-001 修复）
+vi.mock("@tiptap/react", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@tiptap/react")>();
+  const React = await import("react");
+  return {
+    ...actual,
+    EditorContent: (props: { editor: Editor | null }) =>
+      React.createElement(
+        React.Profiler,
+        {
+          id: "editor",
+          onRender: () => {
+            renderState.count += 1;
+          },
+        },
+        React.createElement(actual.EditorContent, props),
+      ),
+  };
+});
 
 const novelRow = { id: 1, title: "书一", synopsis: "", created_at: "c", updated_at: "u" };
 const volRow = { id: 1, novel_id: 1, title: "卷一", order_index: 0 };
@@ -125,9 +145,12 @@ describe("v0.1 全链路 E2E（mock）", () => {
     const dispatchSpy = vi.spyOn(editor!.view, "dispatch");
     const setContentSpy = vi.spyOn(editor!.commands, "setContent");
     fireEvent.change(screen.getByLabelText("本章要求"), { target: { value: "续写一段" } });
+    const rendersBefore = renderState.count;
+    expect(rendersBefore).toBeGreaterThan(0); // 非空洞性守卫：Profiler 包裹已生效（含挂载渲染）
     fireEvent.click(screen.getByText("开始生成"));
 
     await waitFor(() => expect(editor!.getText()).toContain("生成文"));
+    expect(renderState.count - rendersBefore).toBe(0); // C-03：流式期间编辑器子树零 React 重渲染
     expect(dispatchSpy.mock.calls.length).toBeLessThanOrEqual(6 / 2); // 直插节流（代理指标）
     expect(setContentSpy).not.toHaveBeenCalled(); // 无整文档重设
 

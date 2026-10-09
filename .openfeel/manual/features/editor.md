@@ -37,7 +37,7 @@ src/features/editor/
 ## 已知遗留（非阻塞，stage-04 归档时）
 
 - **性能人工协验**：DoD #1（真实 WebView P95 < 16ms）与 #2（切 20 章实例数=1 / 堆增幅 < 20%）为人工协验项，`perf/README.md` 实测记录表待回填（脚本/面板已入库）。
-- **构建体积警告**：`pnpm build` 入口 chunk 311KB（gzip 97KB，Tiptap/ProseMirror 固有），v0.1 接受现状。
+- **构建体积警告**：`pnpm build` 入口 chunk 850KB（gzip 268KB，Tiptap/ProseMirror 固有；2026-10-10 实测），v0.1 接受现状。
 - **REV-013/014/015**：op-006 验证口径过宽、perf 人工协验待回填、chunk 体积警告（均 low，建议随 stage-05 清理）。
 
 ## 关联文档
