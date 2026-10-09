@@ -17,6 +17,7 @@ src/features/generation/
 
 配套：
 - `src/orchestration/prompts/chapter-generation.ts`：提示模板（`CHAPTER_GENERATION_PROMPT_VERSION` + 预算裁剪）。
+- **规避 skill 回注（stage-07 T6）**：`ChapterPromptInput.skills?: PromptSkill[]`；`buildChapterPrompt` 将 skill 规则拼入 **system**（`规避要点：` + 逐条 `- 标题：规则`，预算桶 **≤500 字**并计入总预算）；**缺省/空时输出与旧实现完全一致（向后兼容）**；超总预算时按「设定卡 → 前文 → **skill**」裁剪（skill 最后削）。生成链路（`build-chapter-options` / `useGeneration`）在生成前加载 skill 并透传；加载失败/无 skill → 不注入。
 - `src/store/generationStore.ts`：元状态。
 - `src/features/editor/EditorController.ts`：AI 增量插入（`appendChunk`/`flushPending`/`dispose`）。
 

@@ -79,4 +79,64 @@ describe("buildChapterPrompt", () => {
     expect(o.model).toBe("m1");
     expect(o.temperature).toBe(0.7);
   });
+
+  it("skill 注入：system 含 skill 文本（标题 + 规则），user 段不变", () => {
+    const o = buildChapterPrompt(
+      input({ skills: [{ title: "去套话", rule: "避免「不禁」等套话" }] }),
+    );
+    expect(systemContent(o)).toContain("规避要点：");
+    expect(systemContent(o)).toContain("- 去套话：避免「不禁」等套话");
+    expect(userContent(o)).toBe("卡1: 内容1\n\n前文末尾\n\n写一章"); // user 段与无 skill 时一致
+  });
+
+  it("skill 缺省/空数组：输出与旧实现完全一致（向后兼容）", () => {
+    const baseline = buildChapterPrompt(input());
+    expect(systemContent(buildChapterPrompt(input({ skills: [] })))).toBe(systemContent(baseline));
+    expect(systemContent(baseline)).toBe("系统提示");
+  });
+
+  it("skill 段超 500 字 → 截断至 skills 预算内", () => {
+    const longRule = rep("规", 1200);
+    const o = buildChapterPrompt(
+      input({ systemPrompt: "S", skills: [{ title: "T", rule: longRule }] }),
+    );
+    const system = systemContent(o);
+    const skillsPart = system.slice(system.indexOf("规避要点："));
+    expect(skillsPart.length).toBe(PROMPT_BUDGET.skills);
+  });
+
+  it("总预算超额：裁剪序「设定卡 → 前文 → skill」，skill 最后被削", () => {
+    const o = buildChapterPrompt(
+      input({
+        systemPrompt: "S",
+        settingCards: [{ id: 1, title: "T", content: rep("字", 2000) }],
+        previousChapterTail: rep("P", 2000),
+        userInstruction: rep("I", 6000),
+        skills: [{ title: "去套话", rule: "避免套话" }],
+      }),
+    );
+    // ① 设定卡被清空；② 前文按剩余空间削；③ skill 段最后削（此处仍保留）
+    expect(userContent(o).includes("T:")).toBe(false);
+    expect(systemContent(o)).toContain("规避要点：");
+    const prevChars = (userContent(o).match(/P/g) ?? []).length;
+    expect(prevChars).toBeGreaterThan(0);
+    expect(prevChars).toBeLessThanOrEqual(PROMPT_BUDGET.prevTail);
+    expect((userContent(o).match(/I/g) ?? []).length).toBe(6000); // 指令不裁
+  });
+
+  it("极端超额：skill 段最后被削（可截断）", () => {
+    const o = buildChapterPrompt(
+      input({
+        systemPrompt: "S",
+        settingCards: [],
+        previousChapterTail: "",
+        userInstruction: rep("I", 7990),
+        skills: [{ title: "去套话", rule: "避免套话避免套话" }],
+      }),
+    );
+    const system = systemContent(o);
+    expect(system.startsWith("S\n\n")).toBe(true);
+    expect(system.length - 3).toBeLessThan(20); // 被削到极小
+    expect((userContent(o).match(/I/g) ?? []).length).toBe(7990); // 指令不裁
+  });
 });

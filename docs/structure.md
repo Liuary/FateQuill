@@ -151,4 +151,5 @@ plan v3 技术约束中的目录集为 `src/{app,components,features,domain,orch
 - **配置来源**：列出**全部 `model_config`**，用户**勾选 ≥1**；Key 缺失（`keyringExists=false`）→ 禁用采样 + 引导「设置」。
 - **调度形态**：**串行逐模型**；持 `AbortController` 支持**停止采样**（模型边界 / 流循环内检查，已采集候选保留）。
 - **通道单一来源（REV-016②）**：`MaterialSourceType` 定义于 `src/domain/models/material.ts`，`orchestration/research` 引用之（采样候选自带 `sourceType=multi_model_creation`）。
+- **闭环回注与度量（stage-07 T6）**：装配器 `src/orchestration/prompts/chapter-generation.ts` 增 `ChapterPromptInput.skills?`（`PromptSkill { title, rule }`；拼入 **system**，预算桶 **≤500 字**，**缺省向后兼容**，超总预算时最后削）；`features/generation` 在生成前加载 skill 并透传；度量实验落点 `src/features/research/experiments/`（`samples/*` 固定样本集 ≥3 篇、`run-experiment.ts`、`report.md`——真机执行由用户 / feel-tester 协验，报告含**数据状态**字段，未执行前**不得填分数**）。
 - **`EditorController` 命令面**：`appendChunk(text, options?)`（增量**追加**语义不变）/ `flushPending()` / **`replaceContent(html)`**（整章替换 = **单条撤销历史**，供审查采纳落地）/ `dispose()`。**`replaceContent` 是前端 `EditorController` 命令面，非 IPC 命令**——正文替换**不新增 IPC**（见 `docs/ipc.md`）。

@@ -4,6 +4,7 @@ import {
   buildChapterPrompt,
   DEFAULT_CHAPTER_AGENT_SYSTEM_PROMPT,
   type ChapterSettingCard,
+  type PromptSkill,
 } from "@/orchestration/prompts/chapter-generation";
 
 /** 去除 HTML 标签（前章内容以 HTML 存储；取「末尾」以纯文本口径） */
@@ -21,6 +22,8 @@ export async function buildChapterGenerationOptions(params: {
   userInstruction: string;
   model: string;
   temperature?: number;
+  /** 规避 skill（stage-07 T6 回注；缺省不注入，行为不变） */
+  skills?: PromptSkill[];
 }): Promise<ChatOptions> {
   const settingCards: ChapterSettingCard[] = (
     await repositories.settingCard.listByNovel(params.novelId)
@@ -39,6 +42,7 @@ export async function buildChapterGenerationOptions(params: {
     settingCards,
     previousChapterTail,
     userInstruction: params.userInstruction,
+    skills: params.skills,
     model: params.model,
     temperature: params.temperature,
   });

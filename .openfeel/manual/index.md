@@ -20,6 +20,7 @@
   - [`generation.md`](features/generation.md)：生成入口/面板、`generationStore` 边界、模式 A 流式直插（stage-05 建立）
   - [`setting-cards.md`](features/setting-cards.md)：设定卡 CRUD 面板（stage-05 建立）
   - [`review.md`](features/review.md)：审查流水线 —— 四维评估器 / 加权择优 / 重写回路 / 审查面板 / 审查记录持久化（迁移 v3 + IPC）（stage-06 建立）
+  - [`research.md`](features/research.md)：研究工作台 —— 多模型采样 / 交叉判断 / 用户标注 / 素材库（迁移 v4 + 导出）/ 规避 skill 库 / 闭环回注与度量实验（stage-07 建立）
 
 ## 维护约定
 

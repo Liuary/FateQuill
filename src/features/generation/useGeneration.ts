@@ -2,6 +2,7 @@ import { useCallback, useRef } from "react";
 import type { Editor } from "@tiptap/react";
 import type { ModelConfig } from "@/domain/models/model-config";
 import { parseIpcError } from "@/ipc/errors";
+import { repositories } from "@/ipc/repositories";
 import { subscribeChunks } from "@/orchestration/stream";
 import { createEditorController } from "@/features/editor/EditorController";
 import { useGenerationStore } from "@/store/generationStore";
@@ -22,12 +23,16 @@ export function useGeneration(editor: Editor | null) {
   const start = useCallback(
     async (p: StartGenerationParams) => {
       if (!editor) return;
+      // 规避 skill 回注（stage-07 T6）：加载已入库 skill 并透传；加载失败/无 skill → 不注入（行为不变）
+      const skillEntries = await repositories.skillEntry.list().catch(() => []);
+      const skills = skillEntries.map((entry) => ({ title: entry.title, rule: entry.rule }));
       const options = await buildChapterGenerationOptions({
         novelId: p.novelId,
         chapterId: p.chapterId,
         userInstruction: p.userInstruction,
         model: p.config.modelName,
         temperature: p.config.temperature,
+        skills,
       });
       const provider = resolveProviderForConfig(p.config);
       const abort = new AbortController();

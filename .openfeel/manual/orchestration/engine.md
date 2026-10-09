@@ -59,6 +59,7 @@ tests/fixtures/*.sse    # SSE 录制回放夹具（openai-compatible / anthropic
 - **消费工具**：`throttleChunks`（默认 50ms 合并、源结束冲刷）、`subscribeChunks`；**不建 store**，stage-05 `generationStore` 订阅其输出。
 - **无 AI SDK**：`orchestration` 任何文件不得 `import "ai"`（ADR-001）。
 - **审查评估（stage-06）**：`src/orchestration/review/` —— `Evaluator` 契约 / `Registry<Evaluator>` 注册表（`evaluateWithFallback` 有限重试 + 降级不抛穿）/ 四维评估器（剧情·世界观·真人感为 LLM-as-judge，经 `ModelProvider` **非流式收口**；合规为**规则引擎**，无需 Token）/ rubric（`REVIEW_RUBRIC_VERSION`）/ 加权归一 `weightedTotal` / `runReviewLoop`（自动重写上限 2，**合规低分仅人工裁决**，产物入池**不自动替换正文**）。
+- **提示模板 `skills` 扩展（stage-07 T6）**：`prompts/chapter-generation.ts` 的 `ChapterPromptInput.skills?`（`PromptSkill { title, rule }`）拼入 system 段（预算桶 **≤500 字**，计入总预算）；**缺省向后兼容**；生成链路经 skill 仓储加载并透传（`src/features/research/experiments/` 为该扩展的度量实验落点）。
 
 ## 测试基线（v0.1.0-stage-03）
 

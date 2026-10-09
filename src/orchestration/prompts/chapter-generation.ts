@@ -8,6 +8,7 @@ export const PROMPT_BUDGET = {
   system: 1000,
   settingCards: 2000,
   prevTail: 2000,
+  skills: 500,
   total: 8000,
 } as const;
 
@@ -22,11 +23,19 @@ export interface ChapterSettingCard {
   content: string;
 }
 
+/** 规避 skill 条目（stage-07 T6 回注；`rule` 为可执行规避指令） */
+export interface PromptSkill {
+  title: string;
+  rule: string;
+}
+
 export interface ChapterPromptInput {
   systemPrompt: string;
   settingCards: ChapterSettingCard[];
   previousChapterTail: string; // 前章末尾（HTML/纯文本；此处按预算取末尾）
   userInstruction: string; // 本章要求（不裁）
+  /** 规避 skill 规则（optional；缺省/空时**行为与旧实现完全一致**，stage-07 T6） */
+  skills?: PromptSkill[];
   model: string;
   temperature?: number;
 }
@@ -59,7 +68,8 @@ function joinSettingCards(cards: ChapterSettingCard[], limit: number): string {
  * 组装章节生成 `ChatOptions`（**provider 无关**）：
  * - 系统 ≤ system 预算；用户指令**不裁**；
  * - 设定卡 ≤ settingCards 预算；前文取**末尾** ≤ prevTail 预算；
- * - 合计超 total 时按「**设定卡 → 前文**」裁剪（系统/指令不裁）。
+ * - **规避 skill 段**（stage-07 T6）≤ skills 预算，拼入 **system**；`skills` 缺省/空时**行为不变**；
+ * - 合计超 total 时按「**设定卡 → 前文 → skill**」裁剪（系统正文/指令不裁）。
  */
 export function buildChapterPrompt(
   input: ChapterPromptInput,
@@ -67,10 +77,14 @@ export function buildChapterPrompt(
 ): ChatOptions {
   const budget: Budget = { ...PROMPT_BUDGET, ...budgetOverride };
 
-  const system = head(input.systemPrompt, budget.system);
+  const baseSystem = head(input.systemPrompt, budget.system);
   const instruction = input.userInstruction; // 不裁
   let settings = joinSettingCards(input.settingCards, budget.settingCards);
   let prevTail = tail(input.previousChapterTail, budget.prevTail);
+
+  // 规避 skill 段（≤ skills 预算）；缺省/空 → 空串，输出与旧实现一致
+  let skills = buildSkillsSection(input.skills, budget.skills);
+  let system = skills ? `${baseSystem}\n\n${skills}` : baseSystem;
 
   const totalLen = () => system.length + settings.length + prevTail.length + instruction.length;
 
@@ -83,6 +97,15 @@ export function buildChapterPrompt(
       const roomForTail = budget.total - (system.length + instruction.length + settings.length);
       prevTail = roomForTail <= 0 ? "" : tail(prevTail, roomForTail);
     }
+    // ③ 仍超再削 skill 段（可清空；最后削）
+    if (totalLen() > budget.total && skills) {
+      const roomForSkills =
+        budget.total -
+        (baseSystem.length + instruction.length + settings.length + prevTail.length) -
+        (baseSystem ? 2 : 0);
+      skills = roomForSkills <= 0 ? "" : head(skills, roomForSkills);
+      system = skills ? `${baseSystem}\n\n${skills}` : baseSystem;
+    }
   }
 
   const userContent = [settings, prevTail, instruction].filter(Boolean).join("\n\n");
@@ -91,4 +114,13 @@ export function buildChapterPrompt(
     { role: "user", content: userContent },
   ];
   return { model: input.model, temperature: input.temperature, messages };
+}
+
+/** 组装 skill 段（`规避要点：` + 逐条 `- 标题：规则`）；缺省/空返回空串；≤ limit */
+function buildSkillsSection(skills: PromptSkill[] | undefined, limit: number): string {
+  if (!skills || skills.length === 0) {
+    return "";
+  }
+  const lines = skills.map((skill) => `- ${skill.title}：${skill.rule}`);
+  return head(["规避要点：", ...lines].join("\n"), limit);
 }

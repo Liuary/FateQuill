@@ -2,14 +2,14 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-09T18:54:21.014Z",
-    "revision": 235
+    "updated": "2026-10-09T18:56:04.435Z",
+    "revision": 236
   },
   "pipeline": {
     "phase": "active",
     "current": {
       "stage": "v0.2.0-stage-07",
-      "op": "op-005"
+      "op": "op-006"
     },
     "retry": 0
   },
@@ -967,9 +967,9 @@
         },
         "op-005": {
           "title": "用户标注工作台：受控标签与引文定位（T3）",
-          "state": "pending",
+          "state": "done",
           "assignee": "openfeel-executor",
-          "attempts": 0,
+          "attempts": 1,
           "max_attempts": 3,
           "checkpoints": {
             "plan": "pending",
@@ -3350,6 +3350,15 @@
       "action": "attempt_pass",
       "detail": {
         "opId": "v0.2.0-stage-07.op-004",
+        "attempts": 1
+      }
+    },
+    {
+      "time": "2026-10-09T18:56:04.404Z",
+      "agent": "openfeel-executor",
+      "action": "attempt_pass",
+      "detail": {
+        "opId": "v0.2.0-stage-07.op-005",
         "attempts": 1
       }
     }
