@@ -31,6 +31,8 @@ interface ExplorationState {
   selectBranch: (id: string) => void;
   /** 折叠/展开分支 */
   toggleCollapsed: (id: string) => void;
+  /** 丢弃分支（会话容器移除；选中/折叠状态一并清理） */
+  removeBranch: (id: string) => void;
   clear: () => void;
 }
 
@@ -59,6 +61,13 @@ export const useExplorationStore = create<ExplorationState>((set) => ({
       collapsedIds: state.collapsedIds.includes(id)
         ? state.collapsedIds.filter((current) => current !== id)
         : [...state.collapsedIds, id],
+    })),
+  removeBranch: (id) =>
+    set((state) => ({
+      branches: state.branches.filter((branch) => branch.id !== id),
+      // 选中已移除分支 → 清空（避免悬空引用）
+      selectedBranchId: state.selectedBranchId === id ? null : state.selectedBranchId,
+      collapsedIds: state.collapsedIds.filter((current) => current !== id),
     })),
   // 清空分支、选中与折叠态（保留意向与温度配置）
   clear: () => set({ branches: [], running: false, selectedBranchId: null, collapsedIds: [] }),

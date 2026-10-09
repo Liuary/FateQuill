@@ -28,5 +28,14 @@
   "flagged": "偏离设定（已降权）",
   "coverage": "覆盖率",
   "missingSettings": "缺失设定卡",
-  "invalidRefs": "无效引用"
+  "invalidRefs": "无效引用",
+  "nextChapterTitle": "推演草稿",
+  "adoptNextChapter": "采纳为下一章",
+  "replaceCurrent": "替换当前章（危险）",
+  "confirmNextChapter": "将在当前卷末新建一章草稿（不改动当前章）。确认采纳？",
+  "dangerWarning": "将覆盖当前章正文（替换前正文已自动入池快照，可恢复；一次 Ctrl+Z 亦可撤销）。确认替换？",
+  "confirm": "确认",
+  "cancel": "取消",
+  "snapshotSaved": "替换前正文已入池快照",
+  "discard": "丢弃"
 }

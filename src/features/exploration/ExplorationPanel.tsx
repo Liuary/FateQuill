@@ -25,7 +25,7 @@ export interface ExplorationPanelProps {
 }
 
 /** 多温度并行推演面板 */
-export function ExplorationPanel({ novelId, chapterId }: ExplorationPanelProps) {
+export function ExplorationPanel({ novelId, chapterId, editor = null }: ExplorationPanelProps) {
   const { t } = useTranslation("exploration");
   const { state, config } = useGenerationAvailability();
   const intent = useExplorationStore((s) => s.intent);
@@ -67,7 +67,7 @@ export function ExplorationPanel({ novelId, chapterId }: ExplorationPanelProps) 
         <h3 className="text-xs opacity-70">
           {t("branch")}（{branches.length}）
         </h3>
-        <BranchCompare />
+        <BranchCompare editor={editor} currentChapterId={chapterId} />
       </section>
     </div>
   );

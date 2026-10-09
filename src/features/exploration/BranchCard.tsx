@@ -1,14 +1,17 @@
 /**
- * 单分支走向卡（stage-08 T2）
+ * 单分支走向卡（stage-08 T2/T3/T4）
  *
- * 职责：展示一个温度分支的走向卡（温度 / `clamped` 标注 / `summary` / `keyTurns` / 设定卡引用）；
- * **独有关键转折**（`uniqueKeyTurns`）以左侧标记 + 加粗高亮。
+ * 职责：展示一个温度分支的走向卡（温度 / `clamped` 标注 / `summary` / `keyTurns` / 设定卡引用；
+ * **独有关键转折**高亮；**偏离标注 + 降权弱化**）；并提供三动作：
+ * **「采纳为下一章」（主路径，无 DB 丢失）**、**「替换当前章（危险）」**（经二次确认）、**「丢弃」**。
  */
 
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import type { BranchDiff } from "@/orchestration/exploration/diff";
 import type { ExplorationBranch } from "@/orchestration/exploration/types";
+import { ConfirmInline } from "./ConfirmInline";
 
 export interface BranchCardProps {
   branch: ExplorationBranch;
@@ -17,6 +20,12 @@ export interface BranchCardProps {
   selected: boolean;
   onToggleCollapsed: () => void;
   onSelect: () => void;
+  /** 主路径：新建下一章草稿（**不改当前章**） */
+  onAdoptNextChapter: (branchId: string) => Promise<boolean>;
+  /** 次路径（危险）：替换当前章（内部先强制入池快照） */
+  onReplaceCurrent: (branchId: string) => boolean;
+  /** 丢弃分支 */
+  onDiscard: (branchId: string) => void;
 }
 
 /** 单分支走向卡 */
@@ -27,9 +36,15 @@ export function BranchCard({
   selected,
   onToggleCollapsed,
   onSelect,
+  onAdoptNextChapter,
+  onReplaceCurrent,
+  onDiscard,
 }: BranchCardProps) {
   const { t } = useTranslation("exploration");
   const uniqueTurns = new Set(diff.uniqueKeyTurns);
+  // 二次确认门：未确认不执行任何落地动作
+  const [pendingAction, setPendingAction] = useState<"next" | "replace" | null>(null);
+  const [snapshotSaved, setSnapshotSaved] = useState(false);
 
   return (
     <article
@@ -96,6 +111,43 @@ export function BranchCard({
               <p className="text-xs opacity-70">
                 {t("settingRefs")}: {branch.card.settingCardIds.join(", ")}
               </p>
+            )}
+
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" onClick={() => setPendingAction("next")}>
+                {t("adoptNextChapter")}
+              </Button>
+              <Button variant="outline" onClick={() => setPendingAction("replace")}>
+                {t("replaceCurrent")}
+              </Button>
+              <Button variant="outline" onClick={() => onDiscard(branch.id)}>
+                {t("discard")}
+              </Button>
+            </div>
+
+            {snapshotSaved && <p className="text-xs opacity-70">{t("snapshotSaved")}</p>}
+
+            {pendingAction === "next" && (
+              <ConfirmInline
+                prompt={t("confirmNextChapter")}
+                onConfirm={() => {
+                  setPendingAction(null);
+                  void onAdoptNextChapter(branch.id);
+                }}
+                onCancel={() => setPendingAction(null)}
+              />
+            )}
+            {pendingAction === "replace" && (
+              <ConfirmInline
+                prompt={t("dangerWarning")}
+                onConfirm={() => {
+                  setPendingAction(null);
+                  if (onReplaceCurrent(branch.id)) {
+                    setSnapshotSaved(true);
+                  }
+                }}
+                onCancel={() => setPendingAction(null)}
+              />
             )}
           </>
         ) : branch.error ? (

@@ -28,5 +28,14 @@
   "flagged": "Deviates from settings (down-weighted)",
   "coverage": "Coverage",
   "missingSettings": "Missing settings",
-  "invalidRefs": "Invalid refs"
+  "invalidRefs": "Invalid refs",
+  "nextChapterTitle": "Exploration draft",
+  "adoptNextChapter": "Adopt as next chapter",
+  "replaceCurrent": "Replace current chapter (danger)",
+  "confirmNextChapter": "A draft chapter will be appended to the current volume (current chapter untouched). Confirm?",
+  "dangerWarning": "This overwrites the current chapter text (a snapshot is saved first; one Ctrl+Z also restores). Confirm?",
+  "confirm": "Confirm",
+  "cancel": "Cancel",
+  "snapshotSaved": "Pre-replace text saved to the version pool",
+  "discard": "Discard"
 }
