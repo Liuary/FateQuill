@@ -27,6 +27,8 @@ export function buildSamplingMessages(instruction: string): ChatMessage[] {
   ];
 }
 
+// 候选 id 计数器：**模块级可变状态**（跨测试实例共享，v0.2 明确注明）。
+// 仅需会话内唯一；如需测试强隔离，可改为工厂注入计数器。
 let candidateSeq = 0;
 
 /** 会话内唯一的候选 id */

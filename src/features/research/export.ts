@@ -12,6 +12,20 @@ function csvCell(value: unknown): string {
   return /[",\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
 }
 
+/** 归一为 ISO 8601（REV-020②）：SQLite `datetime('now')` 的 UTC `YYYY-MM-DD HH:MM:SS` → `...Z`；非法原样返回 */
+export function toIsoDateTime(value: string): string {
+  const text = value.trim();
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z?$/.test(text)) {
+    return text.endsWith("Z") ? text : `${text}Z`; // 已是 ISO 形态
+  }
+  const sqlite = /^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2}:\d{2})/.exec(text);
+  if (sqlite) {
+    return `${sqlite[1]}T${sqlite[2]}Z`; // SQLite UTC → ISO 8601
+  }
+  const date = new Date(text);
+  return Number.isNaN(date.getTime()) ? text : date.toISOString();
+}
+
 /** 素材列表 → JSON 文本（2 空格缩进；纯函数） */
 export function materialsToJson(materials: Material[]): string {
   return JSON.stringify(materials, null, 2);
@@ -42,7 +56,7 @@ export function materialsToCsv(materials: Material[]): string {
       material.label,
       material.chapterId,
       material.status,
-      material.createdAt,
+      toIsoDateTime(material.createdAt), // REV-020②：统一 ISO 8601
       material.position.contextBefore ?? "",
       material.position.contextAfter ?? "",
     ].map(csvCell),

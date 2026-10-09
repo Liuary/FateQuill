@@ -2,14 +2,14 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-09T18:56:04.435Z",
-    "revision": 236
+    "updated": "2026-10-09T19:11:03.724Z",
+    "revision": 244
   },
   "pipeline": {
     "phase": "active",
     "current": {
       "stage": "v0.2.0-stage-07",
-      "op": "op-006"
+      "op": "op-008"
     },
     "retry": 0
   },
@@ -890,8 +890,8 @@
     },
     "v0.2.0-stage-07": {
       "name": "v0.2.0-stage-07",
-      "phase": "exec_running",
-      "status": "planned",
+      "phase": "scheme_passed",
+      "status": "review_failed",
       "deps": [
         "v0.1.0-stage-03",
         "v0.2.0-stage-06"
@@ -984,9 +984,9 @@
         },
         "op-006": {
           "title": "规避 skill 库雏形：skill_entry + 归纳引用 + 版本（T5）",
-          "state": "pending",
+          "state": "done",
           "assignee": "openfeel-executor",
-          "attempts": 0,
+          "attempts": 1,
           "max_attempts": 3,
           "checkpoints": {
             "plan": "pending",
@@ -1001,6 +1001,23 @@
         },
         "op-007": {
           "title": "闭环回注与度量：skills 注入 + 实验报告（T6）",
+          "state": "done",
+          "assignee": "openfeel-executor",
+          "attempts": 1,
+          "max_attempts": 3,
+          "checkpoints": {
+            "plan": "pending",
+            "scheme": "pending",
+            "exec": {
+              "attempts": 0,
+              "self": "pending"
+            },
+            "review": "pending",
+            "test": "pending"
+          }
+        },
+        "op-008": {
+          "title": "修复交叉判断无 UI 入口与标注入库静默失败（REV-018/019）(fix)",
           "state": "pending",
           "assignee": "openfeel-executor",
           "attempts": 0,
@@ -3360,6 +3377,83 @@
       "detail": {
         "opId": "v0.2.0-stage-07.op-005",
         "attempts": 1
+      }
+    },
+    {
+      "time": "2026-10-09T18:59:07.356Z",
+      "agent": "openfeel-executor",
+      "action": "attempt_pass",
+      "detail": {
+        "opId": "v0.2.0-stage-07.op-006",
+        "attempts": 1
+      }
+    },
+    {
+      "time": "2026-10-09T19:02:13.709Z",
+      "agent": "openfeel-executor",
+      "action": "attempt_pass",
+      "detail": {
+        "opId": "v0.2.0-stage-07.op-007",
+        "attempts": 1
+      }
+    },
+    {
+      "time": "2026-10-09T19:02:14.097Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.2.0-stage-07",
+        "from": "exec_running",
+        "to": "review_pending"
+      }
+    },
+    {
+      "time": "2026-10-09T19:08:27.299Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.2.0-stage-07",
+        "from": "review_pending",
+        "to": "review_failed"
+      }
+    },
+    {
+      "time": "2026-10-09T19:08:27.620Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.2.0-stage-07",
+        "from": "review_failed",
+        "to": "scheme_pending"
+      }
+    },
+    {
+      "time": "2026-10-09T19:09:00.081Z",
+      "agent": "cli",
+      "action": "register_op",
+      "detail": {
+        "stageName": "v0.2.0-stage-07",
+        "opId": "op-008"
+      }
+    },
+    {
+      "time": "2026-10-09T19:09:39.921Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.2.0-stage-07",
+        "from": "scheme_pending",
+        "to": "scheme_review"
+      }
+    },
+    {
+      "time": "2026-10-09T19:11:03.724Z",
+      "agent": "cli",
+      "action": "advance_stage_phase",
+      "detail": {
+        "stageName": "v0.2.0-stage-07",
+        "from": "scheme_review",
+        "to": "scheme_passed"
       }
     }
   ]

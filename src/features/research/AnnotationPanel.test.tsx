@@ -137,4 +137,19 @@ describe("AnnotationPanel（标注工作台）", () => {
     expect(invokeMock).not.toHaveBeenCalled();
     expect(result.current.error).toBe("invalid-tag");
   });
+
+  it("入库失败（REV-019）：提示 annotationSaveFailed、savedCount 不变、无未捕获拒绝", async () => {
+    invokeMock.mockRejectedValue({ code: "VALIDATION", message: "save failed" });
+
+    render(<AnnotationPanel />);
+    fireEvent.click(screen.getByRole("button", { name: "从零手选片段" }));
+    fireEvent.change(screen.getByLabelText("引文"), { target: { value: "她不禁皱眉" } });
+    fireEvent.click(screen.getByRole("button", { name: "保存" }));
+
+    await waitFor(() =>
+      expect(invokeMock).toHaveBeenCalledWith("save_material", expect.anything()),
+    );
+    await waitFor(() => expect(screen.getByText("入库失败，请重试")).toBeInTheDocument());
+    expect(screen.getByText("已入库：0")).toBeInTheDocument(); // savedCount 不变
+  });
 });

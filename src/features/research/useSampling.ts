@@ -34,6 +34,22 @@ async function loadOptions(): Promise<SamplingModelOption[]> {
   );
 }
 
+/** 由勾选项构造可用 `SamplingModel[]`（含 Key；**供采样与交叉判断共用**） */
+export function buildSelectedModels(
+  options: SamplingModelOption[],
+  selectedConfigIds: number[],
+): SamplingModel[] {
+  return options
+    .filter((option) => selectedConfigIds.includes(option.config.id) && option.hasKey)
+    .map((option) => ({
+      configId: option.config.id,
+      providerId: option.config.provider,
+      label: option.config.label,
+      model: option.config.modelName,
+      provider: resolveProviderForConfig(option.config),
+    }));
+}
+
 /** 采样编排：勾选模型 → 串行采样；支持停止 */
 export function useSampling() {
   const [options, setOptions] = useState<SamplingModelOption[]>([]);
@@ -71,15 +87,7 @@ export function useSampling() {
 
   const startSampling = useCallback(
     async (instruction: string) => {
-      const models: SamplingModel[] = options
-        .filter((option) => selectedConfigIds.includes(option.config.id) && option.hasKey)
-        .map((option) => ({
-          configId: option.config.id,
-          providerId: option.config.provider,
-          label: option.config.label,
-          model: option.config.modelName,
-          provider: resolveProviderForConfig(option.config),
-        }));
+      const models = buildSelectedModels(options, selectedConfigIds);
       if (models.length === 0) {
         return; // 无可用模型：不启动
       }

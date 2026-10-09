@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Material } from "@/domain/models/material";
-import { downloadExport, materialsToCsv, materialsToJson } from "./export";
+import { downloadExport, materialsToCsv, materialsToJson, toIsoDateTime } from "./export";
 
 const material = (over: Partial<Material> = {}): Material => ({
   id: 1,
@@ -12,7 +12,7 @@ const material = (over: Partial<Material> = {}): Material => ({
   label: "套话",
   chapterId: 3,
   status: "confirmed",
-  createdAt: "2026-10-10",
+  createdAt: "2026-10-10T00:00:00Z",
   ...over,
 });
 
@@ -30,8 +30,14 @@ describe("materialsToCsv", () => {
       "id,sourceType,sourceModel,excerpt,reason,label,chapterId,status,createdAt,contextBefore,contextAfter",
     );
     expect(lines[1]).toBe(
-      "1,multi_model_creation,modelA,她不禁皱眉,套话,套话,3,confirmed,2026-10-10,前文,后文",
+      "1,multi_model_creation,modelA,她不禁皱眉,套话,套话,3,confirmed,2026-10-10T00:00:00Z,前文,后文",
     );
+  });
+
+  it("createdAt 统一为 ISO 8601（REV-020②）", () => {
+    // SQLite `datetime('now')`（UTC，无时区标记）→ ISO 8601
+    const csv = materialsToCsv([material({ createdAt: "2026-10-10 03:00:00" })]);
+    expect(csv.split("\n")[1]).toContain(",2026-10-10T03:00:00Z,");
   });
 
   it("含逗号/引号/换行的单元格加引号并转义", () => {
@@ -46,6 +52,22 @@ describe("materialsToCsv", () => {
       .split("\n")[1]
       .split(",");
     expect(cells[6]).toBe("");
+  });
+});
+
+describe("toIsoDateTime（REV-020②）", () => {
+  it("SQLite UTC 形态 → ISO 8601", () => {
+    expect(toIsoDateTime("2026-10-10 03:00:00")).toBe("2026-10-10T03:00:00Z");
+    expect(toIsoDateTime("2026-10-10T03:00:00")).toBe("2026-10-10T03:00:00Z");
+  });
+
+  it("已为 ISO 形态 → 原样（补 Z）", () => {
+    expect(toIsoDateTime("2026-10-10T03:00:00Z")).toBe("2026-10-10T03:00:00Z");
+  });
+
+  it("其它可解析日期 → ISO；非法 → 原样返回", () => {
+    expect(toIsoDateTime("2026-10-10")).toBe("2026-10-10T00:00:00.000Z");
+    expect(toIsoDateTime("not a date")).toBe("not a date");
   });
 });
 

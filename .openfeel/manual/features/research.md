@@ -43,6 +43,7 @@ src-tauri/src/db/{material.rs,skill.rs}        # CRUD / 检索 / 删除防护 / 
 - **素材库（T4）**：迁移 v4 `material`（`excerpt` 唯一权威、`position_json` 仅上下文、`chapter_id` `ON DELETE SET NULL`）；命令 `save_material`/`list_materials`/`delete_material`（**被 skill 引用则拒绝**，REV-012）；导出 JSON/CSV，**默认仅本地**。
 - **skill 库（T5）**：`skill_entry`（`rule` = 可执行规避指令、`version` 可管理）；**素材 → skill 以 id 引用**（保存/更新校验素材存在）；归纳**需人工参与**。
 - **闭环回注与度量（T6）**：装配器 `ChapterPromptInput.skills?`（拼入 system，预算桶 ≤500 字，**缺省向后兼容**）；度量实验 `runExperiment`（同模型、温度 0、每样本 skill 关/开两轮四维评分；主指标 = 真人感↑，约束 = 其余三维不回退超容差）；`report.md` 含**数据状态**（真机执行由用户 / feel-tester 协验）。
+- **注入口径（REV-020③）**：生成注入 = **全部** `skill_entry` 条目（表**无 status 维度**；入库 skill 均源自 `confirmed` 素材归纳），加载失败/无条目时**不注入**。
 
 ## 关联文档
 

@@ -2,14 +2,14 @@
   "meta": {
     "version": "1.0",
     "project": "OpenFeel",
-    "updated": "2026-10-09T19:11:04.049Z",
-    "revision": 245
+    "updated": "2026-10-09T19:08:27.299Z",
+    "revision": 240
   },
   "pipeline": {
     "phase": "active",
     "current": {
       "stage": "v0.2.0-stage-07",
-      "op": "op-008"
+      "op": ""
     },
     "retry": 0
   },
@@ -890,7 +890,7 @@
     },
     "v0.2.0-stage-07": {
       "name": "v0.2.0-stage-07",
-      "phase": "exec_running",
+      "phase": "scheme_pending",
       "status": "review_failed",
       "deps": [
         "v0.1.0-stage-03",
@@ -1004,23 +1004,6 @@
           "state": "done",
           "assignee": "openfeel-executor",
           "attempts": 1,
-          "max_attempts": 3,
-          "checkpoints": {
-            "plan": "pending",
-            "scheme": "pending",
-            "exec": {
-              "attempts": 0,
-              "self": "pending"
-            },
-            "review": "pending",
-            "test": "pending"
-          }
-        },
-        "op-008": {
-          "title": "修复交叉判断无 UI 入口与标注入库静默失败（REV-018/019）(fix)",
-          "state": "pending",
-          "assignee": "openfeel-executor",
-          "attempts": 0,
           "max_attempts": 3,
           "checkpoints": {
             "plan": "pending",
@@ -3415,55 +3398,6 @@
         "stageName": "v0.2.0-stage-07",
         "from": "review_pending",
         "to": "review_failed"
-      }
-    },
-    {
-      "time": "2026-10-09T19:08:27.620Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.2.0-stage-07",
-        "from": "review_failed",
-        "to": "scheme_pending"
-      }
-    },
-    {
-      "time": "2026-10-09T19:09:00.081Z",
-      "agent": "cli",
-      "action": "register_op",
-      "detail": {
-        "stageName": "v0.2.0-stage-07",
-        "opId": "op-008"
-      }
-    },
-    {
-      "time": "2026-10-09T19:09:39.921Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.2.0-stage-07",
-        "from": "scheme_pending",
-        "to": "scheme_review"
-      }
-    },
-    {
-      "time": "2026-10-09T19:11:03.724Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.2.0-stage-07",
-        "from": "scheme_review",
-        "to": "scheme_passed"
-      }
-    },
-    {
-      "time": "2026-10-09T19:11:04.049Z",
-      "agent": "cli",
-      "action": "advance_stage_phase",
-      "detail": {
-        "stageName": "v0.2.0-stage-07",
-        "from": "scheme_passed",
-        "to": "exec_running"
       }
     }
   ]

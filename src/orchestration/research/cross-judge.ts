@@ -49,6 +49,8 @@ export async function extractFlavorExcerpts(opts: {
   model: string;
   content: string;
   temperature?: number;
+  /** 可选中止信号（透传 provider，供交叉判断停止） */
+  signal?: AbortSignal;
 }): Promise<ModelExcerpts> {
   let full = "";
   // 非流式收口：聚合全部增量后再解析
@@ -59,6 +61,7 @@ export async function extractFlavorExcerpts(opts: {
       { role: "system", content: EXCERPT_SYSTEM_PROMPT },
       { role: "user", content: opts.content },
     ],
+    signal: opts.signal,
   })) {
     full += chunk.delta;
   }

@@ -189,6 +189,9 @@ export function AnnotationPanel() {
           </label>
 
           {error === "invalid-tag" && <p className="text-destructive text-xs">{t("invalidTag")}</p>}
+          {error === "save-failed" && (
+            <p className="text-destructive text-xs">{t("annotationSaveFailed")}</p>
+          )}
 
           <div className="flex items-center gap-2">
             <Button

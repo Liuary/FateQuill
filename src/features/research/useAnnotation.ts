@@ -62,6 +62,10 @@ export function useAnnotation() {
           chapterId: null,
           status: "confirmed",
         });
+      } catch {
+        // 入库失败（如 IPC 异常 / VALIDATION）：**捕获并提示**（REV-019），不抛出
+        setError("save-failed");
+        return null;
       } finally {
         setSaving(false);
       }

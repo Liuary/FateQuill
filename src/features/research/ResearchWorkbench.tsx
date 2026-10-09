@@ -13,7 +13,8 @@ import { Input } from "@/components/ui/input";
 import { useResearchStore } from "@/store/researchStore";
 import { AnnotationPanel } from "./AnnotationPanel";
 import { SkillLibrary } from "./SkillLibrary";
-import { useSampling } from "./useSampling";
+import { buildSelectedModels, useSampling } from "./useSampling";
+import { useCrossJudge } from "./useCrossJudge";
 
 /** 研究/采样工作台 */
 export function ResearchWorkbench() {
@@ -31,6 +32,10 @@ export function ResearchWorkbench() {
   } = useSampling();
   const candidates = useResearchStore((s) => s.candidates);
   const [instruction, setInstruction] = useState("");
+
+  // 交叉判断（REV-018）：复用勾选模型，对已有采样候选逐模型摘取 → 精确交集 → 待确认队列
+  const models = buildSelectedModels(options, selectedConfigIds);
+  const { runCrossJudge, stopCrossJudge, crossing } = useCrossJudge(models);
 
   const toggle = (id: number) => {
     setSelectedConfigIds(
@@ -86,7 +91,22 @@ export function ResearchWorkbench() {
             {t("stopSampling")}
           </Button>
         )}
+        <Button
+          disabled={!canSample || candidates.length === 0 || crossing}
+          onClick={() => void runCrossJudge()}
+        >
+          {t("startCrossJudge")}
+        </Button>
+        {crossing && (
+          <Button variant="outline" onClick={stopCrossJudge}>
+            {t("stopCrossJudge")}
+          </Button>
+        )}
       </div>
+
+      {candidates.length === 0 && (
+        <p className="text-xs opacity-70">{t("crossJudgeNeedsCandidates")}</p>
+      )}
 
       <section className="flex flex-col gap-1">
         <h3 className="text-xs opacity-70">
