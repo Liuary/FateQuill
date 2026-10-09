@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useResearchStore } from "@/store/researchStore";
+import { AnnotationPanel } from "./AnnotationPanel";
 import { useSampling } from "./useSampling";
 
 /** 研究/采样工作台 */
@@ -107,6 +108,8 @@ export function ResearchWorkbench() {
           </ul>
         )}
       </section>
+
+      <AnnotationPanel />
     </div>
   );
 }

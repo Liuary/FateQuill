@@ -27,3 +27,4 @@
 | [2026-10-10-Liuary-022.md](2026-10-10-Liuary-022.md) | Liuary | v0.2.0-stage-07.op-001 执行通过 |
 | [2026-10-10-Liuary-023.md](2026-10-10-Liuary-023.md) | Liuary | v0.2.0-stage-07.op-002 执行通过 |
 | [2026-10-10-Liuary-024.md](2026-10-10-Liuary-024.md) | Liuary | v0.2.0-stage-07.op-003 执行通过 |
+| [2026-10-10-Liuary-025.md](2026-10-10-Liuary-025.md) | Liuary | v0.2.0-stage-07.op-004 执行通过 |

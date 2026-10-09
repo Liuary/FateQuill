@@ -9,5 +9,28 @@
   "emptyCandidates": "暂无候选",
   "loading": "加载中…",
   "guideSettings": "请先在「设置」配置模型并写入 API Key",
-  "keyMissing": "未配置 Key"
+  "keyMissing": "未配置 Key",
+  "annotation": "标注",
+  "pending": "待确认队列",
+  "emptyPending": "暂无待确认项",
+  "label": "标注",
+  "manualPick": "从零手选片段",
+  "source": "来源通道",
+  "excerpt": "引文",
+  "locateContent": "定位正文",
+  "locateHit": "命中位置：{{index}}",
+  "locateMiss": "未在正文中命中",
+  "ambiguous": "多命中（{{matches}} 处），已取首个",
+  "reason": "理由",
+  "tag": "标签",
+  "note": "备注",
+  "save": "保存",
+  "savedCount": "已入库：{{count}}",
+  "invalidTag": "标签非法，已拒绝",
+  "tags": {
+    "cliche": "套话",
+    "parallelism": "排比",
+    "empty": "空洞形容",
+    "translationese": "翻译腔"
+  }
 }

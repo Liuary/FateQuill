@@ -9,5 +9,28 @@
   "emptyCandidates": "No candidates yet",
   "loading": "Loading…",
   "guideSettings": "Configure a model and store an API key in Settings first",
-  "keyMissing": "No API key"
+  "keyMissing": "No API key",
+  "annotation": "Annotation",
+  "pending": "Pending review",
+  "emptyPending": "No pending items",
+  "label": "Annotate",
+  "manualPick": "Pick a fragment manually",
+  "source": "Source channel",
+  "excerpt": "Excerpt",
+  "locateContent": "Text to locate in",
+  "locateHit": "Matched at {{index}}",
+  "locateMiss": "Not found in the text",
+  "ambiguous": "{{matches}} matches — first one used",
+  "reason": "Reason",
+  "tag": "Tag",
+  "note": "Note",
+  "save": "Save",
+  "savedCount": "Saved: {{count}}",
+  "invalidTag": "Invalid tag rejected",
+  "tags": {
+    "cliche": "Cliché",
+    "parallelism": "Parallelism",
+    "empty": "Empty wording",
+    "translationese": "Translationese"
+  }
 }
