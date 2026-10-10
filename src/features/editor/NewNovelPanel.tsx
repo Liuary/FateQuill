@@ -25,7 +25,8 @@ export function NewNovelPanel({ onCreate }: NewNovelPanelProps) {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-6">
+    // `min-h-full`（**不再用 100vh**）：适配父容器（flex 内容区），卡片居中且不溢出
+    <div className="flex min-h-full items-center justify-center overflow-auto p-6">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>{t("emptyNovels")}</CardTitle>
