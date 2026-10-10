@@ -5,6 +5,7 @@
   "edit": "编辑",
   "cancel": "取消",
   "provider": "提供方",
+  "providerId": "自定义 provider id",
   "label": "标签",
   "baseUrl": "接口地址",
   "modelName": "模型名称",

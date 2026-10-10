@@ -5,6 +5,7 @@
   "edit": "Edit",
   "cancel": "Cancel",
   "provider": "Provider",
+  "providerId": "Custom provider id",
   "label": "Label",
   "baseUrl": "Base URL",
   "modelName": "Model",
