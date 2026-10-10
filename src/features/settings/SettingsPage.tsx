@@ -48,9 +48,11 @@ export function SettingsPage() {
   }
 
   return (
-    <section className="flex w-full max-w-2xl flex-col gap-4">
-      <h2 className="text-xl font-semibold">{t("title")}</h2>
-      <div className="flex justify-end">
+    // 可读容器：居中 + 统一内边距（与顶部 header 观感一致）
+    <section className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-6">
+      {/* 标题与「新增模型配置」按钮**同一行**（左标题、右按钮） */}
+      <div data-testid="settings-header" className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold">{t("title")}</h2>
         <Button
           onClick={() => {
             setEditing(null);

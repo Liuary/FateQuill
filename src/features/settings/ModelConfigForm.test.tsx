@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import i18n from "@/app/i18n";
 import type { ModelConfig } from "@/domain/models/model-config";
+import { PROVIDER_PRESETS } from "@/domain/models/provider-presets";
 import { ModelConfigForm } from "./ModelConfigForm";
 
 const { keyringSetMock } = vi.hoisted(() => ({ keyringSetMock: vi.fn() }));
@@ -27,7 +28,7 @@ beforeEach(async () => {
 });
 
 describe("ModelConfigForm（provider 预设与自定义入口；stage-03 op-008）", () => {
-  it("预设下拉含国内主流厂商 + 自定义（不再硬编码两项）", () => {
+  it("预设下拉含海外与国内主流厂商 + 自定义（op-009 补齐 6 家）", () => {
     render(<ModelConfigForm onSubmit={vi.fn()} />);
     const select = screen.getByTestId("model-provider-select") as HTMLSelectElement;
     const values = [...select.options].map((option) => option.value);
@@ -36,16 +37,32 @@ describe("ModelConfigForm（provider 预设与自定义入口；stage-03 op-008�
       expect.arrayContaining([
         "openai",
         "anthropic",
+        "gemini",
+        "grok",
         "deepseek",
         "zhipu",
         "qwen",
         "moonshot",
+        "ernie",
+        "hunyuan",
+        "spark",
+        "doubao",
         "siliconflow",
         "minimax",
         "custom",
       ]),
     );
-    expect(values.length).toBeGreaterThanOrEqual(9);
+    // 预设总数（op-009：15 项）
+    expect(values).toHaveLength(15);
+    expect(PROVIDER_PRESETS).toHaveLength(15);
+  });
+
+  it("预设分组顺序可读（OpenAI → Anthropic → Gemini → Grok → DeepSeek → … → 自定义）", () => {
+    const order = PROVIDER_PRESETS.map((preset) => preset.id);
+    expect(order.slice(0, 5)).toEqual(["openai", "anthropic", "gemini", "grok", "deepseek"]);
+    expect(order[order.length - 1]).toBe("custom");
+    // 豆包无默认模型（模型名由用户在表单填写）
+    expect(PROVIDER_PRESETS.find((preset) => preset.id === "doubao")?.defaultModel).toBeUndefined();
   });
 
   it("选 **DeepSeek** 预设 → 自动填充 `baseUrl` 与 `modelName`（字段保持可编辑）", () => {
